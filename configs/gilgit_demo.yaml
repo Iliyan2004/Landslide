@@ -1,0 +1,79 @@
+# Gilgit City landslide pilot; edit file paths to point to YOUR existing datasets.
+# Compatible with landslide-platform/configs/inputs.example.yaml and methodology §3.1.
+# All paths are resolved relative to landslide-platform root; absolute Windows paths also work.
+project:
+  name: gilgit_city_landslide_demo
+  presentation_mode: true
+  label: "Gilgit City — demonstration / scenario only"
+  output_dir: runs/gilgit_city_demo
+  data_root: 'D:/LandslideData'             # EDIT: main existing data folder
+  no_auto_download: true
+study_area:
+  geometry: D:\Downloads\CMIP6\Shapefiles\Gilgit shp\Gilgit.shp    # illustrative extent; replace with real Gilgit boundary
+  canonical_crs: EPSG:4326
+  analysis_crs: EPSG:32643
+  target_resolution_m: 30
+  buffer_m: 1000
+  strict_aoi_statistics: true
+terrain: D:\Downloads\CMIP6\gilgit_dem.tif                              # EDIT: path to 30m DEM GeoTIFF
+inventory: D:\Downloads\CMIP6\LANDSLIDE PLATFORM\additional data\downloaded_data\landslide_inventory\landslide_inventory.gpkg                            # EDIT: landslide inventory GeoPackage; required for supervised ML
+forcing:
+  rainfall: D:\Downloads\CMIP6\Snow Glacier Model\Precipitation\tp_pak_20260101_20261231_hourly_v1.nc                          # EDIT: hourly rainfall NetCDF, time/y/x
+  temperature: D:\Downloads\CMIP6\Snow Glacier Model\era5 Temperature\t2m_pak_20260101_20261231_hourly_v1.nc                        # optional: hourly temperature NetCDF
+  soil_moisture: null                      # optional: hourly moisture NetCDF
+  earthquake_shakemap: null               # optional: PGA raster GeoTIFF
+soil:
+  profile: null                            # optional: soil profile Zarr or NetCDF
+  soil_depth: null                         # measured m or explicitly declared scenario
+  effective_cohesion: null                 # measured Pa or explicitly declared scenario
+  friction_angle: null                     # measured degrees or scenario
+  hydraulic_conductivity: null             # measured m/s or scenario
+  water_table: null                        # m below surface; measured or scenario
+  parameter_mode: scenario_ensemble        # change to measured only with actual site values
+models:
+  susceptibility: legacy_screening         # run without ML inventory; ratings must be reviewed
+  shallow_stability: infinite_slope        # disabled below until parameter requirements met
+  rainfall_hydrology: green_ampt_scenario
+  runout: empirical_envelope               # needs observed/defined release geometry
+  sediment: shields_capacity               # needs discharge, channel geometry and bed d50
+# These extra dataset paths support the full methodology; they are not yet automatically
+# consumed by the current landslide-platform API. Adapter wiring is necessary.
+datasets:
+  lithology: null                          # GLiM GeoPackage/GeoTIFF, with lithology codes
+  landcover: null                          # WorldCover categorical GeoTIFF
+  hydro_rivers: null                       # HydroRIVERS lines GeoPackage/shapefile
+  roads: null                              # OSM roads GeoPackage
+  buildings: null                          # optional, GeoPackage
+  historical_rain_gauges: null             # UTC CSV
+  landslide_source_polygons: null          # GeoPackage
+  release_source_polygon: null             # needed for runout
+  river_discharge: null                    # daily/hourly CSV (timestamp_utc, discharge_m3_s)
+  riverbed_d50: null                       # reach/site CSV or GeoPackage (d50_mm)
+  sediment_ssc: null                       # optional measured SSC CSV
+  sediment_bedload: null                   # optional measured bedload CSV
+  geology_faults: null                     # fault lines GeoPackage
+  sentinel2_ndvi: null                     # NDVI GeoTIFF
+  seismic_pga: null                        # GeoTIFF (g or m/s2, declared)
+  groundwater_observations: null           # optional observations CSV
+  geotechnical_observations: null          # optional observations CSV
+  rock_discontinuities: null               # optional observations CSV
+  deposition_observations: null            # optional mapped GeoPackage
+# Explicit demo switches prevent unfinished/unsupported modules from appearing authoritative.
+demo:
+  enabled: true
+  stages:
+    terrain_layers: true
+    legacy_susceptibility: true
+    ml_susceptibility: false
+    rainfall_stability: false
+    earthquake: D:\Downloads\CMIP6\LANDSLIDE PLATFORM\additional data\downloaded_data\earthquake_hazard\usgs_events.geojson
+    runout: false
+    sediment: false
+    exposure: false
+  show_missing_data_badges: true
+  include_uncertainty_warning: true
+  forbid_synthetic_inputs: true
+quality:
+  reject_nodata_fraction_above: 0.10
+  provenance_required: true
+  prevent_extrapolation_beyond_training_domain: true

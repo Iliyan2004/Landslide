@@ -1,0 +1,26 @@
+# Standard input schema (methodology §3.1). Copy to runs/<name>/inputs.yaml.
+study_area:
+  geometry: data/aois/aoi.geojson
+  canonical_crs: EPSG:4326
+  analysis_crs: auto_utm_or_local_equal_area
+  target_resolution_m: 30
+  buffer_m: 3000
+  strict_aoi_statistics: true
+forcing:
+  rainfall: prepared/met/rain_hourly.nc
+  temperature: prepared/met/t2m_hourly.nc
+  soil_moisture: prepared/met/sm_hourly.nc
+  earthquake_shakemap: null
+soil:
+  profile: prepared/soil/soil_profiles.zarr
+  parameter_mode: scenario_ensemble        # or: measured
+  # Every value is a MEASURED scalar or an explicit scenario range. null => run is rejected (insufficient_data).
+  soil_depth:             {min: 1.0,  max: 3.0}      # m
+  effective_cohesion:     {min: 2000, max: 8000}     # Pa
+  friction_angle:         {min: 28,   max: 38}       # degrees
+  hydraulic_conductivity: {min: 1.0e-6, max: 1.0e-4} # m/s (log-uniform)
+  water_table:            {min: 2.0,  max: 6.0}      # m below ground
+inventory: prepared/inventory/landslides.gpkg
+terrain: prepared/terrain/dem_cog.tif
+models: {susceptibility: random_forest, shallow_stability: infinite_slope, rainfall_hydrology: green_ampt_scenario, runout: empirical_envelope, sediment: shields_capacity}
+quality: {reject_nodata_fraction_above: 0.10, provenance_required: true, prevent_extrapolation_beyond_training_domain: true}

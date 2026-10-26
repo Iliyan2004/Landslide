@@ -1,0 +1,5 @@
+# Tier 4: Earthquake Scenario
+
+The tab takes a magnitude, a focal depth, an epicentre (clicked on the map or the area centre), the time after the start of the animation, the Newmark criterion, an option to snap to the nearest mapped fault, and an optional preceding rainfall series. It previews the rupture length and mean PGA at 0 to 150 km, then runs the same pipeline as Tier 3 with the failures set by Newmark displacement (Ch. {{ch:earthquake_failure}}). Outputs add the PGA raster. Faults can be drawn on the map.
+
+The shaking now carries a site term (Vs30 from the USGS global grid) and a separate intermediate-depth model for the Hindu Kush and Pamir earthquakes (a focal depth over 40 km switches to it). Both were compared with {{pga_validation.json:events|0}} USGS ShakeMaps (Ch. {{ch:earthquake_failure}}.2): the scatter against ShakeMap is {{pga_validation.json:pooled.auto.all.sd_ln|2}} ln units over all events. There is still no calibration to a recorded landslide inventory of a specific earthquake, so the result is a scenario of pattern and order of magnitude, not a forecast for a specific earthquake.

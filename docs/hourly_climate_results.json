@@ -1,0 +1,257 @@
+{
+ "n_windows": 752,
+ "n_reports": 188,
+ "n_controls": 564,
+ "groups": {
+  "all reports": {
+   "n_pos": 188,
+   "rows": [
+    {
+     "feature": "rain 7 days (mm)",
+     "auc": 0.673,
+     "tss": 0.291,
+     "threshold": 5.77,
+     "pod": 0.676,
+     "pofd": 0.385
+    },
+    {
+     "feature": "max 48 h rain (mm)",
+     "auc": 0.627,
+     "tss": 0.227,
+     "threshold": 7.25,
+     "pod": 0.612,
+     "pofd": 0.385
+    },
+    {
+     "feature": "max 72 h rain (mm)",
+     "auc": 0.621,
+     "tss": 0.218,
+     "threshold": 7.29,
+     "pod": 0.686,
+     "pofd": 0.468
+    },
+    {
+     "feature": "max 24 h rain (mm)",
+     "auc": 0.609,
+     "tss": 0.179,
+     "threshold": 4.19,
+     "pod": 0.702,
+     "pofd": 0.523
+    },
+    {
+     "feature": "rain 30 days (mm)",
+     "auc": 0.603,
+     "tss": 0.207,
+     "threshold": 15.3,
+     "pod": 0.824,
+     "pofd": 0.617
+    },
+    {
+     "feature": "max 12 h rain (mm)",
+     "auc": 0.602,
+     "tss": 0.181,
+     "threshold": 2.82,
+     "pod": 0.739,
+     "pofd": 0.559
+    },
+    {
+     "feature": "max 3 h rain (mm)",
+     "auc": 0.593,
+     "tss": 0.165,
+     "threshold": 1.71,
+     "pod": 0.75,
+     "pofd": 0.585
+    },
+    {
+     "feature": "max 1 h rain (mm)",
+     "auc": 0.591,
+     "tss": 0.156,
+     "threshold": 1.51,
+     "pod": 0.66,
+     "pofd": 0.504
+    },
+    {
+     "feature": "max 6 h rain (mm)",
+     "auc": 0.59,
+     "tss": 0.156,
+     "threshold": 2.73,
+     "pod": 0.617,
+     "pofd": 0.461
+    },
+    {
+     "feature": "soil water, top layer",
+     "auc": 0.57,
+     "tss": 0.147,
+     "threshold": 0.4,
+     "pod": 0.319,
+     "pofd": 0.172
+    },
+    {
+     "feature": "soil water, 7-28 cm",
+     "auc": 0.55,
+     "tss": 0.122,
+     "threshold": 0.39,
+     "pod": 0.303,
+     "pofd": 0.181
+    },
+    {
+     "feature": "snowmelt 10 days (mm)",
+     "auc": 0.51,
+     "tss": 0.043,
+     "threshold": 6.63,
+     "pod": 0.133,
+     "pofd": 0.09
+    },
+    {
+     "feature": "air temperature, last day (C)",
+     "auc": 0.5,
+     "tss": 0.06,
+     "threshold": -7.6,
+     "pod": 0.947,
+     "pofd": 0.887
+    },
+    {
+     "feature": "snowmelt 3 days (mm)",
+     "auc": 0.498,
+     "tss": 0.027,
+     "threshold": 0.35,
+     "pod": 0.229,
+     "pofd": 0.202
+    }
+   ]
+  },
+  "rain-type triggers": {
+   "n_pos": 136,
+   "rows": [
+    {
+     "feature": "rain 7 days (mm)",
+     "auc": 0.697,
+     "tss": 0.301,
+     "threshold": 4.15,
+     "pod": 0.875,
+     "pofd": 0.574
+    },
+    {
+     "feature": "max 48 h rain (mm)",
+     "auc": 0.634,
+     "tss": 0.221,
+     "threshold": 7.27,
+     "pod": 0.676,
+     "pofd": 0.456
+    },
+    {
+     "feature": "max 72 h rain (mm)",
+     "auc": 0.629,
+     "tss": 0.221,
+     "threshold": 7.29,
+     "pod": 0.757,
+     "pofd": 0.537
+    },
+    {
+     "feature": "max 24 h rain (mm)",
+     "auc": 0.613,
+     "tss": 0.186,
+     "threshold": 4.2,
+     "pod": 0.772,
+     "pofd": 0.586
+    },
+    {
+     "feature": "max 12 h rain (mm)",
+     "auc": 0.608,
+     "tss": 0.191,
+     "threshold": 2.89,
+     "pod": 0.801,
+     "pofd": 0.61
+    },
+    {
+     "feature": "rain 30 days (mm)",
+     "auc": 0.605,
+     "tss": 0.208,
+     "threshold": 17.15,
+     "pod": 0.868,
+     "pofd": 0.659
+    },
+    {
+     "feature": "soil water, top layer",
+     "auc": 0.601,
+     "tss": 0.201,
+     "threshold": 0.4,
+     "pod": 0.412,
+     "pofd": 0.211
+    },
+    {
+     "feature": "max 3 h rain (mm)",
+     "auc": 0.595,
+     "tss": 0.162,
+     "threshold": 1.74,
+     "pod": 0.801,
+     "pofd": 0.64
+    },
+    {
+     "feature": "max 6 h rain (mm)",
+     "auc": 0.594,
+     "tss": 0.172,
+     "threshold": 2.73,
+     "pod": 0.699,
+     "pofd": 0.527
+    },
+    {
+     "feature": "max 1 h rain (mm)",
+     "auc": 0.592,
+     "tss": 0.152,
+     "threshold": 1.54,
+     "pod": 0.713,
+     "pofd": 0.561
+    },
+    {
+     "feature": "soil water, 7-28 cm",
+     "auc": 0.576,
+     "tss": 0.189,
+     "threshold": 0.39,
+     "pod": 0.404,
+     "pofd": 0.216
+    },
+    {
+     "feature": "snowmelt 10 days (mm)",
+     "auc": 0.51,
+     "tss": 0.059,
+     "threshold": 6.63,
+     "pod": 0.162,
+     "pofd": 0.103
+    },
+    {
+     "feature": "snowmelt 3 days (mm)",
+     "auc": 0.508,
+     "tss": 0.056,
+     "threshold": 0.35,
+     "pod": 0.272,
+     "pofd": 0.216
+    },
+    {
+     "feature": "air temperature, last day (C)",
+     "auc": 0.496,
+     "tss": 0.064,
+     "threshold": -4.94,
+     "pod": 0.941,
+     "pofd": 0.877
+    }
+   ]
+  }
+ },
+ "models": {
+  "all reports": {
+   "daily rain only (24 h, 72 h)": 0.618,
+   "hourly intensity (1, 3, 6 h)": 0.585,
+   "intensity + antecedent rain": 0.674,
+   "intensity + antecedent + soil water": 0.679,
+   "all + snowmelt + temperature": 0.681
+  },
+  "rain-type triggers": {
+   "daily rain only (24 h, 72 h)": 0.622,
+   "hourly intensity (1, 3, 6 h)": 0.584,
+   "intensity + antecedent rain": 0.706,
+   "intensity + antecedent + soil water": 0.7,
+   "all + snowmelt + temperature": 0.709
+  }
+ }
+}

@@ -1,0 +1,25 @@
+# M01 legacy screening table. EDITABLE and TRANSPARENT (methodology §4.3).
+# PROVENANCE: author-assigned placeholder ratings, NOT copied from SAILAB. Reconcile against the SAILAB baseline
+# (acceptance checklist §13) and have an engineering geologist review before any use. Ratings are NOT shear strength.
+provenance: placeholder_not_from_sailab_requires_expert_review
+slope_pct_bins: [15, 35, 70]        # -> 4 slope classes: <15, 15-35, 35-70, >=70 percent (35% != 35 deg)
+weights: {slope: 0.6, lithology: 0.4}
+class_cutoffs: [0.25, 0.5, 0.75]    # on weighted 0-1 score -> Low/Moderate/High/Very high
+class_names: [Low, Moderate, High, Very high]
+glim_erodibility_rank:               # 1 (competent) .. 5 (weak); GLiM first-level codes
+  su: 5   # unconsolidated sediments
+  ss: 3   # siliciclastic sedimentary
+  sm: 3   # mixed sedimentary
+  sc: 2   # carbonate sedimentary
+  py: 4   # pyroclastic
+  va: 2   # acid volcanic
+  vi: 2   # intermediate volcanic
+  vb: 2   # basic volcanic
+  pa: 1   # acid plutonic
+  pi: 1   # intermediate plutonic
+  pb: 1   # basic plutonic
+  mt: 3   # metamorphics
+  ev: 3   # evaporites
+  wb: null  # water bodies
+  ig: null  # ice and glaciers
+  nd: null  # no data -> NODATA, never "low risk"

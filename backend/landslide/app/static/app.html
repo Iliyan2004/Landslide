@@ -1,0 +1,408 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LANDLAB · Landslide Modelling</title>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
+<link href="https://unpkg.com/@mapbox/mapbox-gl-draw@1.4.3/dist/mapbox-gl-draw.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--page:#070B0F;--page-2:#0A1015;--surface:#101820;--surface-2:#182028;--surface-3:#1E2932;--ink:#EAF3F6;--ink-2:#9FB8C2;--muted:#5C7680;--line:#233039;--line-soft:#1A252D;
+--accent:#E8A24A;--accent-2:#D9822B;--accent-dim:#9A5E1E;--accent-soft:#2C1E0E;--violet:#8C7CF0;--amber:#F5A742;--danger:#F0575A;--success:#3ED598;
+--glow-accent:0 0 0 1px rgba(232,162,74,.25),0 0 24px rgba(232,162,74,.18);--glow-accent-strong:0 0 0 1px rgba(232,162,74,.5),0 0 32px rgba(232,162,74,.35),0 0 4px rgba(232,162,74,.6);
+--ease:cubic-bezier(.2,.8,.25,1);--radius:12px;--radius-sm:8px}
+*{box-sizing:border-box}::selection{background:var(--accent);color:#1a0f02}
+html,body{margin:0;height:100%;font-family:"Public Sans",system-ui,sans-serif;color:var(--ink);background:radial-gradient(1100px 620px at 14% -8%,rgba(232,162,74,.10),transparent 60%),radial-gradient(900px 700px at 108% 8%,rgba(140,124,240,.08),transparent 55%),linear-gradient(180deg,var(--page-2),var(--page) 70%);background-attachment:fixed;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:99px;border:2px solid var(--page)}*{scrollbar-width:thin;scrollbar-color:var(--surface-3) transparent}
+.app{display:flex;flex-direction:column;height:100vh;position:relative}
+header{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;background:linear-gradient(180deg,rgba(16,24,32,.92),rgba(16,24,32,.8));backdrop-filter:blur(14px);border-bottom:1px solid var(--line);position:relative;z-index:20}
+header::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--violet),transparent);background-size:200% 100%;opacity:.55;animation:sheen 9s linear infinite}
+@keyframes sheen{0%{background-position:0 0}100%{background-position:200% 0}}
+.brand{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:23px;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:9px}
+.brand::before{content:'';width:9px;height:9px;border-radius:99px;background:var(--accent);box-shadow:0 0 0 3px rgba(232,162,74,.15),0 0 14px rgba(232,162,74,.85);animation:pd 2.6s ease-in-out infinite}
+@keyframes pd{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.72)}}
+.brand span{background:linear-gradient(120deg,var(--accent),#F7D49A 45%,var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.tagline{font-size:11.5px;color:var(--ink-2);font-family:"IBM Plex Mono",monospace;display:flex;gap:14px;align-items:center}
+.dot{display:inline-block;width:6px;height:6px;border-radius:99px;background:var(--success);box-shadow:0 0 8px rgba(62,213,152,.9);margin-right:6px;animation:pd 2.6s infinite}
+.main{display:flex;flex:1;overflow:hidden;position:relative;z-index:1}
+.left-col{display:flex;flex-direction:column;flex:1;min-width:320px}
+#mapWrap{position:relative;flex:1;display:flex;min-height:120px}#map{flex:1}
+.vresizer{height:5px;cursor:row-resize;background:var(--line);flex:0 0 auto;transition:background .2s}.vresizer:hover,.vresizer.active{background:var(--accent);box-shadow:var(--glow-accent)}
+.view3d-wrap{position:relative;flex:1;display:flex;flex-direction:column;min-height:120px}
+.view3d-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--line);align-items:center}
+.view3d-tabs span{flex:1;padding:8px 10px;color:var(--ink-2);font-size:12.5px}
+.v3d-btn{padding:8px 12px;color:var(--accent);font-size:12px;text-decoration:none}
+iframe.frame3d{width:100%;flex:1;border:1px solid var(--line);border-top:none;background:#0B1417;display:block}
+.empty3d{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;text-align:center;padding:20px;border:1px solid var(--line);border-top:none}
+.resizer{width:5px;cursor:col-resize;background:var(--line);flex:0 0 auto;transition:background .2s}.resizer:hover,.resizer.active{background:var(--accent);box-shadow:var(--glow-accent)}
+.right-col{width:420px;min-width:300px;max-width:70vw;background:linear-gradient(180deg,var(--surface),var(--page-2) 96%);border-left:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column}
+.panel-section{padding:17px 19px;border-bottom:1px solid var(--line-soft);display:flex;flex-direction:column;gap:11px}
+.panel-section h3{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;font-size:14.5px;margin:0 0 2px;letter-spacing:.045em;display:flex;align-items:center;gap:8px;font-weight:700}
+.panel-section h3::before{content:'';width:3px;height:14px;border-radius:2px;background:linear-gradient(180deg,var(--accent),var(--violet));box-shadow:0 0 8px rgba(232,162,74,.5)}
+.note{font-size:12px;color:var(--ink-2);margin:0;line-height:1.45}.warn{font-size:11.5px;color:var(--amber);line-height:1.4}.err{color:var(--danger);font-size:12px}
+label{font-size:12.5px;color:var(--ink-2);display:block;margin-bottom:4px;font-weight:500}
+input[type=number],input[type=file],input[type=text],input[type=date]{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-family:"IBM Plex Mono",monospace;font-size:12.5px;background:var(--surface-2);color:var(--ink);outline:none;transition:all .2s}
+input:focus{border-color:var(--accent);box-shadow:var(--glow-accent)}input[type=checkbox]{accent-color:var(--accent)}input[type=range]{width:100%;accent-color:var(--accent)}
+select{padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:12.5px;background:var(--surface-2);color:var(--ink);outline:none;cursor:pointer;width:100%}
+button{font-family:inherit}
+button.action{padding:12px;border:none;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#1a0f02;font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.045em;cursor:pointer;font-size:14px;box-shadow:0 4px 16px -4px rgba(232,162,74,.45);transition:all .18s}
+button.action:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 22px -4px rgba(232,162,74,.6)}button.action:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+button.secondary{padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--ink);font-size:12.5px;cursor:pointer;transition:all .18s;font-weight:500}
+button.secondary:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:var(--accent-soft);box-shadow:var(--glow-accent);transform:translateY(-1px)}button.secondary:disabled{opacity:.4;cursor:not-allowed}
+.tier-tabs{display:flex;gap:6px;position:sticky;top:0;z-index:5;padding:10px 10px 8px;background:linear-gradient(180deg,var(--surface),rgba(16,24,32,.97));border-bottom:1px solid var(--line)}
+.tier-tabs button{flex:1;padding:10px 2px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:11px;cursor:pointer;border-radius:var(--radius-sm);transition:all .22s}
+.tier-tabs button:hover{color:var(--ink);border-color:var(--accent-dim);transform:translateY(-1px)}
+.tier-tabs button.active{background:linear-gradient(160deg,var(--accent),var(--accent-2));color:#1a0f02;border-color:var(--accent);box-shadow:var(--glow-accent-strong)}
+.progress-track{width:100%;height:10px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-dim),var(--accent),var(--violet));width:2%;transition:width .6s var(--ease)}
+.stat-row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;border-bottom:1px dashed var(--line-soft)}.stat-row span:first-child{color:var(--ink-2)}.stat-row span:last-child{font-family:"IBM Plex Mono",monospace}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:10.5px;background:var(--accent-soft);color:var(--accent);text-transform:uppercase;letter-spacing:.045em;border:1px solid rgba(232,162,74,.25);font-weight:600}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 11px}.card .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.card .v{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:21px;margin-top:2px}
+.row2{display:flex;gap:8px}.row2>*{flex:1}
+details{border:1px solid var(--line-soft);border-radius:var(--radius-sm);padding:6px 10px}summary{cursor:pointer;font-size:12.5px;color:var(--ink-2);font-weight:600}
+.list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}.item{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px}
+.item small{color:var(--muted)}canvas.chart{width:100%;height:96px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm)}
+.maptools{position:absolute;top:10px;left:50px;z-index:5;display:flex;gap:6px;flex-wrap:wrap}.maptools button{padding:6px 10px;font-size:11.5px;background:rgba(16,24,32,.88);border:1px solid var(--line);color:var(--ink);border-radius:var(--radius-sm);cursor:pointer;backdrop-filter:blur(8px)}.maptools button.on{border-color:var(--accent);color:var(--accent)}
+#legend2d{position:absolute;right:10px;bottom:24px;z-index:5;background:rgba(16,24,32,.92);border:1px solid var(--line);padding:8px 10px;border-radius:8px;min-width:190px;font-size:11.5px;display:none}.ramp{height:10px;border-radius:2px;margin:5px 0}
+.layerpick{display:flex;flex-wrap:wrap;gap:6px}.layerpick button{padding:5px 9px;font-size:11.5px}.layerpick button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+</style></head><body><div class="app">
+<header><div class="brand"><span>LANDLAB</span> <small style="font-size:11px;color:var(--ink-2);letter-spacing:.12em;font-weight:600">LANDSLIDE MODELLING · PAKISTAN</small></div>
+<div class="tagline"><span id="hwInfo"></span><span id="demSource"><span class="dot"></span>SRTM 29 m · national ML susceptibility · ERA5/CHIRPS</span></div></header>
+<div class="main"><div class="left-col">
+<div id="mapWrap"><div id="map"></div>
+<div class="maptools"><button id="tNat" title="National ML susceptibility, 90 m">Susceptibility</button><button id="tFrac" title="National physics stability product">Physics (national)</button><button id="tRisk">Risk index</button><button id="tDist">Districts</button><button id="tFault">Faults</button><button id="tPng">Export PNG</button></div>
+<div id="legend2d"></div></div>
+<div class="vresizer" id="vResizer"></div>
+<div class="view3d-wrap"><div class="view3d-tabs"><span>Debris-flow visualization (Mapbox 3D)</span><a class="v3d-btn" id="v3dFull" style="display:none" target="_blank" href="#">Full Page &#8599;</a></div>
+<div class="empty3d" id="empty3d">Run Tier 3 or Tier 4 to see the animated 3D scene here: terrain, release, flow depth over time, buildings and roads coloured by damage.</div>
+<iframe id="view3dFrame" class="frame3d" style="display:none" allowfullscreen></iframe></div></div>
+<div class="resizer" id="resizerMain"></div>
+<div class="right-col" id="rightCol">
+
+<div class="panel-section"><h3>Draw or upload an area</h3>
+<p class="note">Use the polygon tool (top-left of the map), upload a shapefile (.zip) / GeoJSON, or pick a district or river basin below. Physics runs work up to about 700,000 cells at 30–120 m; larger areas use Tiers 1–2 and the national layers.</p>
+<div class="row2"><button class="secondary" id="bDraw">&#9998; Draw polygon</button><button class="secondary" id="bClr">Clear</button></div>
+<input type="file" id="uploadFile" accept=".zip,.geojson,.json"><button class="secondary" onclick="uploadShape()">Upload as area</button>
+<div id="areaInfo" style="display:none"><div class="stat-row"><span>Area</span><span id="aKm2">-</span></div><div class="stat-row"><span>District</span><span id="aDist">-</span></div><div class="stat-row"><span>Physics run</span><span id="aPhys">-</span></div></div></div>
+
+<div class="panel-section"><h3>District discovery (national)</h3>
+<p class="note">Rank all 164 districts by a national metric (from the 90 m ML susceptibility, population and, once built, the national physics product). Use any district as your area.</p>
+<div class="row2"><select id="dMetric"><option value="lsm_area_frac_gt_0_7">Area share, susceptibility &gt; 0.7</option><option value="population_lsm_gt_0_7">People in susceptibility &gt; 0.7</option><option value="lsm_mean">Mean susceptibility</option><option value="mean_risk_index">Mean risk index</option><option value="physics_frac_fs_lt1_mean">Physics: mean share FS&lt;1</option></select>
+<input type="text" id="dQuery" placeholder="name filter"></div><button class="secondary" onclick="loadDistricts()">Show districts &rarr;</button><div id="distBox" class="list"></div></div>
+
+<div class="panel-section"><h3>Rainfall hotspots (national)</h3>
+<p class="note">The highest individually recorded cells (ERA5-Land 1980-2025, never averaged) for a metric, each with its district: where triggering rain has been most extreme. Values are lower bounds for short durations.</p>
+<div class="row2"><select id="hMetric"><option value="rx1day">RX1day: max 1-day rain</option><option value="rx5day">RX5day: max 5-day rain</option><option value="r99p">R99p: extremely-wet-day total</option><option value="peakhr">Peak hourly rain</option><option value="r20mm">Days with &ge; 20 mm</option><option value="trend">Trend of RX1day</option></select>
+<select id="hSeason"><option value="monsoon">Monsoon (Jul-Sep)</option><option value="pre">Pre-monsoon</option><option value="post">Post-monsoon</option><option value="all">Full year</option></select></div><button class="secondary" onclick="loadHot()">Show hotspots &rarr;</button><div id="hotBox" class="list"></div></div>
+<div class="panel-section"><h3>River basins (HydroSHEDS)</h3>
+<div class="row2"><select id="bRegion"><option value="gilgit_baltistan">Gilgit-Baltistan</option><option value="khyber_pakhtunkhwa">Khyber Pakhtunkhwa</option><option value="azad_kashmir">Azad Kashmir</option><option value="punjab">Punjab</option><option value="balochistan">Balochistan</option><option value="sindh">Sindh</option></select><button class="secondary" onclick="loadBasins()">Show basins &rarr;</button></div><div id="basinBox" class="list"></div></div>
+
+<div class="panel-section"><h3>Rainfall &amp; triggers</h3><div id="ctxBox"><p class="note">Draw or choose an area first.</p></div></div>
+
+<div class="panel-section"><h3>Live monitoring</h3>
+<p class="note">Watches an area's Open-Meteo forecast and automatically runs the Tier 3 physics model when the forecast crosses your threshold. Alerts are experimental (not validated against Pakistani events).</p>
+<div class="row2"><div><label>Threshold (mm/h)</label><input type="number" id="wThr" value="10" min="0.1"></div><div><label>Check every</label><select id="wEvery"><option value="1">1 h</option><option value="3" selected>3 h</option><option value="6">6 h</option><option value="24">24 h</option></select></div></div>
+<input type="text" id="wHook" placeholder="Webhook URL (Slack/Discord/ntfy.sh, optional)"><button class="secondary" id="wBtn" disabled onclick="watchArea()">Watch this area &rarr;</button><div id="wList"><p class="note">No areas watched.</p></div></div>
+
+<div class="tier-tabs">
+<button class="tier-btn active" data-tier="1" onclick="showTier(1)">&#128269; Tier 1 Screening</button>
+<button class="tier-btn" data-tier="2" onclick="showTier(2)">&#9889; Tier 2 Instant</button>
+<button class="tier-btn" data-tier="3" onclick="showTier(3)">&#127956;&#65039; Tier 3 Physics</button>
+<button class="tier-btn" data-tier="4" onclick="showTier(4)">&#127755; Tier 4 Quake</button>
+<button class="tier-btn" data-tier="5" onclick="showTier(5)">&#128737;&#65039; Tier 5 Mitigate</button>
+<button class="tier-btn" data-tier="6" onclick="showTier(6)">&#129704; Rockfall</button></div>
+
+<div class="tier-content" data-tier="1"><div class="panel-section"><h3>Tier 1 &middot; Susceptibility screening</h3>
+<p class="note">National CNN/DNN ensemble susceptibility (northern Pakistan; elsewhere NODATA, never "low"), terrain, and the physical stability ensemble for a rain scenario, plus population exposure. Instant and ML-based: a ranking of where slopes are prone, not a model of a specific event.</p>
+<div class="row2"><div><label>Rain (mm/h)</label><input type="number" id="s1rain" value="20"></div><div><label>Duration (h)</label><input type="number" id="s1dur" value="24"></div></div>
+<button class="secondary" id="s1Btn" disabled onclick="runScreening()">Run screening &rarr;</button><div id="s1Out"></div></div></div>
+
+<div class="tier-content" data-tier="2" style="display:none"><div class="panel-section"><h3>Tier 2 &middot; Instant stability (rain library)</h3>
+<p class="note">Builds a library of factor-of-safety maps for a ladder of 24 h rain totals (median parameters). Drag the slider for an instant map and failing area, no server call. Also gives the <b>critical-rain map</b>: how much rain each slope needs to fail.</p>
+<div class="row2"><div><label>Soil texture</label><select id="t2tex" class="texsel"></select></div><div><label>Strength preset</label><select id="t2pre" class="presel"></select></div></div>
+<label>Strength scenario: <span id="t2qv">weak-ish 0.30</span></label><input type="range" id="t2q" min="0" max="1" step="0.05" value="0.3" oninput="$('t2qv').textContent=qLabel(this.value)">
+<button class="secondary" id="t2Btn" disabled onclick="buildLibrary()">Build rain library &rarr;</button>
+<div id="t2Ctl" style="display:none"><label>24 h rain: <b id="t2mm">100</b> mm</label><input type="range" id="t2s" min="0" max="8" step="0.01" value="3" oninput="libSlide()">
+<div class="stat-row"><span>Failing area (interpolated)</span><span id="t2area">-</span></div><div class="stat-row"><span>Median critical rain</span><span id="t2crit">-</span></div>
+<div class="row2"><button class="secondary" onclick="showCrit()">Show critical-rain map</button><button class="secondary" onclick="libSlide()">Show map at slider</button></div></div><div id="t2Out"></div></div></div>
+
+<div class="tier-content" data-tier="3" style="display:none">
+<div class="panel-section"><h3>Storm / rainfall</h3>
+<label>Source</label><select id="rSrc" onchange="rSrcChange()"><option value="design">Design storm (triangular, you set it)</option><option value="idf">Design storm by return period (observed IDF)</option><option value="forecast">Open-Meteo forecast (next days)</option><option value="recent">Open-Meteo recent observed</option><option value="era5_wettest">ERA5 hindcast: wettest 72 h at this location</option><option value="era5">ERA5 hindcast: pick dates</option><option value="imerg">IMERG half-hourly: pick dates (2000-)</option><option value="chirps">CHIRPS daily: pick dates</option><option value="csv">Upload rainfall CSV</option></select>
+<div id="rDesign" class="row2"><div><label>Peak (mm/h)</label><input type="number" id="rPeak" value="40"></div><div><label>Duration (h)</label><input type="number" id="rDur" value="6"></div></div>
+<div id="rIdf" style="display:none"><div class="row2"><div><label>Return period (years)</label><select id="rT"><option>2</option><option>5</option><option>10</option><option>25</option><option selected>50</option><option>100</option><option>200</option></select></div><div><label>Duration (h, 1-24)</label><input type="number" id="rIdfD" value="6" min="1" max="24"></div></div>
+<div class="row2"><div><label>Climate multiplier</label><input type="number" id="rCf" value="1.00" step="0.01" min="0.5" max="2"></div><div><label>Scenario / period</label><select id="rScen"><option value="ssp245|2036-2065">SSP2-4.5 · 2036-65</option><option value="ssp585|2036-2065" selected>SSP5-8.5 · 2036-65</option><option value="ssp245|2071-2100">SSP2-4.5 · 2071-2100</option><option value="ssp585|2071-2100">SSP5-8.5 · 2071-2100</option></select></div></div>
+<button class="secondary" onclick="estClimate()">Estimate the multiplier from CMIP6 (slow, minutes)</button><div id="rClimOut" class="note"></div>
+<p class="note">Depths come from 46 years of ERA5-Land annual maxima (Gumbel). ERA5-Land smooths cloudbursts, so short-duration depths are lower bounds. The multiplier is 1 until you set or estimate it.</p></div>
+<div id="rDates" style="display:none" class="row2"><div><label>Start</label><input type="date" id="rStart" value="2022-08-10"></div><div><label>End</label><input type="date" id="rEnd" value="2022-08-13"></div></div>
+<div id="rCsv" style="display:none"><input type="file" id="rFile" accept=".csv,.txt"><select id="rUnit"><option value="mm_per_hour">values are mm/h</option><option value="mm_per_interval">values are mm per interval</option></select></div>
+<button class="secondary" id="rBtn" disabled onclick="loadRain()">Load rainfall &rarr;</button><canvas id="rainChart" class="chart" width="380" height="96"></canvas><div id="rInfo"></div></div>
+
+<div class="panel-section"><h3>Ground &amp; failure</h3>
+<div class="row2"><div><label>Soil texture</label><select id="t3tex" class="texsel"></select></div><div><label>Strength preset</label><select id="t3pre" class="presel"></select></div></div>
+<label>Strength scenario: <span id="t3qv">weak-ish 0.30</span> <span class="note">(weak = pessimistic end of the explicit ranges)</span></label><input type="range" id="t3q" min="0" max="1" step="0.05" value="0.3" oninput="$('t3qv').textContent=qLabel(this.value)">
+<label>Failure / flow type</label><select id="t3ft"><option value="debris_flow">Debris flow / mudflow (&mu;=0.12, &xi;=200)</option><option value="earth_flow">Earth / soil flow (&mu;=0.20, &xi;=250)</option><option value="shallow_slide">Shallow slide, short runout (&mu;=0.30, &xi;=300)</option></select>
+<label><input type="checkbox" id="t3ent" checked style="width:auto"> Entrainment (moving debris scours up to <input type="number" id="t3entd" value="0.5" step="0.1" min="0" style="width:64px;display:inline-block"> m of bed)</label>
+<label><input type="checkbox" id="t3dvs" checked style="width:auto"> Soil depth thins with slope</label>
+<label><input type="checkbox" id="t3sg" style="width:auto"> Spatially varying ground (root cohesion from land cover; geology multipliers neutral until calibrated)</label>
+<label><input type="checkbox" id="t3ant" checked style="width:auto"> Antecedent wetness (soil starts wetter after rain in the 30 days before the storm; ERA5/IMERG/CHIRPS sources)</label>
+<label>Uncertainty ensemble: members <input type="number" id="t3ens" value="0" min="0" max="200" step="8" style="width:72px;display:inline-block"> <span class="note">(0 = off; adds failure probability, every prior drawn independently)</span></label>
+<details><summary>Advanced</summary><div class="row2"><div><label>Min slope (&deg;)</label><input type="number" id="t3ms" value="12"></div><div><label>Min cluster (cells)</label><input type="number" id="t3mc" value="3"></div></div>
+<div class="row2"><div><label>Release factor</label><input type="number" id="t3rf" value="1" step="0.1" min="0.1"></div><div><label>Backend</label><select id="t3be"><option value="auto">GPU first (auto)</option><option value="numba">CPU (numba)</option></select></div></div></details>
+<button class="action" id="runBtn" disabled onclick="runPhysics('rain')">Run physics model</button>
+<button class="secondary" id="cancelBtn" style="display:none" onclick="cancelRun()">Cancel</button>
+<div id="prog" style="display:none"><div class="progress-track"><div class="progress-fill" id="progFill"></div></div><p class="note" id="progTxt"></p></div><div id="runOut"></div></div></div>
+
+<div class="tier-content" data-tier="4" style="display:none"><div class="panel-section"><h3>Tier 4 &middot; Earthquake-triggered landslides</h3>
+<p class="note">Scenario earthquake &rarr; PGA field (Joyner-Boore 1981 from distance to a Wells-Coppersmith rupture centred on the nearest mapped fault) &rarr; Newmark displacement (Jibson 2007) &rarr; coseismic failures &rarr; the same runout engine. No site amplification; screening only.</p>
+<div class="row2"><div><label>Magnitude (Mw)</label><input type="number" id="qM" value="6.8" step="0.1" min="5" max="7.7"></div><div><label>Time (h after start)</label><input type="number" id="qT" value="0" step="0.5" min="0"></div></div>
+<div class="row2"><div><label>Epicentre lon</label><input type="number" id="qLon" step="0.001"></div><div><label>Epicentre lat</label><input type="number" id="qLat" step="0.001"></div></div>
+<div class="row2"><button class="secondary" id="qPick">&#128205; Pick on map</button><button class="secondary" onclick="qFromAoi()">Use area centre</button></div>
+<div class="row2"><div><label>Focal depth (km)</label><input type="number" id="qDep" value="15" min="1" max="300" step="1"></div><div class="note" style="align-self:end">&gt; 40 km uses the intermediate-depth (Hindu Kush) model</div></div>
+<div class="row2"><div><label>Failure if Newmark &ge; (cm)</label><input type="number" id="qD" value="5" step="1" min="0.5"></div><div><label>Rain before the quake</label><select id="qRain"><option value="none">None (dry slopes)</option><option value="loaded">Use the Tier 3 rainfall</option></select></div></div>
+<label><input type="checkbox" id="qSnap" checked style="width:auto"> Snap to nearest mapped fault (&lt; 25 km)</label>
+<div class="row2"><div><label>Soil texture</label><select id="t4tex" class="texsel"></select></div><div><label>Strength scenario <span id="t4qv">0.30</span></label><input type="range" id="t4q" min="0" max="1" step="0.05" value="0.3" oninput="$('t4qv').textContent=this.value"></div></div>
+<div id="qPrev" class="note"></div><button class="action" id="qRunBtn" disabled onclick="runPhysics('quake')">Run earthquake scenario</button><div id="prog4" style="display:none"><div class="progress-track"><div class="progress-fill" id="progFill4"></div></div><p class="note" id="progTxt4"></p></div><div id="runOut4"></div></div></div>
+
+<div class="tier-content" data-tier="6" style="display:none"><div class="panel-section"><h3>Rockfall</h3>
+<p class="note">A separate hazard from debris flows: individual rocks are released on steep rock faces and simulated through flight, bounce and rolling (GPU Monte Carlo). Restitution, friction and sub-grid roughness are scenario values; energy is translational only. Draw barrier lines with the line tool (Tier 5) and give them a capacity here.</p>
+<label>Release</label><select id="kSrc"><option value="auto">Steep rock faces (automatic)</option><option value="quake">Faces shaken by an earthquake (Tier 4 settings)</option></select>
+<div class="row2"><div><label>Min source slope (&deg;)</label><input type="number" id="kSl" value="50" min="30" max="80"></div><div><label>Max release cells</label><input type="number" id="kMs" value="150" min="5" max="400"></div></div>
+<div class="row2"><div><label>Rocks per cell</label><input type="number" id="kN" value="40" min="5" max="200"></div><div><label>Median diameter (m)</label><input type="number" id="kD" value="0.8" step="0.1" min="0.2" max="4"></div></div>
+<div class="row2"><div><label>Shape</label><select id="kSh"><option value="round">Round</option><option value="angular">Angular</option><option value="platy">Platy</option></select></div><div><label>Surface</label><select id="kSu"><option value="">From land cover</option><option value="rock">Bedrock</option><option value="talus">Talus</option><option value="soil">Soil</option><option value="forest">Forest</option><option value="snow_ice">Snow / ice</option></select></div></div>
+<div class="row2"><div><label>Roughness (&deg;)</label><input type="number" id="kRg" value="9" step="1" min="0" max="25"></div><div><label>Barrier capacity (kJ)</label><input type="number" id="kCap" value="500" min="50" step="50"></div></div>
+<button class="action" id="kBtn" disabled onclick="runRock()">Run rockfall simulation</button><div id="kProg" style="display:none"><div class="progress-track"><div class="progress-fill" id="kFill"></div></div><p class="note" id="kTxt"></p></div><div id="kOut"></div></div></div>
+<div class="tier-content" data-tier="5" style="display:none">
+<div class="panel-section"><h3>Nature-based solutions</h3>
+<p class="note">Scenario levers that act on slope stability in the whole area. The effect sizes are yours to set; nothing here is a measured performance. Uses the storm and ground settings of Tier 3 (load a rainfall series first).</p>
+<label><input type="checkbox" id="nPlant" style="width:auto"> Planting: add root cohesion <input type="number" id="nPlantV" value="5" step="0.5" min="0" max="20" style="width:70px;display:inline-block"> kPa</label>
+<label><input type="checkbox" id="nReg" style="width:auto"> Regrading / terracing: cap slope at <input type="number" id="nRegV" value="30" min="10" max="45" style="width:70px;display:inline-block">&deg;</label>
+<label><input type="checkbox" id="nDrain" style="width:auto"> Subsurface drainage: saturation &times; <input type="number" id="nDrM" value="0.6" step="0.05" min="0.1" max="1" style="width:64px;display:inline-block">, water table +<input type="number" id="nDrW" value="2" step="0.5" min="0" style="width:60px;display:inline-block"> m</label>
+<div class="row2"><button class="secondary" id="recBtn" disabled onclick="recommendNbs()">Rank all combinations (fast)</button></div><div id="recOut"></div></div>
+<div class="panel-section"><h3>Barriers (check dams)</h3>
+<p class="note">Draw lines across the flow path with the line tool (top-left of the map, or the button). A barrier's height is measured above the ground just upslope of it. A fast flow can overtop a low barrier; the solver decides.</p>
+<div class="row2"><button class="secondary" onclick="draw.changeMode('draw_line_string')">&#9998; Draw barrier line</button><div><label>Default height (m)</label><input type="number" id="bH" value="6" min="1" max="20"></div></div>
+<div id="barList" class="list"></div>
+<button class="action" id="mitBtn" disabled onclick="runMitigation()">Run mitigated vs unmitigated</button>
+<details><summary>Auto-place barriers (expensive: every try is a full simulation)</summary>
+<div class="row2"><div><label>Barriers</label><input type="number" id="oN" value="2" min="1" max="4"></div><div><label>Max simulations</label><input type="number" id="oE" value="30" min="8" max="120"></div></div>
+<div class="row2"><div><label>Wall cost (PKR per m&sup2; of length &times; height)</label><input type="number" id="oC" value="0" min="0"></div><div><label>Blocked-road penalty (PKR/km)</label><input type="number" id="oR" value="0" min="0"></div></div>
+<p class="warn">With a zero wall cost the optimiser will choose the biggest walls. Enter a cost to make the trade-off meaningful.</p>
+<button class="secondary" id="optBtn" disabled onclick="runOptimise()">Search for barrier positions</button></details>
+<div id="mitProg" style="display:none"><div class="progress-track"><div class="progress-fill" id="mitFill"></div></div><p class="note" id="mitTxt"></p></div><div id="mitOut"></div></div>
+<div class="panel-section"><h3>Average annual loss</h3>
+<p class="note">Runs design storms of several return periods (from the observed IDF, Tier 3 ground settings), takes the direct loss of each, and integrates loss over annual probability. It assumes a T-year storm gives the T-year loss: an order-of-magnitude figure. Each return period is a full simulation.</p>
+<div class="row2"><div><label>Storm duration (h)</label><input type="number" id="aD" value="6" min="1" max="24"></div><div><label>Climate multiplier</label><input type="number" id="aCf" value="1.00" step="0.01" min="0.5" max="2"></div></div>
+<label>Return periods</label><div id="aPer" style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px"><label style="display:inline-flex;gap:3px"><input type="checkbox" class="aT" value="2" checked style="width:auto">2</label><label style="display:inline-flex;gap:3px"><input type="checkbox" class="aT" value="5"  style="width:auto">5</label><label style="display:inline-flex;gap:3px"><input type="checkbox" class="aT" value="10" checked style="width:auto">10</label><label style="display:inline-flex;gap:3px"><input type="checkbox" class="aT" value="25" checked style="width:auto">25</label><label style="display:inline-flex;gap:3px"><input type="checkbox" class="aT" value="50"  style="width:auto">50</label><label style="display:inline-flex;gap:3px"><input type="checkbox" class="aT" value="100" checked style="width:auto">100</label></div>
+<button class="secondary" id="aalBtn" disabled onclick="computeAal()">Compute average annual loss</button><div id="aalOut"></div></div></div>
+
+<div class="panel-section"><h3>Layers of this run</h3><div id="layerPick" class="layerpick"><span class="note">Run a model to see its map layers.</span></div>
+<div class="row2"><button class="secondary" onclick="damScreen()">Landslide-dam screening</button><a class="secondary" style="text-decoration:none;text-align:center" id="batchLink" target="_blank">Batch PDF (all runs)</a></div><div id="damOut"></div>
+<details><summary>Score against an observed extent</summary><p class="note">Upload the observed deposit or affected area (GeoJSON, zipped shapefile, or a 0/1 GeoTIFF) for the same event. Gives CSI, POD, false-alarm ratio, F1 and bias.</p>
+<div class="row2"><input type="file" id="obsFile" accept=".geojson,.json,.zip,.tif,.tiff"><div><label>Depth counted as reached (m)</label><input type="number" id="obsD" value="0.3" step="0.1" min="0.05"></div></div><button class="secondary" onclick="scoreObserved()">Score the current run</button><div id="obsOut"></div></details>
+<div class="row2"><a id="expLink" class="secondary" style="display:none;text-decoration:none;text-align:center" target="_blank">GIS export (.zip)</a><a id="repLink" class="secondary" style="display:none;text-decoration:none;text-align:center" target="_blank">PDF report</a><a id="sumLink" class="secondary" style="display:none;text-decoration:none;text-align:center" target="_blank">Summary JSON</a></div></div>
+
+<div class="panel-section"><h3>Run history &amp; compare</h3>
+<div class="row2"><select id="cmpA"></select><select id="cmpB"></select></div><button class="secondary" onclick="compareRuns()">Compare two runs &rarr;</button><div id="cmpOut"></div><div id="hist" class="list"></div></div>
+<div class="panel-section"><p class="note">Screening-grade decision support. Soil strength and flow friction are scenario values; nothing here is calibrated or validated against observed Pakistani events. Not for engineering design or evacuation orders.</p></div>
+</div></div></div>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+<script src="https://unpkg.com/@mapbox/mapbox-gl-draw@1.4.3/dist/mapbox-gl-draw.js"></script>
+<script>
+mapboxgl.accessToken="__MAPBOX_TOKEN__";
+const $=id=>document.getElementById(id);const fmt=(x,d=1)=>x==null||isNaN(x)?"–":Number(x).toLocaleString(undefined,{maximumFractionDigits:d});
+const post=(u,b)=>fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)}).then(r=>r.json().then(j=>({ok:r.ok,j})));
+const qLabel=v=>(+v<=.15?"weak ":+v<=.4?"weak-ish ":+v<=.65?"median ":"strong ")+(+v).toFixed(2);
+let aoi=null,rain=null,ramps={},lib=null,curRun=null,quakeMarker=null,picking=false;
+
+const map=new mapboxgl.Map({container:"map",style:"mapbox://styles/mapbox/satellite-streets-v12",center:[70.5,31],zoom:4.7,projection:"globe"});
+map.addControl(new mapboxgl.NavigationControl(),"top-right");
+const draw=new MapboxDraw({displayControlsDefault:false,controls:{polygon:true,line_string:true,trash:true}});map.addControl(draw,"top-left");
+map.on("style.load",()=>map.setFog({color:"rgb(10,16,22)","high-color":"rgb(20,30,45)","space-color":"rgb(4,6,10)","star-intensity":.4}));
+const polys=()=>draw.getAll().features.filter(f=>f.geometry.type==="Polygon"),lines=()=>draw.getAll().features.filter(f=>f.geometry.type==="LineString");
+$("bDraw").onclick=()=>{polys().forEach(p=>draw.delete(p.id));draw.changeMode("draw_polygon")};
+$("bClr").onclick=()=>{draw.deleteAll();setAoi(null);renderBarriers()};
+map.on("draw.create",e=>{const f=e.features[0];if(f.geometry.type==="Polygon"){polys().filter(p=>p.id!==f.id).forEach(p=>draw.delete(p.id));setAoi(f.geometry)}else renderBarriers()});
+map.on("draw.update",e=>{const f=e.features[0];if(f.geometry.type==="Polygon")setAoi(f.geometry);else renderBarriers()});
+map.on("draw.delete",()=>{if(!polys().length)setAoi(null);renderBarriers()});
+function setAoiExternal(g){polys().forEach(p=>draw.delete(p.id));draw.add({type:"Feature",geometry:g});setAoi(g);const xs=g.coordinates[0].map(p=>p[0]),ys=g.coordinates[0].map(p=>p[1]);map.fitBounds([[Math.min(...xs),Math.min(...ys)],[Math.max(...xs),Math.max(...ys)]],{padding:60})}
+async function setAoi(g){aoi=g;for(const id of["rBtn","runBtn","s1Btn","t2Btn","wBtn","qRunBtn","mitBtn","recBtn","aalBtn","optBtn","kBtn"])$(id).disabled=!g;if(!g){$("areaInfo").style.display="none";$("ctxBox").innerHTML='<p class="note">Draw or choose an area first.</p>';return}
+  const {ok,j}=await post("/area/polygon",{geometry:g});if(!ok){$("areaInfo").style.display="block";$("aKm2").textContent="invalid";$("aDist").textContent=j.error||"";return}
+  $("areaInfo").style.display="block";$("aKm2").textContent=fmt(j.area_km2,1)+" km²";$("aDist").textContent=j.district?`${j.district.name}, ${j.district.province}`:"–";
+  $("aPhys").innerHTML=j.physics_possible?"yes":'<span class="err">too large: use Tiers 1–2</span>';$("runBtn").disabled=!j.physics_possible;$("qRunBtn").disabled=!j.physics_possible;
+  if(!$("qLon").value)qFromAoi();loadContext()}
+async function uploadShape(){const f=$("uploadFile").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);const r=await fetch("/area/upload",{method:"POST",body:fd});const j=await r.json();if(j.error)return alert(j.error);setAoiExternal(j.geometry)}
+
+// ---------- discovery
+async function loadDistricts(){const r=await fetch(`/districts/search?metric=${$("dMetric").value}&q=${encodeURIComponent($("dQuery").value)}&n=15`);const j=await r.json();
+  $("distBox").innerHTML=(j.results||[]).map(d=>`<div class="item"><div><b>${d.name}</b> <small>${d.province}</small><br><small>${fmt(d.metric,3)} · pop ${fmt(d.population,0)}${d.lsm_coverage<.99?" · ML cover "+Math.round(d.lsm_coverage*100)+"%":""}</small></div><button class="secondary" onclick="useDistrict(${d.idx})">Use</button></div>`).join("")||`<p class="err">${j.error||"none"}</p>`}
+async function useDistrict(i){const j=await (await fetch("/districts/"+i)).json();setAoiExternal(j.geometry)}
+async function loadBasins(){const j=await (await fetch("/basins/search?region="+$("bRegion").value)).json();
+  $("basinBox").innerHTML=(j.results||[]).map(b=>`<div class="item"><div>Basin ${b.hybas_id}<br><small>${fmt(b.area_km2,0)} km²</small></div><button class="secondary" onclick="useBasin(${b.hybas_id})">Use</button></div>`).join("")||`<p class="err">${j.error||"none"}</p>`}
+async function useBasin(i){const j=await (await fetch("/basins/"+i)).json();setAoiExternal(j.geometry)}
+
+// ---------- rainfall context
+async function loadContext(){$("ctxBox").innerHTML='<p class="note">Fetching Open-Meteo and ERA5…</p>';const {j}=await post("/area/context",{geometry:aoi});let h="";
+  if(j.open_meteo){const o=j.open_meteo;h+=`<div class="stat-row"><span>Last 3 days (observed)</span><span>${fmt(o.past_mm)} mm</span></div><div class="stat-row"><span>Next 3 days (forecast)</span><span>${fmt(o.forecast_mm)} mm · peak ${fmt(o.peak_mm_h)} mm/h</span></div>`;
+    if(j.antecedent_precip_index_mm!=null)h+=`<div class="stat-row"><span>Antecedent precipitation index</span><span>${fmt(j.antecedent_precip_index_mm)} mm</span></div>`;
+    const f=j.id_check_forecast;h+=`<div class="stat-row"><span>Forecast vs global I–D threshold</span><span>${f.exceeded?'<b style="color:var(--danger)">exceeded</b>':"below"}</span></div><p class="note">${f.threshold}. Watch tier only: experimental, not validated for Pakistan.</p>`}
+  else h+=`<p class="err">${j.open_meteo_error||""}</p>`;
+  if(j.era5_wettest_72h)h+=`<div class="stat-row"><span>Wettest 72 h since 2000 (ERA5)</span><span>${fmt(j.era5_wettest_72h.total_mm)} mm · ${j.era5_wettest_72h.start.slice(0,10)}</span></div>`;
+  $("ctxBox").innerHTML=h}
+
+// ---------- tiers
+function showTier(n){document.querySelectorAll(".tier-btn").forEach(b=>b.classList.toggle("active",+b.dataset.tier===n));document.querySelectorAll(".tier-content").forEach(c=>c.style.display=+c.dataset.tier===n?"":"none")}
+const strength={};fetch("/api/presets").then(r=>r.json()).then(p=>{document.querySelectorAll(".texsel").forEach(s=>s.innerHTML=p.textures.map(t=>`<option ${t==="sandy loam"?"selected":""}>${t}</option>`).join(""));document.querySelectorAll(".presel").forEach(s=>s.innerHTML=Object.keys(p.strength).map(t=>`<option>${t}</option>`).join(""))});
+
+// ---------- 2D overlays
+function clearOverlay(){if(map.getLayer("ov"))map.removeLayer("ov");if(map.getSource("ov"))map.removeSource("ov");if(map.getLayer("nat"))map.removeLayer("nat");if(map.getSource("nat"))map.removeSource("nat");$("legend2d").style.display="none"}
+function legend(ramp,label){const r=ramps[ramp];if(!r){$("legend2d").style.display="none";return}const st=r.stops,mx=st[st.length-1][0];$("legend2d").style.display="block";$("legend2d").innerHTML=`<b>${label||r.label}</b><div class="ramp" style="background:linear-gradient(90deg,${st.map(s=>`rgb(${s[1].join(",")}) ${s[0]/mx*100}%`).join(",")})"></div><div style="display:flex;justify-content:space-between;color:var(--muted)"><span>${st[0][0]}</span><span>${mx}</span></div>`}
+function addImage(url,coords,ramp,label){clearOverlay();map.addSource("ov",{type:"image",url,coordinates:coords});map.addLayer({id:"ov",type:"raster",source:"ov",paint:{"raster-opacity":.85,"raster-fade-duration":0}});legend(ramp,label)}
+async function showRunLayer(rid,layer,ramp){const r=await fetch(`/runs/${rid}/overlay/${layer}.png`);if(!r.ok)return;addImage(URL.createObjectURL(await r.blob()),JSON.parse(r.headers.get("X-Coordinates")),ramp||layer)}
+function natLayer(id,ramp){clearOverlay();map.addSource("nat",{type:"raster",tiles:[`${location.origin}/tiles/${id}/{z}/{x}/{y}.png`],tileSize:256,maxzoom:12});map.addLayer({id:"nat",type:"raster",source:"nat",paint:{"raster-opacity":.8}});legend(ramp)}
+const toggles={tNat:["lsm","lsm_prob"],tFrac:["frac","frac_lt1"],tRisk:["risk","risk_index"]};
+for(const [b,[id,rp]] of Object.entries(toggles))$(b).onclick=()=>{const on=$(b).classList.contains("on");document.querySelectorAll(".maptools button").forEach(x=>x.classList.remove("on"));if(on){clearOverlay();return}$(b).classList.add("on");natLayer(id,rp)};
+let distLoaded=false;$("tDist").onclick=async()=>{if(!distLoaded){const g=await (await fetch("/api/districts")).json();map.addSource("dist",{type:"geojson",data:g});map.addLayer({id:"dist-fill",type:"fill",source:"dist",paint:{"fill-color":["interpolate",["linear"],["to-number",["get","lsm_area_frac_gt_0_7"],0],0,"#ffffcc",.2,"#fecc5c",.5,"#fd8d3c",.8,"#bd0026"],"fill-opacity":.55}});map.addLayer({id:"dist-line",type:"line",source:"dist",paint:{"line-color":"#fff","line-width":.5}});
+  map.on("click","dist-fill",e=>{if(picking||draw.getMode()!=="simple_select")return;const p=e.features[0].properties;new mapboxgl.Popup().setLngLat(e.lngLat).setHTML(`<div style="color:#111"><b>${p.name}</b> · ${p.province}<br>Share of area with susceptibility &gt; 0.7: <b>${fmt(p.lsm_area_frac_gt_0_7*100,0)}%</b><br>Population: ${fmt(p.population,0)}</div>`).addTo(map)});distLoaded=true}
+  const on=$("tDist").classList.toggle("on");map.setLayoutProperty("dist-fill","visibility",on?"visible":"none");map.setLayoutProperty("dist-line","visibility",on?"visible":"none")};
+let faultsOn=false;$("tFault").onclick=async()=>{faultsOn=!faultsOn;$("tFault").classList.toggle("on",faultsOn);if(!map.getSource("faults")){const g=await (await fetch("/faults")).json();map.addSource("faults",{type:"geojson",data:g});map.addLayer({id:"faults",type:"line",source:"faults",paint:{"line-color":"#ff5a5a","line-width":1.2}})}map.setLayoutProperty("faults","visibility",faultsOn?"visible":"none")};
+$("tPng").onclick=()=>{map.once("idle",()=>{const a=document.createElement("a");a.href=map.getCanvas().toDataURL("image/png");a.download="map.png";a.click()});map.triggerRepaint()};
+fetch("/api/layers").then(r=>r.json()).then(j=>ramps=j.ramps);
+function layerPick(rid,layers){curRun=rid;const names={hmax:["Max flow depth","hmax"],vmax:["Max flow speed","vmax"],deposit:["Deposit","deposit"],scour:["Scar / scour","scour"],t_fail_h:["Failure time","t_fail_h"],fs_min:["Min factor of safety","min_fs_p50"],pga_g:["PGA","pga_g"],slope:["Slope","slope_deg"],reach_frac:["Rocks passing","reach_frac"],emax_kj:["Peak rock energy","emax_kj"],hmax_m:["Bounce height","hmax_m"]};
+  $("layerPick").innerHTML=layers.map(l=>`<button class="secondary" data-l="${l}">${(names[l]||[l])[0]}</button>`).join("");
+  $("layerPick").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("layerPick").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");showRunLayer(rid,b.dataset.l,(names[b.dataset.l]||[])[1])});
+  $("repLink").style.display=$("sumLink").style.display=$("expLink").style.display="";$("expLink").href=`/runs/${rid}/export.zip`;$("repLink").href=`/runs/${rid}/report.pdf`;$("sumLink").href=`/runs/${rid}/summary.json`}
+
+// ---------- Tier 1
+async function runScreening(){$("s1Out").innerHTML='<p class="note">Running…</p>';const {ok,j}=await post("/area/screening",{geometry:aoi,params:{rain_mm_h:+$("s1rain").value,duration_h:+$("s1dur").value,texture:"sandy loam",n_members:30}});
+  if(!ok){$("s1Out").innerHTML=`<p class="err">${j.error}</p>`;return}const s=j.summary;let h="";
+  if(s.susceptibility)h+=`<div class="stat-row"><span>Mean ML susceptibility</span><span>${fmt(s.susceptibility.mean_prob,2)}</span></div><div class="stat-row"><span>Area share &gt; 0.5</span><span>${fmt(s.susceptibility.area_frac_prob_gt_0_5*100,0)}%</span></div>`;
+  if(s.stability)h+=`<div class="stat-row"><span>Area where most members FS&lt;1</span><span>${fmt(s.stability.area_km2_majority_members_fs_lt1,1)} km²</span></div>`;
+  if(s.exposure)h+=`<div class="stat-row"><span>Population in area</span><span>${fmt(s.exposure.population_in_aoi,0)}</span></div>`;
+  h+=j.warnings.slice(0,4).map(w=>`<div class="warn">⚠ ${w}</div>`).join("");$("s1Out").innerHTML=h;layerPick(j.run_id,j.layers.filter(l=>["slope_deg","lsm_prob","min_fs_p50","frac_lt1","runout_freq","risk_index"].includes(l)).map(l=>l));
+  // screening layers use the generic overlay route of the tier-1 API
+  $("layerPick").querySelectorAll("button").forEach(b=>b.onclick=async()=>{$("layerPick").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");const r=await fetch(`/api/run/${j.run_id}/overlay/${b.dataset.l}`);addImage(URL.createObjectURL(await r.blob()),JSON.parse(r.headers.get("X-Coordinates")),b.dataset.l)});
+  $("layerPick").innerHTML=j.layers.map(l=>`<button class="secondary" data-l="${l}">${l}</button>`).join("");$("layerPick").querySelectorAll("button").forEach(b=>b.onclick=async()=>{const r=await fetch(`/api/run/${j.run_id}/overlay/${b.dataset.l}`);addImage(URL.createObjectURL(await r.blob()),JSON.parse(r.headers.get("X-Coordinates")),b.dataset.l)})}
+
+// ---------- Tier 2
+const T2={pre:()=>$("t2pre").value,tex:()=>$("t2tex").value};
+async function buildLibrary(){$("t2Out").innerHTML='<p class="note">Computing 9 stability maps…</p>';const {ok,j}=await post("/area/instant-library",{geometry:aoi,params:{texture:$("t2tex").value,strength_preset:$("t2pre").value,strength_quantile:+$("t2q").value}});
+  if(!ok){$("t2Out").innerHTML=`<p class="err">${j.error}</p>`;return}lib=j;$("t2Ctl").style.display="block";$("t2Out").innerHTML=`<p class="note">${fmt(j.area_km2,1)} km² at ${j.resolution_m} m · ${fmt(j.never_fails_within_ladder_frac*100,0)}% of cells never fail up to ${j.ladder_mm.at(-1)} mm.</p>`;$("t2crit").textContent=j.median_critical_rain_mm==null?"none ≤ "+j.ladder_mm.at(-1)+" mm":fmt(j.median_critical_rain_mm,0)+" mm";libSlide()}
+function libSlide(){if(!lib)return;const v=+$("t2s").value,L=lib.ladder_mm,i=Math.min(Math.floor(v),L.length-2),f=v-i;const mm=L[i]+f*(L[i+1]-L[i]);$("t2mm").textContent=fmt(mm,0);
+  const a=lib.unstable_area_km2[i]+f*(lib.unstable_area_km2[i+1]-lib.unstable_area_km2[i]);$("t2area").textContent=fmt(a,2)+" km² ("+fmt(a/lib.area_km2*100,1)+"%)";const k=String(L[f<.5?i:i+1]);
+  addImage("data:image/png;base64,"+lib.png[k],lib.corners,"frac_lt1","Failing (FS<1) at "+k+" mm / 24 h")}
+function showCrit(){if(lib)addImage("data:image/png;base64,"+lib.png.crit,lib.corners,"crit_rain_mm")}
+
+// ---------- rainfall (Tier 3)
+function rSrcChange(){const s=$("rSrc").value;$("rDesign").style.display=s==="design"?"":"none";$("rIdf").style.display=s==="idf"?"":"none";$("rDates").style.display=["era5","chirps","imerg"].includes(s)?"":"none";$("rCsv").style.display=s==="csv"?"":"none"}
+async function loadRain(){$("rInfo").innerHTML='<p class="note">Loading…</p>';const s=$("rSrc").value;let j;
+  if(s==="csv"){const f=$("rFile").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);fd.append("unit",$("rUnit").value);j=await (await fetch("/area/rainfall-csv",{method:"POST",body:fd})).json()}
+  else if(s==="idf")j=(await post("/area/design-storm",{geometry:aoi,T:+$("rT").value,duration_h:+$("rIdfD").value,climate_factor:+$("rCf").value})).j;
+  else j=(await post("/area/rainfall",{geometry:aoi,source:s,peak_mm_h:+$("rPeak").value,duration_h:+$("rDur").value,start:$("rStart").value,end:$("rEnd").value})).j;
+  if(j.error){$("rInfo").innerHTML=`<p class="err">${j.error}</p>`;return}rain=j;drawRain();
+  $("rInfo").innerHTML=`<div class="stat-row"><span>Source</span><span style="max-width:230px;text-align:right">${j.source}</span></div><div class="stat-row"><span>Total / peak / duration</span><span>${fmt(j.total_mm)} mm · ${fmt(j.peak_mm_h)} mm/h · ${fmt(j.duration_h)} h</span></div>`+(j.id_check?`<div class="stat-row"><span>vs global I–D threshold</span><span>${j.id_check.exceeded?'<b style="color:var(--danger)">exceeded</b>':"below"}</span></div>`:"")+(j.idf_row?`<div class="note">Observed depths for T=${j.return_period_y} y (90% band): ${j.idf_row.durations_h.map((d,i)=>`${d} h ${fmt(j.idf_row.depth_mm[i],0)} mm (${fmt(j.idf_row.p05[i],0)}–${fmt(j.idf_row.p95[i],0)})`).join(" · ")}</div>`:"")}
+function drawRain(){const c=$("rainChart"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);if(!rain)return;const t=rain.times_h,r=rain.rate_mm_h,mx=Math.max(...r,1),T=t.at(-1);
+  x.fillStyle="rgba(232,162,74,.35)";x.strokeStyle="#E8A24A";x.beginPath();x.moveTo(0,c.height-14);for(let i=0;i<t.length;i++){x.lineTo(t[i]/T*(c.width-4)+2,c.height-14-(r[i]/mx)*(c.height-24))}x.lineTo(c.width-2,c.height-14);x.closePath();x.fill();x.stroke();
+  x.fillStyle="#9FB8C2";x.font="10px IBM Plex Mono";x.fillText(fmt(mx)+" mm/h",4,11);x.fillText("0",4,c.height-3);x.fillText(fmt(T)+" h",c.width-44,c.height-3)}
+
+// ---------- physics run
+function baseParams(tex,pre,q){return{texture:tex,strength_preset:pre,strength_quantile:+q}}
+async function runPhysics(mode){
+  const t4=mode==="quake";const params=t4?{...baseParams($("t4tex").value,$("t3pre").value,$("t4q").value),mode:(rain&&$("qRain").value==="loaded")?"both":"quake",quake:{magnitude:+$("qM").value,depth_km:+$("qDep").value,lon:+$("qLon").value,lat:+$("qLat").value,time_h:+$("qT").value,d_crit_cm:+$("qD").value,snap_to_fault:$("qSnap").checked},failure_type:$("t3ft").value}
+   :{...baseParams($("t3tex").value,$("t3pre").value,$("t3q").value),mode:"rain",failure_type:$("t3ft").value};
+  if(params.mode!=="quake"){if(!rain)return alert("Load a rainfall series first (Storm / rainfall).");params.rain={times_h:rain.times_h,rate_mm_h:rain.rate_mm_h,source:rain.source,start_iso:rain.start_iso}}
+  Object.assign(params,{entrain:$("t3ent").checked,entrain_depth_m:+$("t3entd").value,depth_vs_slope:$("t3dvs").checked,spatial_ground:$("t3sg").checked,antecedent:$("t3ant").checked,ensemble:+$("t3ens").value,min_slope_deg:+$("t3ms").value,min_cluster_cells:+$("t3mc").value,release_factor:+$("t3rf").value,backend:$("t3be").value});
+  const pf=t4?"progFill4":"progFill",pt=t4?"progTxt4":"progTxt",pg=t4?"prog4":"prog",out=t4?"runOut4":"runOut";$(pg).style.display="block";$(out).innerHTML="";$("cancelBtn").style.display=t4?"none":"";$("runBtn").disabled=$("qRunBtn").disabled=true;
+  const {ok,j}=await post("/run",{geometry:aoi,params});if(!ok){$(out).innerHTML=`<p class="err">${j.error}</p>`;$(pg).style.display="none";$("runBtn").disabled=$("qRunBtn").disabled=false;return}
+  window._job=j.job;const t=setInterval(async()=>{const p=await (await fetch(`/runs/${j.job}/progress.json`)).json();$(pf).style.width=Math.max(2,p.frac*100)+"%";$(pt).textContent=`${p.stage} · ${fmt(p.elapsed_s,0)} s`;
+    if(["queued","running"].includes(p.state))return;clearInterval(t);$(pg).style.display="none";$("cancelBtn").style.display="none";$("runBtn").disabled=$("qRunBtn").disabled=false;
+    if(p.state!=="done"){$(out).innerHTML=`<p class="err">${p.state}: ${p.error||""} ${(p.reasons||[]).join("; ")}</p>`;return}showResult(p.result,out);loadHistory()},1200)}
+function cancelRun(){fetch(`/runs/${window._job}/cancel`,{method:"POST"})}
+function showResult(r,out){const s=r.summary,fl=s.flow||{},ex=s.exposure||{},tr=s.trigger||{};let h=`<span class="pill">${r.outcome==="no_failure"?"no failure":"run complete"}</span> <span class="pill">${s.backend||""}</span>`;
+  if(r.outcome==="no_failure"){h+=`<p class="note">${s.note}</p>`}
+  else{h+=`<div class="cards"><div class="card"><div class="k">Failing area</div><div class="v">${fmt(tr.failing_area_km2,3)} km²</div></div><div class="card"><div class="k">Released</div><div class="v">${fmt(fl.released_volume_m3,0)} m³</div></div><div class="card"><div class="k">Impacted area</div><div class="v">${fmt(fl.impacted_area_km2,3)} km²</div></div><div class="card"><div class="k">Max depth / speed</div><div class="v">${fmt(fl.max_depth_m)} m · ${fmt(fl.max_speed_ms)} m/s</div></div></div>
+   <div class="stat-row"><span>Max runout from source</span><span>${fmt(fl.max_runout_m,0)} m</span></div><div class="stat-row"><span>Entrained from bed</span><span>${fmt(fl.entrained_volume_m3,0)} m³</span></div><div class="stat-row"><span>Mass check (should be ~0)</span><span>${fmt(fl.mass_check_m3,1)} m³</span></div>
+   <div class="stat-row"><span>Buildings damaged (DS≥1 / DS≥3)</span><span>${fmt(ex.buildings_damaged_ds_ge1,0)} / ${fmt(ex.buildings_ds_ge3,0)} of ${fmt(ex.buildings_in_aoi,0)}</span></div><div class="stat-row"><span>Direct loss (assumed unit cost)</span><span>PKR ${fmt(ex.direct_loss_pkr/1e6,1)} M</span></div>
+   <div class="stat-row"><span>Roads blocked</span><span>${fmt(ex.road_blocked_km,2)} of ${fmt(ex.road_length_km,1)} km</span></div><div class="stat-row"><span>People in impacted cells</span><span>${fmt(ex.population_in_impacted_cells,0)}</span></div>`+(ex.access&&ex.access.points?`<div class="stat-row"><span>Buildings and facilities cut off from the road network</span><span>${fmt(ex.access.cut_off,0)} (${fmt(ex.access.cut_off_share*100,0)}%)</span></div>`+(ex.access.facilities?`<div class="stat-row"><span>Hospitals / schools cut off · with detour</span><span>${ex.access.facilities.cut_off} · ${ex.access.facilities.with_detour}</span></div>`:""):"");
+   if(ex.facilities_impacted&&ex.facilities_impacted.length)h+=`<div class="warn">Facilities hit: ${ex.facilities_impacted.map(f=>f.kind+" "+f.name).join(", ")}</div>`;
+   if(s.quake)h+=`<div class="stat-row"><span>Peak PGA / rupture</span><span>${fmt(s.quake.pga_g_max,2)} g · ${fmt(s.quake.rupture_km,0)} km</span></div><p class="note">${s.quake.model||""}</p>`}
+  if(tr.antecedent)h+=`<div class="stat-row"><span>Antecedent wetness (API ${fmt(tr.antecedent.api_mm,0)} mm)</span><span>${fmt(tr.antecedent.wetness*100,0)} % · water table ${fmt(tr.antecedent.water_table_m,1)} m</span></div>`;
+  if(s.ensemble){const e=s.ensemble.failing_area_km2;h+=`<div class="stat-row"><span>Failing area, ${s.ensemble.members}-member ensemble (p05 / p50 / p95)</span><span>${fmt(e.p05,3)} / ${fmt(e.p50,3)} / ${fmt(e.p95,3)} km²</span></div><p class="note">${s.ensemble.note}. Layer: failure probability.</p>`}
+  h+=(r.warnings||[]).slice(0,5).map(w=>`<div class="warn">⚠ ${w}</div>`).join("");$(out).innerHTML=h;
+  if(r.has_scene){$("empty3d").style.display="none";const f=$("view3dFrame");f.style.display="block";f.src=`/runs/${r.run_id}/mapbox3d`;$("v3dFull").style.display="";$("v3dFull").href=`/runs/${r.run_id}/mapbox3d`}
+  layerPick(r.run_id,r.layers||[]);if(r.layers&&r.layers.includes("hmax"))showRunLayer(r.run_id,"hmax","hmax")}
+
+// ---------- earthquake helpers
+$("qPick").onclick=()=>{picking=true;map.getCanvas().style.cursor="crosshair";$("qPick").textContent="Click the map…"};
+map.on("click",e=>{if(!picking)return;picking=false;map.getCanvas().style.cursor="";$("qPick").textContent="📍 Pick on map";setEpi(e.lngLat.lng,e.lngLat.lat)});
+function setEpi(lo,la){$("qLon").value=lo.toFixed(4);$("qLat").value=la.toFixed(4);if(quakeMarker)quakeMarker.remove();quakeMarker=new mapboxgl.Marker({color:"#F0575A"}).setLngLat([lo,la]).addTo(map);qPreview()}
+function qFromAoi(){if(!aoi)return;const p=aoi.coordinates[0];setEpi(p.reduce((a,b)=>a+b[0],0)/p.length,p.reduce((a,b)=>a+b[1],0)/p.length)}
+async function qPreview(){const j=await (await fetch(`/quake/preview?mag=${$("qM").value}&lon=${$("qLon").value}&lat=${$("qLat").value}`)).json();$("qPrev").innerHTML=`Rupture ≈ ${fmt(j.rupture_km,0)} km. Mean PGA at ${j.dist_km.join(", ")} km: ${j.pga_g.join(", ")} g.`}
+$("qM").onchange=qPreview;
+
+// ---------- monitoring / history / compare
+async function watchArea(){const r=await post("/monitor/watch",{geometry:aoi,threshold_mm_h:+$("wThr").value,every_h:+$("wEvery").value,webhook:$("wHook").value,name:$("aDist").textContent});loadWatches()}
+async function loadWatches(){const l=await (await fetch("/monitor/list")).json();$("wList").innerHTML=l.length?l.map(w=>`<div class="item"><div><b>${w.name}</b><br><small>≥ ${w.threshold_mm_h} mm/h · every ${w.every_h} h · forecast peak ${w.last?fmt(w.last.forecast_peak_mm_h):"–"} mm/h ${w.last&&w.last.crossed?'<b style="color:var(--danger)">CROSSED</b>':""}</small></div><span><button class="secondary" onclick="fetch('/monitor/${w.id}/check-now',{method:'POST'}).then(loadWatches)">Check</button> <button class="secondary" onclick="fetch('/monitor/${w.id}',{method:'DELETE'}).then(loadWatches)">✕</button></span></div>`).join(""):'<p class="note">No areas watched.</p>'}
+async function loadHistory(){const h=await (await fetch("/runs")).json();$("hist").innerHTML=h.map(r=>`<div class="item"><div>${r.mode||""} · ${r.outcome==="no_failure"?"no failure":fmt(r.impacted_km2,3)+" km²"}<br><small>${(r.t||"").slice(0,16).replace("T"," ")} · ${r.run_id.slice(0,8)}</small></div>${r.outcome==="no_failure"?"":`<button class="secondary" onclick="openRun('${r.run_id}')">Open</button>`}</div>`).join("")||'<p class="note">No runs yet.</p>';
+  const opts=h.filter(r=>r.outcome!=="no_failure").map(r=>`<option value="${r.run_id}">${(r.t||"").slice(5,16)} · ${r.run_id.slice(0,6)}</option>`).join("");$("cmpA").innerHTML=opts;$("cmpB").innerHTML=opts;$("batchLink").href="/batch-report.pdf?ids="+h.filter(r=>r.outcome!=="no_failure").slice(0,30).map(r=>r.run_id).join(",")}
+async function openRun(id){const r=await (await fetch(`/runs/${id}/summary.json`)).json();$("view3dFrame").style.display="block";$("empty3d").style.display="none";$("view3dFrame").src=`/runs/${id}/mapbox3d`;$("v3dFull").style.display="";$("v3dFull").href=`/runs/${id}/mapbox3d`;layerPick(id,r.layers||[]);showResult(r,"runOut")}
+async function compareRuns(){const {ok,j}=await post("/compare-runs",{a:$("cmpA").value,b:$("cmpB").value});$("cmpOut").innerHTML=ok?`<div class="stat-row"><span>Impacted area A / B</span><span>${fmt(j.area_a_km2,3)} / ${fmt(j.area_b_km2,3)} km²</span></div><div class="stat-row"><span>Only A / only B / both</span><span>${fmt(j.only_a_km2,3)} / ${fmt(j.only_b_km2,3)} / ${fmt(j.both_km2,3)} km²</span></div><div class="stat-row"><span>Max depth A / B</span><span>${fmt(j.max_depth_a)} / ${fmt(j.max_depth_b)} m</span></div><div class="stat-row"><span>Loss A / B</span><span>${fmt((j.loss_a_pkr||0)/1e6,1)} / ${fmt((j.loss_b_pkr||0)/1e6,1)} M PKR</span></div>`:`<p class="err">${j.error}</p>`}
+
+
+// ---------- generic background-job poller
+function pollJob(job,prog,done){const t=setInterval(async()=>{const p=await (await fetch(`/runs/${job}/progress.json`)).json();prog(p);if(["queued","running"].includes(p.state))return;clearInterval(t);done(p)},1500)}
+function mitProgress(p){$("mitProg").style.display="block";$("mitFill").style.width=Math.max(2,p.frac*100)+"%";$("mitTxt").textContent=`${p.stage} · ${fmt(p.elapsed_s,0)} s`}
+function jobError(p){return `<p class="err">${p.state}: ${p.error||""} ${(p.reasons||[]).join("; ")}</p>`}
+function currentParams(){const p={...baseParams($("t3tex").value,$("t3pre").value,$("t3q").value),mode:"rain",failure_type:$("t3ft").value,entrain:$("t3ent").checked,entrain_depth_m:+$("t3entd").value,depth_vs_slope:$("t3dvs").checked,spatial_ground:$("t3sg").checked,antecedent:$("t3ant").checked,ensemble:+$("t3ens").value,min_slope_deg:+$("t3ms").value,min_cluster_cells:+$("t3mc").value,release_factor:+$("t3rf").value,backend:$("t3be").value};
+  if(rain)p.rain={times_h:rain.times_h,rate_mm_h:rain.rate_mm_h,source:rain.source,start_iso:rain.start_iso};return p}
+function nbsSpec(){const s={};if($("nPlant").checked)s.planting={root_cohesion_add_pa:+$("nPlantV").value*1000};if($("nReg").checked)s.regrading={max_slope_deg:+$("nRegV").value};if($("nDrain").checked)s.drainage={m_scale:+$("nDrM").value,water_table_add_m:+$("nDrW").value};return Object.keys(s).length?s:null}
+function barriers(){return lines().map(f=>({coords:f.geometry.coordinates,height_m:+(f.properties&&f.properties.height_m||$("bH").value),width_m:+(f.properties&&f.properties.width_m||6)}))}
+function renderBarriers(){const L=lines();$("barList").innerHTML=L.length?L.map((f,i)=>`<div class="item"><div>Barrier ${i+1}<br><small>height <input type="number" value="${f.properties.height_m||$("bH").value}" min="1" max="20" style="width:60px" onchange="setBar('${f.id}','height_m',this.value)"> m</small></div><button class="secondary" onclick="draw.delete('${f.id}');renderBarriers()">✕</button></div>`).join(""):'<p class="note">No barriers drawn.</p>'}
+function setBar(id,k,v){draw.setFeatureProperty(id,k,+v)}
+renderBarriers();
+const fmtM=x=>x==null?"–":(Math.abs(x)>=1e9?fmt(x/1e9,2)+" bn":Math.abs(x)>=1e6?fmt(x/1e6,1)+" M":fmt(x,0));
+function deltaRows(b,m,r){return `<div class="stat-row"><span></span><span>unmitigated → mitigated</span></div>`+[["Failing area km²","failing_km2",3],["Impacted area km²","impacted_km2",3],["Direct loss PKR","loss_pkr",0],["Blocked roads km","road_blocked_km",2],["Buildings DS≥3","buildings_ds3",0]].map(([n,k,d])=>`<div class="stat-row"><span>${n}</span><span>${k==="loss_pkr"?fmtM(b[k])+" → "+fmtM(m[k]):fmt(b[k],d)+" → "+fmt(m[k],d)}${b[k]>0?` <b style="color:${r[k]>0?"var(--success)":"var(--danger)"}">(${r[k]>0?"−":"+"}${fmt(Math.abs(r[k]/b[k]*100),0)}%)</b>`:""}</span></div>`).join("")}
+async function runMitigation(){if(!rain)return alert("Load a rainfall series first (Tier 3 > Storm / rainfall).");const nbs=nbsSpec(),prot=barriers();if(!nbs&&!prot.length)return alert("Choose a nature-based lever or draw a barrier.");
+  $("mitOut").innerHTML="";const {ok,j}=await post("/area/mitigation",{geometry:aoi,params:currentParams(),interventions:{nbs:nbs,protection:prot.length?prot:null}});if(!ok)return $("mitOut").innerHTML=`<p class="err">${j.error}</p>`;
+  pollJob(j.job,mitProgress,p=>{$("mitProg").style.display="none";if(p.state!=="done")return $("mitOut").innerHTML=jobError(p);const r=p.result;$("mitOut").innerHTML=`<span class="pill">mitigated vs unmitigated</span>`+deltaRows(r.baseline,r.mitigated,r.reduction)+`<p class="note">${r.note}</p>`;loadHistory();openRun(r.mitigated.run_id)})}
+async function recommendNbs(){if(!rain)return alert("Load a rainfall series first.");$("recOut").innerHTML="";const {ok,j}=await post("/area/nbs-recommend",{geometry:aoi,params:currentParams(),effects:{planting:nbsSpec()&&nbsSpec().planting,regrading:nbsSpec()&&nbsSpec().regrading,drainage:nbsSpec()&&nbsSpec().drainage}});if(!ok)return $("recOut").innerHTML=`<p class="err">${j.error}</p>`;
+  pollJob(j.job,mitProgress,p=>{$("mitProg").style.display="none";if(p.state!=="done")return $("recOut").innerHTML=jobError(p);const r=p.result;$("recOut").innerHTML=`<div class="stat-row"><span>Unmitigated failing area</span><span>${fmt(r.baseline.failing_km2,3)} km²</span></div>`+r.ranked.map(x=>`<div class="stat-row"><span>${x.levers.join(" + ")}</span><span>${fmt(x.failing_km2,3)} km² <b style="color:var(--success)">−${fmt(x.reduction_frac*100,0)}%</b></span></div>`).join("")+`<p class="note">${r.note}</p>`})}
+async function runOptimise(){if(!rain)return alert("Load a rainfall series first.");if(!confirm("This runs up to "+$("oE").value+" full simulations. Continue?"))return;$("mitOut").innerHTML="";
+  const {ok,j}=await post("/protect/optimize",{geometry:aoi,params:currentParams(),n_barriers:+$("oN").value,max_evals:+$("oE").value,wall_cost_pkr_per_m2:+$("oC").value,road_penalty_pkr_per_km:+$("oR").value});if(!ok)return $("mitOut").innerHTML=`<p class="err">${j.error}</p>`;
+  pollJob(j.job,mitProgress,p=>{$("mitProg").style.display="none";if(p.state!=="done")return $("mitOut").innerHTML=jobError(p);const r=p.result;
+    $("mitOut").innerHTML=`<span class="pill">${r.evaluations} simulations</span>`+deltaRows(r.baseline,r.optimised,{failing_km2:r.baseline.failing_km2-r.optimised.failing_km2,impacted_km2:r.baseline.impacted_km2-r.optimised.impacted_km2,loss_pkr:r.baseline.loss_pkr-r.optimised.loss_pkr,road_blocked_km:r.baseline.road_blocked_km-r.optimised.road_blocked_km,buildings_ds3:r.baseline.buildings_ds3-r.optimised.buildings_ds3})+`<p class="note">${r.note}</p>`;
+    r.barriers.forEach(b=>draw.add({type:"Feature",properties:{height_m:b.height_m},geometry:{type:"LineString",coordinates:b.coords}}));renderBarriers();loadHistory();openRun(r.optimised.run_id)})}
+async function computeAal(){if(!aoi)return;const per=[...document.querySelectorAll(".aT:checked")].map(x=>+x.value);if(per.length<3)return alert("Choose at least three return periods.");if(!confirm(`This runs ${per.length} full simulations. Continue?`))return;$("aalOut").innerHTML="";
+  const {ok,j}=await post("/area/compute-aal",{geometry:aoi,params:currentParams(),periods:per,duration_h:+$("aD").value,climate_factor:+$("aCf").value});if(!ok)return $("aalOut").innerHTML=`<p class="err">${j.error}</p>`;
+  pollJob(j.job,mitProgress,p=>{$("mitProg").style.display="none";if(p.state!=="done")return $("aalOut").innerHTML=jobError(p);const r=p.result;
+    $("aalOut").innerHTML=`<div class="cards"><div class="card"><div class="k">Average annual loss</div><div class="v">PKR ${fmtM(r.eal_pkr)}</div></div><div class="card"><div class="k">Storm</div><div class="v">${r.duration_h} h${r.climate_factor!==1?" ×"+r.climate_factor:""}</div></div></div>`+r.scenarios.map(s=>`<div class="stat-row"><span>T = ${s.T} y · ${fmt(s.depth_mm,0)} mm</span><span>${s.outcome==="no_failure"?"no failure":"PKR "+fmtM(s.loss_pkr)+" · "+fmt(s.impacted_km2,2)+" km²"}</span></div>`).join("")+`<p class="warn">${r.assumption}</p>`;loadHistory()})}
+async function estClimate(){const [sc,per]=$("rScen").value.split("|"),[a,b]=per.split("-");$("rClimOut").textContent="Reading CMIP6 yearly files… (minutes)";
+  const {j}=await post("/area/climate-factor",{geometry:aoi,scenario:sc,period:[+a,+b],T:+$("rT").value});pollJob(j.job,p=>$("rClimOut").textContent=`${p.stage} · ${fmt(p.elapsed_s,0)} s`,p=>{if(p.state!=="done")return $("rClimOut").innerHTML=jobError(p);const r=p.result;$("rCf").value=r.factor.toFixed(2);$("rClimOut").textContent=`Multiplier ${r.factor.toFixed(2)} (model range ${r.range[0].toFixed(2)}–${r.range[1].toFixed(2)}, ${r.n_models} models; delta change on the Gumbel ${r.T}-year daily value). Applied to the design storm.`})}
+// ---------- run tools
+let damMarkers=[];
+async function damScreen(){if(!curRun)return;damMarkers.forEach(m=>m.remove());damMarkers=[];const j=await (await fetch(`/runs/${curRun}/dams`)).json();if(j.error)return $("damOut").innerHTML=`<p class="err">${j.error}</p>`;
+  $("damOut").innerHTML=(j.n_blocking?j.dams.slice(0,5).map(d=>`<div class="item"><div><b>${d.stability}</b> · DBI ${fmt(d.dbi,2)}<br><small>dam ${fmt(d.dam_height_m,1)} m × ${fmt(d.dam_volume_m3/1000,0)}k m³ · catchment ≥ ${fmt(d.upstream_area_km2,2)} km² · lake ${fmt(d.lake_volume_m3/1000,0)}k m³ · breach peak ~${fmt(d.breach_peak_m3s,0)} m³/s</small></div></div>`).join(""):'<p class="note">No deposit blocks a drainage line of at least 0.5 km² in this run.</p>')+`<p class="note">${j.notes.join("; ")}. Stable below DBI 2.75, unstable above 3.08 (Ermini &amp; Casagli 2003).</p>`;
+  j.dams.slice(0,5).forEach(d=>damMarkers.push(new mapboxgl.Marker({color:d.stability==="likely unstable"?"#F0575A":d.stability==="uncertain"?"#F5A742":"#3ED598"}).setLngLat([d.lon,d.lat]).addTo(map)))}
+async function scoreObserved(){const f=$("obsFile").files[0];if(!f||!curRun)return alert("Run a model and choose an observed extent first.");const fd=new FormData();fd.append("file",f);fd.append("depth_m",$("obsD").value);
+  const j=await (await fetch(`/runs/${curRun}/validate-observed`,{method:"POST",body:fd})).json();$("obsOut").innerHTML=j.error?`<p class="err">${j.error}</p>`:`<div class="stat-row"><span>CSI / POD / FAR</span><span>${fmt(j.CSI,2)} / ${fmt(j.POD,2)} / ${fmt(j.FAR,2)}</span></div><div class="stat-row"><span>F1 / bias</span><span>${fmt(j.F1,2)} / ${fmt(j.bias,2)}</span></div><div class="stat-row"><span>hits / false alarms / misses (cells)</span><span>${fmt(j.hits,0)} / ${fmt(j.false_alarms,0)} / ${fmt(j.misses,0)}</span></div><p class="note">${j.note}</p>`}
+async function loadHot(){const j=await (await fetch(`/rainfall-hotspots?metric=${$("hMetric").value}&season=${$("hSeason").value}&n=12`)).json();$("hotBox").innerHTML=j.error?`<p class="err">${j.error}</p>`:j.results.map(r=>`<div class="item"><div><b>${fmt(r.value,0)}</b> <small>${j.label}</small><br><small>${r.district||"–"}, ${r.province||""} · ${r.lat.toFixed(2)}, ${r.lon.toFixed(2)}</small></div><button class="secondary" onclick="map.flyTo({center:[${r.lon},${r.lat}],zoom:9})">Go</button></div>`).join("")+`<p class="note">${j.note}</p>`}
+
+
+async function runRock(){const p={source_mode:$("kSrc").value,min_source_slope_deg:+$("kSl").value,max_sources:+$("kMs").value,rocks_per_source:+$("kN").value,d50_m:+$("kD").value,shape:$("kSh").value,rough_deg:+$("kRg").value,surface_override:$("kSu").value||null,
+    barriers:barriers().map(b=>({...b,capacity_kj:+$("kCap").value}))};
+  if(p.source_mode==="quake")p.quake={magnitude:+$("qM").value,depth_km:+$("qDep").value,lon:+$("qLon").value,lat:+$("qLat").value,time_h:0,snap_to_fault:$("qSnap").checked};
+  $("kOut").innerHTML="";$("kProg").style.display="block";const {ok,j}=await post("/run-rock",{geometry:aoi,params:p});if(!ok){$("kProg").style.display="none";return $("kOut").innerHTML=`<p class="err">${j.error}</p>`}
+  pollJob(j.job,q=>{$("kFill").style.width=Math.max(2,q.frac*100)+"%";$("kTxt").textContent=`${q.stage} · ${fmt(q.elapsed_s,0)} s`},q=>{$("kProg").style.display="none";if(q.state!=="done")return $("kOut").innerHTML=jobError(q);
+    const r=q.result,s=r.summary,e=s.exposure||{};$("kOut").innerHTML=`<span class="pill">${s.backend}</span><div class="cards"><div class="card"><div class="k">Rocks</div><div class="v">${fmt(s.release.rocks,0)}</div></div><div class="card"><div class="k">Peak energy</div><div class="v">${fmt(s.peak_energy_kj,0)} kJ</div></div><div class="card"><div class="k">Max runout</div><div class="v">${fmt(s.max_runout_m,0)} m</div></div><div class="card"><div class="k">P95 bounce</div><div class="v">${fmt(s.p95_bounce_height_m,1)} m</div></div></div>
+     <div class="stat-row"><span>Reach angle P10 / P50 / P90</span><span>${fmt(s.travel_angle_deg.p10,0)} / ${fmt(s.travel_angle_deg.p50,0)} / ${fmt(s.travel_angle_deg.p90,0)}°</span></div><div class="stat-row"><span>Rocks left the area</span><span>${fmt(s.outcome_rocks.left_area*100,1)}%</span></div>
+     <div class="stat-row"><span>Buildings reached</span><span>${fmt(e.buildings_reached,0)} of ${fmt(e.buildings_in_aoi,0)}</span></div><div class="stat-row"><span>Road reached</span><span>${fmt(e.road_reached_km,2)} of ${fmt(e.road_length_km,1)} km</span></div>`+(s.barriers_stopped_rocks!=null?`<div class="stat-row"><span>Stopped by barriers</span><span>${fmt(s.barriers_stopped_rocks*100,1)}%</span></div>`:"")+(e.facilities_reached&&e.facilities_reached.length?`<div class="warn">Facilities reached: ${e.facilities_reached.map(f=>f.kind+" "+f.name).join(", ")}</div>`:"")+`<p class="note">${s.travel_angle_deg.note}. ${s.energy_note}.</p>`+r.warnings.slice(0,3).map(w=>`<div class="warn">⚠ ${w}</div>`).join("");
+    $("empty3d").style.display="none";const f=$("view3dFrame");f.style.display="block";f.src=`/runs/${r.run_id}/mapbox3d`;$("v3dFull").style.display="";$("v3dFull").href=`/runs/${r.run_id}/mapbox3d`;
+    layerPick(r.run_id,r.layers);loadHistory()})}
+
+// ---------- layout: resizers
+function dragger(el,vert){let on=false;el.addEventListener("mousedown",e=>{on=true;el.classList.add("active");e.preventDefault()});window.addEventListener("mouseup",()=>{on=false;el.classList.remove("active")});
+  window.addEventListener("mousemove",e=>{if(!on)return;if(vert){const r=$("mapWrap").parentElement.getBoundingClientRect();const h=Math.min(Math.max(e.clientY-r.top,120),r.height-120);$("mapWrap").style.flex="none";$("mapWrap").style.height=h+"px";map.resize()}else{const w=Math.min(Math.max(window.innerWidth-e.clientX,300),window.innerWidth*.7);$("rightCol").style.width=w+"px";map.resize()}})}
+dragger($("vResizer"),true);dragger($("resizerMain"),false);
+fetch("/api/hw").then(r=>r.json()).then(h=>$("hwInfo").textContent=h.text).catch(()=>{});
+loadWatches();loadHistory();
+</script></body></html>

@@ -1,0 +1,241 @@
+{
+ "n_events": 624,
+ "n_controls": 6112,
+ "controls_per_event": 10,
+ "block_deg": 1.0,
+ "radius_km_quartiles_events": [
+  5.0,
+  25.0,
+  25.0
+ ],
+ "single_predictors": {
+  "slope_mean": {
+   "auc": 0.5782770757819842,
+   "ci95": [
+    0.49616727926446724,
+    0.6769232769754394
+   ]
+  },
+  "slope_p90": {
+   "auc": 0.5503562244093166,
+   "ci95": [
+    0.4511775502309912,
+    0.6505327394480581
+   ]
+  },
+  "slope_max": {
+   "auc": 0.5352447423731373,
+   "ci95": [
+    0.45048606997335555,
+    0.6280451906506189
+   ]
+  },
+  "slope_frac_15_45": {
+   "auc": 0.6172720593787757,
+   "ci95": [
+    0.5438488029131339,
+    0.6718487592123877
+   ]
+  },
+  "phys_mean": {
+   "auc": 0.6148484171533092,
+   "ci95": [
+    0.5408656346961815,
+    0.6858724146175587
+   ]
+  },
+  "phys_p90": {
+   "auc": 0.5859943973184321,
+   "ci95": [
+    0.5091640541759089,
+    0.6645558173084753
+   ]
+  },
+  "phys_frac_unstable": {
+   "auc": 0.6151411630336286,
+   "ci95": [
+    0.5424841952139144,
+    0.6889660056453284
+   ]
+  },
+  "twi_mean": {
+   "auc": 0.4161165718552826,
+   "ci95": [
+    0.3398808382193915,
+    0.4899736031965324
+   ]
+  },
+  "spi_mean": {
+   "auc": 0.5977821058195731,
+   "ci95": [
+    0.5118097489449307,
+    0.6935238964230253
+   ]
+  },
+  "rainfall_mean": {
+   "auc": 0.6073141109544905,
+   "ci95": [
+    0.4476351554943846,
+    0.7203209694422396
+   ]
+  },
+  "dist_faults_mean": {
+   "auc": 0.4512403091018929,
+   "ci95": [
+    0.3575198988854855,
+    0.5867314575676844
+   ]
+  },
+  "dist_rivers_mean": {
+   "auc": 0.33901493698818636,
+   "ci95": [
+    0.28123108907199784,
+    0.3992239514558208
+   ]
+  },
+  "elevation_mean": {
+   "auc": 0.4631043176936502,
+   "ci95": [
+    0.34815070364092415,
+    0.5886089014389343
+   ]
+  },
+  "ml_prob_mean": {
+   "auc": 0.7988889553127937,
+   "ci95": [
+    0.7552263454317497,
+    0.8338113406988568
+   ]
+  },
+  "ml_prob_max": {
+   "auc": 0.7716059045257753,
+   "ci95": [
+    0.7242452255130041,
+    0.8186686103894008
+   ]
+  }
+ },
+ "models": {
+  "slope_only": {
+   "auc": 0.5744965505017452,
+   "ci95": [
+    0.5030225608306669,
+    0.6555011530950183
+   ],
+   "cv": "5-fold spatial blocks x5",
+   "learner": "logistic",
+   "n_features": 2
+  },
+  "physics_infinite_slope": {
+   "auc": 0.5956270871090079,
+   "ci95": [
+    0.527541682834649,
+    0.6676914749714813
+   ],
+   "cv": "5-fold spatial blocks x5",
+   "learner": "logistic",
+   "n_features": 3
+  },
+  "terrain": {
+   "auc": 0.7140210986793529,
+   "ci95": [
+    0.6639416544301666,
+    0.7537407844732386
+   ],
+   "cv": "5-fold spatial blocks x5",
+   "learner": "gradient boosting (depth 3)",
+   "n_features": 9
+  },
+  "terrain+hydro+geology+landcover+rain (hazard-only GBM)": {
+   "auc": 0.752903598637401,
+   "ci95": [
+    0.7078568145301517,
+    0.7987681999601391
+   ],
+   "cv": "5-fold spatial blocks x5",
+   "learner": "gradient boosting (depth 3)",
+   "n_features": 41
+  },
+  "hazard-only + physics": {
+   "auc": 0.7522913625151026,
+   "ci95": [
+    0.7075496217697927,
+    0.7992435696660934
+   ],
+   "cv": "5-fold spatial blocks x5",
+   "learner": "gradient boosting (depth 3)",
+   "n_features": 44
+  },
+  "hazard-only + new ground layers (GLiM, texture, bedrock depth, Vs30)": {
+   "auc": 0.7327241911665996,
+   "ci95": [
+    0.6749705133627064,
+    0.7934466237957501
+   ],
+   "cv": "5-fold spatial blocks x5",
+   "learner": "gradient boosting (depth 3)",
+   "n_features": 51
+  },
+  "hazard-only + physics + new ground layers": {
+   "auc": 0.731891051860988,
+   "ci95": [
+    0.6769383934799335,
+    0.7905355754140085
+   ],
+   "cv": "5-fold spatial blocks x5",
+   "learner": "gradient boosting (depth 3)",
+   "n_features": 54
+  },
+  "hazard + human-access variables (report-aware)": {
+   "auc": 0.7627756766847898,
+   "ci95": [
+    0.7202081686004909,
+    0.8047456025638638
+   ],
+   "cv": "5-fold spatial blocks x5",
+   "learner": "gradient boosting (depth 3)",
+   "n_features": 43
+  },
+  "report-aware + physics": {
+   "auc": 0.7632140744563028,
+   "ci95": [
+    0.7197317706357562,
+    0.8058688074453024
+   ],
+   "cv": "5-fold spatial blocks x5",
+   "learner": "gradient boosting (depth 3)",
+   "n_features": 46
+  }
+ },
+ "by_radius": {
+  "<=1 km": {
+   "auc": 0.8207963270254237,
+   "ci95": [
+    0.7524161076813309,
+    0.8763849566350254
+   ],
+   "events": 107,
+   "controls": 1087
+  },
+  "1-5 km": {
+   "auc": 0.8254342029852234,
+   "ci95": [
+    0.73913060017885,
+    0.9117794328901834
+   ],
+   "events": 91,
+   "controls": 882
+  },
+  ">5 km": {
+   "auc": 0.7297574170035875,
+   "ci95": [
+    0.6706192447409601,
+    0.778334891903467
+   ],
+   "events": 425,
+   "controls": 4132
+  }
+ },
+ "best_model": "report-aware + physics",
+ "reference_published_ml_note": "national CNN-DNN ensemble: reported test AUC 0.88-0.90 (random split, half the negatives on flat ground); trained on these reports, so the AUC above is optimistic"
+}

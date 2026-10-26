@@ -1,0 +1,30 @@
+# Coefficients of the spatially varying ground (spatial_ground: true). EVERYTHING is neutral until scripts/calibrate_physics.py fits it on held-out spatial
+# blocks and the result is copied here (calibration_adopted: true). Do not fill these from intuition.
+calibration_adopted: false
+
+lithology:                    # GLiM lithology groups (engine/ground.py GROUPS): cohesion x exp(w), friction x (1 + friction_per_unit * w)
+  friction_per_unit: 0.0
+  weights: {unconsolidated: 0.0, sedimentary: 0.0, carbonate: 0.0, metamorphic: 0.0, plutonic: 0.0, volcanic: 0.0}
+
+texture:                      # SoilGrids mean of 5-60 cm; cohesion x exp(a_c (clay%-20)/20), friction x (1 + a_phi (sand%-40)/40 + a_cf cf%/30)
+  a_c: 0.0
+  a_phi: 0.0
+  a_cf: 0.0
+
+regolith:                     # slip depth capped at max(min_m, scale x depth-to-bedrock); off until calibrated
+  use: false
+  scale: 1.0
+  min_m: 0.3
+
+# Land cover (ESRI 10-class codes). Root cohesion is the ADDED reinforcement in kPa (literature range for shallow roots ~1-10 kPa; the values
+# below are mid-range assumptions, scenario values).
+landcover_root_cohesion_kpa:
+  2: 6.0     # trees
+  5: 1.5     # crops
+  11: 0.5    # rangeland / bare vegetation
+  7: 0.0     # built area
+  8: 0.0     # bare ground
+  9: 0.0     # snow / ice
+  4: 2.0     # flooded vegetation
+  1: 0.0     # water
+  10: 0.0    # clouds

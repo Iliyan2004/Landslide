@@ -1,0 +1,5 @@
+# Access Control, Run Management and Operations Additions
+
+- **Token and rate limit.** If `LANDLAB_TOKEN` is set, every write (POST, DELETE) needs it as `Authorization: Bearer`, `X-Token` or `?token=`; reads stay open on the network, as in SAILAB. A per-address limit of 40 POST requests per minute applies (`LANDLAB_RATE`). This is a guard against accidents and casual abuse on a shared network, not real authentication: the token travels in clear text over HTTP. Set it before exposing the port beyond the lab.
+- **Run management.** `DELETE /runs/<id>` removes a run; `POST /runs/cleanup` lists (dry run by default) or deletes runs older than N days that are not among the 30 most recent; `GET /api/queue` lists running and queued jobs. One heavy job runs at a time.
+- **API tests.** Flask test-client tests cover the page, area validation, design-storm validation, refusal of runs with missing inputs, the token and the rate limit, unknown runs returning 404, and the dry-run default of cleanup. They run no simulations.

@@ -1,0 +1,107 @@
+{
+ "profile": "cliff 250 m @ 60 deg + talus 700 m @ 36 deg + flat floor, 30 m cells",
+ "targets": {
+  "p1_deg": [
+   27,
+   32
+  ],
+  "p50_deg": [
+   33,
+   42
+  ]
+ },
+ "grid": [
+  {
+   "p1": 26.47557830810547,
+   "p10": 28.756418228149414,
+   "p50": 32.5926513671875,
+   "p90": 35.87199783325195,
+   "share_beyond_talus_toe": 1.0,
+   "median_run_m": 1103.9930419921875,
+   "n": 720,
+   "rough_deg": 9.0,
+   "restitution_scale": 0.8,
+   "friction_scale": 0.3,
+   "admissible": false
+  },
+  {
+   "p1": 29.566251754760742,
+   "p10": 31.057552337646484,
+   "p50": 34.38117599487305,
+   "p90": 36.91891860961914,
+   "share_beyond_talus_toe": 1.0,
+   "median_run_m": 1029.2689208984375,
+   "n": 720,
+   "rough_deg": 9.0,
+   "restitution_scale": 0.8,
+   "friction_scale": 0.4,
+   "admissible": true
+  },
+  {
+   "p1": 30.57052230834961,
+   "p10": 32.476192474365234,
+   "p50": 35.3017578125,
+   "p90": 37.77983474731445,
+   "share_beyond_talus_toe": 1.0,
+   "median_run_m": 991.45068359375,
+   "n": 720,
+   "rough_deg": 9.0,
+   "restitution_scale": 0.8,
+   "friction_scale": 0.5,
+   "admissible": true
+  },
+  {
+   "p1": 25.314746856689453,
+   "p10": 28.536895751953125,
+   "p50": 32.87124252319336,
+   "p90": 36.225791931152344,
+   "share_beyond_talus_toe": 1.0,
+   "median_run_m": 1092.0081787109375,
+   "n": 720,
+   "rough_deg": 9.0,
+   "restitution_scale": 1.0,
+   "friction_scale": 0.3,
+   "admissible": false
+  },
+  {
+   "p1": 28.649877548217773,
+   "p10": 30.960912704467773,
+   "p50": 34.342308044433594,
+   "p90": 37.0875358581543,
+   "share_beyond_talus_toe": 1.0,
+   "median_run_m": 1032.650634765625,
+   "n": 720,
+   "rough_deg": 9.0,
+   "restitution_scale": 1.0,
+   "friction_scale": 0.4,
+   "admissible": true
+  },
+  {
+   "p1": 30.618181228637695,
+   "p10": 32.380889892578125,
+   "p50": 35.34814453125,
+   "p90": 37.557132720947266,
+   "share_beyond_talus_toe": 1.0,
+   "median_run_m": 997.21728515625,
+   "n": 720,
+   "rough_deg": 9.0,
+   "restitution_scale": 1.0,
+   "friction_scale": 0.5,
+   "admissible": true
+  }
+ ],
+ "chosen": {
+  "p1": 30.618181228637695,
+  "p10": 32.380889892578125,
+  "p50": 35.34814453125,
+  "p90": 37.557132720947266,
+  "share_beyond_talus_toe": 1.0,
+  "median_run_m": 997.21728515625,
+  "n": 720,
+  "rough_deg": 9.0,
+  "restitution_scale": 1.0,
+  "friction_scale": 0.5,
+  "admissible": true
+ },
+ "elapsed_s": 35
+}

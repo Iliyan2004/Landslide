@@ -1,0 +1,28 @@
+# Model catalogue M01-M22 (methodology §6) with implementation status in THIS repository.
+status_legend:
+  implemented_tested: code + unit tests in backend/tests
+  adapter_only: contract + gates implemented; validated external engine required
+  not_implemented: interface documented only
+models:
+  - {id: M01, name: Legacy slope+lithology score, module: landslide.models.susceptibility.legacy, status: implemented_tested, tier: S, release_guard: "Not a physical probability; config is placeholder pending SAILAB reconciliation"}
+  - {id: M02, name: Logistic susceptibility, module: landslide.models.susceptibility.statistical, status: implemented_tested, tier: S, release_guard: "Spatial-block CV required; relative score unless calibrated"}
+  - {id: M03, name: Random forest, module: landslide.models.susceptibility.statistical, status: implemented_tested, tier: S, release_guard: "Blocked/event holdouts; OOD suppression"}
+  - {id: M04, name: Gradient boosting (sklearn; XGBoost/LightGBM optional), module: landslide.models.susceptibility.statistical, status: implemented_tested, tier: S, release_guard: "Spatial CV mandatory"}
+  - {id: M05, name: CNN/U-Net scar segmentation, status: not_implemented, tier: S, release_guard: "Detection only; needs labelled polygons + GPU; see change_detection.py for candidate flags"}
+  - {id: M06, name: LHASA benchmark, status: not_implemented, tier: S, release_guard: "Compare only; never train/test on LHASA output"}
+  - {id: M07, name: Rainfall I-D threshold, module: landslide.models.monitoring.thresholds, status: implemented_tested, tier: M, release_guard: "Watch trigger; POD/FAR via contingency()"}
+  - {id: M08, name: Green-Ampt + infinite slope, module: landslide.models.stability.ensemble, status: implemented_tested, tier: T, release_guard: "Scenario ensemble; not calibrated"}
+  - {id: M09, name: Richards + infinite slope, module: landslide.models.runout.adapters.RichardsSolver, status: adapter_only, tier: T, release_guard: "Use verified PDE solver"}
+  - {id: M10, name: TRIGRS-style transient stability, module: landslide.models.runout.adapters.TRIGRS, status: adapter_only, tier: T, release_guard: "Strong geotechnical data"}
+  - {id: M11, name: SINMAP-style index, status: not_implemented, tier: S, release_guard: "Screening; terrain.TWI/slope are the inputs"}
+  - {id: M12, name: Bishop LEM (Janbu/Spencer not included), module: landslide.models.stability.bishop, status: implemented_tested, tier: T, release_guard: "Site-specific; real slip geometry"}
+  - {id: M13, name: Pseudostatic / Newmark / Jibson2007, module: landslide.models.seismic.newmark, status: implemented_tested, tier: E, release_guard: "Needs actual/scenario ground motion"}
+  - {id: M14, name: Rockfall trajectory, module: landslide.models.runout.rockfall, status: implemented_tested, tier: R, release_guard: "Site-resolution DTM; calibrated restitution"}
+  - {id: M15, name: Empirical reach envelope + Voellmy point-mass, module: landslide.models.runout.empirical, status: implemented_tested, tier: R, release_guard: "Envelope only"}
+  - {id: M16, name: r.avaflow, module: landslide.models.runout.adapters.RAvaflow, status: adapter_only, tier: R, release_guard: "Validated container image + licence check"}
+  - {id: M17, name: RUSLE, module: landslide.models.sediment.hillslope_channel, status: implemented_tested, tier: D, release_guard: "Annual screening; C table is a scenario"}
+  - {id: M18, name: Shields + MPM, module: landslide.models.sediment.hillslope_channel, status: implemented_tested, tier: D, release_guard: "Noncohesive beds; per-width vs total"}
+  - {id: M19, name: Suspended sediment rating, module: landslide.models.sediment.hillslope_channel, status: implemented_tested, tier: D, release_guard: "Site-calibrated only"}
+  - {id: M20, name: Blockage screening, module: landslide.models.sediment.hillslope_channel.blockage_screen, status: implemented_tested, tier: D, release_guard: "Possible blockage != breach"}
+  - {id: M21, name: Exposure/fragility, module: landslide.models.exposure.exposure, status: implemented_tested, tier: X, release_guard: "No damage without hazard-specific fragility"}
+  - {id: M22, name: Watch orchestration, module: landslide.models.monitoring.thresholds.watch_state, status: implemented_tested, tier: M, release_guard: "Experimental until hindcast-validated"}

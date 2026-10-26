@@ -1,0 +1,41 @@
+id,name,access_codes,urls,licence_checked,licence_name,redistribution_allowed,commercial_integration_allowed,attribution_text,checked_by,checked_date,notes
+D01,Copernicus DEM GLO-30 Public,P/C,https://registry.opendata.aws/copernicus-dem/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D02,NASADEM / SRTM,R,https://lpdaac.usgs.gov/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D03,OpenTopography,R/C,https://www.opentopography.org/developers,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D04,GLiM global lithology,P/C,https://doi.org/10.1029/2012GC004370,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D05,OneGeology / Geological Survey of Pakistan,C,https://portal.onegeology.org/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D06,SoilGrids 2.0,P,https://files.isric.org/soilgrids/latest/data/ https://docs.isric.org/globaldata/soilgrids/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D07,ESA WorldCover 2021 v200,P,https://esa-worldcover.org/en/data-access,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D08,Dynamic World,R,https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D09,Sentinel-2 L2A,R,https://dataspace.copernicus.eu/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D10,Sentinel-1 GRD/SLC,R,https://dataspace.copernicus.eu/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D11,NASA COOLR / Global Landslide Catalog,P/C,https://gpm.nasa.gov/applications/landslides/coolr,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D12,NASA LHASA datasets/code,P/R,https://github.com/nasa/LHASA,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D13,"Copernicus EMS, UNOSAT, national agencies, literature",P/C,https://rapidmapping.emergency.copernicus.eu/ https://unosat.org/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D14,GPM IMERG,R,https://gpm.nasa.gov/data/imerg,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D15,CHIRPS v2+,P,https://www.chc.ucsb.edu/data/chirps,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D16,ERA5-Land,R,https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D17,Open-Meteo weather forecast/historical API,,https://open-meteo.com/en/docs,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D18,SMAP,R,https://nsidc.org/data/smap,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D19,Global seismic catalog,P,https://earthquake.usgs.gov/fdsnws/event/1/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D20,USGS ShakeMap,P,https://earthquake.usgs.gov/data/shakemap/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D21,OpenQuake / GEM seismic products,P/C,https://www.globalquakemodel.org/openquake,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D22,Active faults,C,https://github.com/GEMScienceTools,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D23,OSM Geofabrik Pakistan,P,https://download.geofabrik.de/asia/pakistan.html,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D24,Google Open Buildings,P/C,https://sites.research.google/gr/open-buildings/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D25,WorldPop / GHSL,P/C,https://www.worldpop.org/ https://human-settlement.emergency.copernicus.eu/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D26,HydroSHEDS / HydroRIVERS / HydroBASINS,P/C,https://www.hydrosheds.org/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D27,JRC Global Surface Water,P,https://global-surface-water.appspot.com/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D28,Hansen Global Forest Change,P/C,https://storage.googleapis.com/earthenginepartners-hansen/GFC-2024-v1.12/download.html,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D29,Landsat Collection 2 Level 2,R,https://earthexplorer.usgs.gov/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D30,Global glacier/lake inventories,P/C,https://www.glims.org/ https://www.glims.org/RGI/,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D31,Global Dam Watch / HydroLAKES,P/C,https://www.globaldamwatch.org/ https://www.hydrosheds.org/products/hydrolakes,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D32,Local geotechnical reports and lab tests,L,,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D33,Groundwater/piezometers,L,,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D34,River stage/sediment gauges,L,,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D35,Landslide deformation ground instruments,L,,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D36,High-resolution optical imagery/field UAV,C/L,,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D37,Observed snow / snow cover,P/R,,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D38,Soil/rock mechanics literature databases,C,,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D39,Local rainfall gauges,L,,no,,,,,,,VERIFY BEFORE DEPLOYMENT
+D40,Regional landslide data,C/L,,no,,,,,,,VERIFY BEFORE DEPLOYMENT

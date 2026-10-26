@@ -1,0 +1,29 @@
+{
+ "records": 381,
+ "dated": 269,
+ "by_trigger": {
+  "rain": 187,
+  "unknown": 128,
+  "glof": 29,
+  "quake": 18,
+  "snow": 10,
+  "anthropogenic": 9
+ },
+ "radius_le_1km": 117,
+ "radius_le_5km": 166,
+ "radius_le_10km": 191,
+ "radius_assumed": 1,
+ "years": [
+  2002,
+  2026
+ ],
+ "rain_day_resolved": 111,
+ "by_trigger_day_resolved": {
+  "unknown": 118,
+  "rain": 111,
+  "quake": 18,
+  "snow": 9,
+  "anthropogenic": 9,
+  "glof": 4
+ }
+}

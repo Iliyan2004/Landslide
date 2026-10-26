@@ -1,0 +1,21 @@
+# Prototype stack (methodology §7.3). Engines (r.avaflow etc.) run as separate isolated images, --network=none.
+services:
+  api:
+    build: {context: ., dockerfile: backend/Dockerfile}
+    env_file: .env
+    ports: ["8000:8000"]
+    volumes: [./runs:/data/runs, ./datasets:/data/datasets, ./configs:/app/configs:ro]
+    depends_on: [redis, db]
+  redis: {image: "redis:7-alpine"}
+  db:
+    image: postgis/postgis:16-3.4
+    environment: {POSTGRES_PASSWORD: landslide, POSTGRES_DB: landslide}
+    volumes: [pgdata:/var/lib/postgresql/data]
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes: [./frontend:/app]
+    command: sh -c "npm install && npm run dev -- --host"
+    ports: ["5173:5173"]
+    environment: {VITE_API_URL: "http://localhost:8000"}
+volumes: {pgdata: {}}

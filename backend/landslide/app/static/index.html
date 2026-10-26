@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Landslide Platform – Pakistan</title>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+<link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.css" rel="stylesheet">
+<style>
+:root{--bg:#0f1720;--panel:#16212d;--ink:#e6edf3;--mute:#8b9bab;--acc:#e8833a;--ok:#3fb27f;--bad:#e5534b;--line:#243344}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:13px/1.4 system-ui,sans-serif}
+#app{display:grid;grid-template-columns:340px 1fr;height:100%}
+#side{overflow:auto;background:var(--panel);border-right:1px solid var(--line);padding:14px}
+#map{height:100%}
+h1{font-size:16px;margin:0 0 2px}.sub{color:var(--mute);margin-bottom:12px}
+fieldset{border:1px solid var(--line);border-radius:6px;margin:0 0 10px;padding:8px 10px}legend{color:var(--mute);padding:0 4px}
+label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0}
+input,select{background:#0c141c;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:3px 5px;width:130px}
+input[type=checkbox]{width:auto}
+button{background:var(--acc);color:#111;border:0;border-radius:5px;padding:7px 10px;font-weight:600;cursor:pointer;margin:2px 4px 2px 0}
+button.sec{background:#243344;color:var(--ink)}button:disabled{opacity:.5}
+#status{margin:8px 0;color:var(--mute)}#bar{height:4px;background:#0c141c;border-radius:2px}#bar i{display:block;height:100%;width:0;background:var(--acc);border-radius:2px;transition:width .3s}
+.kv{display:grid;grid-template-columns:1fr auto;gap:2px 8px}.kv span:nth-child(odd){color:var(--mute)}
+.warn{color:#e0b341;font-size:12px;margin:3px 0}.err{color:var(--bad)}
+#legend{position:absolute;right:10px;bottom:28px;background:rgba(15,23,32,.92);padding:8px 10px;border-radius:6px;min-width:190px}
+.ramp{height:10px;border-radius:2px;margin:4px 0}
+.tag{display:inline-block;background:#3a2a1a;color:#f0b070;border-radius:3px;padding:1px 6px;font-size:11px}
+</style></head><body><div id="app">
+<div id="side">
+<h1>Landslide Platform</h1><div class="sub">Pakistan · screening-grade · <span class="tag">not calibrated / not for design</span></div>
+
+<fieldset><legend>1 · Area</legend>
+<button id="bDraw">Draw polygon</button><button id="bPak" class="sec">Whole Pakistan (districts)</button><button id="bClr" class="sec">Clear</button>
+<div id="distBox" style="display:none;margin-top:8px"><label>District metric<select id="dm"></select></label><div id="distLeg" class="sub"></div><button id="hideDist" class="sec">Hide districts</button><div class="warn">Whole-country view: district statistics from the 90 m national layers. ML susceptibility covers northern Pakistan only; elsewhere it is NODATA, not low risk.</div></div><div id="aoiInfo" class="sub" style="margin:6px 0 0">No area selected. Large areas are analysed at coarser resolution.</div></fieldset>
+
+<fieldset><legend>2 · Rainfall scenario</legend>
+<label>Intensity (mm/h)<input id="rain" type="number" value="20" min="0" step="1"></label>
+<label>Duration (h)<input id="dur" type="number" value="24" min="1" max="720"></label>
+<label>Soil texture<select id="tex"></select></label>
+<label>Strength preset<select id="pre"></select></label>
+<label>Members<input id="nm" type="number" value="40" min="5" max="200"></label></fieldset>
+
+<fieldset><legend>3 · Earthquake (optional)</legend>
+<label>Scenario PGA (g)<input id="pga" type="number" value="" placeholder="off" step="0.05" min="0"></label></fieldset>
+
+<fieldset><legend>4 · Run-out envelope</legend>
+<label><span>Enable</span><input id="ro" type="checkbox" checked></label>
+<label>Volume (m³)<input id="vol" type="number" value="10000"></label>
+<label>Reach angle min–max (°)<span><input id="a0" type="number" value="14" style="width:55px"> <input id="a1" type="number" value="24" style="width:55px"></span></label></fieldset>
+
+<button id="bRun" disabled>Run analysis</button>
+<div id="status"></div><div id="bar"><i></i></div>
+<div id="res"></div>
+
+<fieldset style="margin-top:12px"><legend>National layers (whole country)</legend><div id="nat"></div>
+<label>Opacity<input id="op" type="range" min="0.1" max="1" step="0.05" value="0.8"></label></fieldset>
+<fieldset><legend>This run's layers</legend><div id="runl" class="sub">Run an analysis first.</div></fieldset>
+</div>
+<div style="position:relative"><div id="map"></div><div id="legend" style="display:none"></div></div></div>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js"></script>
+<script>
+mapboxgl.accessToken="__MAPBOX_TOKEN__";
+const $=id=>document.getElementById(id);
+const map=new mapboxgl.Map({container:"map",style:"mapbox://styles/mapbox/satellite-streets-v12",center:[69.5,30.2],zoom:4.6,projection:"mercator"});
+map.addControl(new mapboxgl.NavigationControl());
+const draw=new MapboxDraw({displayControlsDefault:false,controls:{}});map.addControl(draw);
+let aoi=null,ramps={},natOn=null,runLayer=null,runId=null;
+
+const fmt=(x,d=1)=>x==null?"–":Number(x).toLocaleString(undefined,{maximumFractionDigits:d});
+function setAoi(g){aoi=g;$("bRun").disabled=!g;if(!g){$("aoiInfo").textContent="No area selected.";return}
+  const ring=g.coordinates[0];let a=0;const R=6371,k=Math.PI/180;
+  for(let i=0;i<ring.length-1;i++){const[x1,y1]=ring[i],[x2,y2]=ring[i+1];a+=(x2-x1)*k*(2+Math.sin(y1*k)+Math.sin(y2*k))}
+  a=Math.abs(a*R*R/2);$("aoiInfo").textContent=`Area ≈ ${fmt(a,0)} km²`+(a>1500?" — analysed at coarser resolution":" — 30 m analysis")}
+$("bDraw").onclick=()=>{draw.deleteAll();draw.changeMode("draw_polygon")};
+$("bClr").onclick=()=>{draw.deleteAll();setAoi(null);clearRun()};
+map.on("draw.create",e=>{draw.getAll().features.slice(0,-1).forEach(f=>draw.delete(f.id));setAoi(e.features[0].geometry)});
+map.on("draw.update",e=>setAoi(e.features[0].geometry));
+const METRICS={lsm_mean:["Mean susceptibility (ML)",[0,.3,.6,.9]],lsm_area_frac_gt_0_7:["Area share with susceptibility > 0.7",[0,.15,.4,.7]],population_lsm_gt_0_7:["People in susceptibility > 0.7",[0,1e4,1e5,1e6]],mean_risk_index:["Mean risk index",[0,.01,.03,.08]],physics_frac_fs_lt1_mean:["Physics: mean share of members FS<1",[0,.01,.05,.2]],population:["Population",[0,2e5,1e6,3e6]]};
+const COLS=["#ffffcc","#fecc5c","#fd8d3c","#bd0026"];let distOn=false;
+$("bPak").onclick=async()=>{map.fitBounds([[60.8,23.6],[77.9,37.2]],{padding:30});if(!map.getSource("dist")){const g=await (await fetch("/api/districts")).json();
+  map.addSource("dist",{type:"geojson",data:g,generateId:true});map.addLayer({id:"dist-fill",type:"fill",source:"dist",paint:{"fill-opacity":.7}});
+  map.addLayer({id:"dist-line",type:"line",source:"dist",paint:{"line-color":"#fff","line-width":.5}});
+  $("dm").innerHTML=Object.entries(METRICS).filter(([k])=>g.features.some(f=>f.properties[k]!=null)).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join("");
+  $("dm").onchange=colorDist;map.on("click","dist-fill",e=>{const p=e.features[0].properties;new mapboxgl.Popup().setLngLat(e.lngLat).setHTML(`<div style="color:#111"><b>${p.name}</b> · ${p.province}<br>`+Object.keys(METRICS).filter(k=>p[k]!=null&&p[k]!=="null").map(k=>`${METRICS[k][0]}: <b>${fmt(+p[k],3)}</b>`).join("<br>")+(p.lsm_coverage<0.99?`<br><i>ML susceptibility covers ${fmt(p.lsm_coverage*100,0)}% of this district (rest is NODATA)</i>`:"")+`</div>`).addTo(map)})}
+  distOn=true;$("distBox").style.display="block";if(map.getLayer("dist-fill"))map.setLayoutProperty("dist-fill","visibility","visible");colorDist()};
+function colorDist(){const k=$("dm").value,b=METRICS[k][1];map.setPaintProperty("dist-fill","fill-color",["case",["==",["get",k],null],"rgba(0,0,0,0)",["step",["to-number",["get",k],0],COLS[0],b[1],COLS[1],b[2],COLS[2],b[3],COLS[3]]]);
+  $("distLeg").innerHTML=COLS.map((c,i)=>`<span style="display:inline-block;width:14px;height:10px;background:${c}"></span> ${i?"≥ "+fmt(b[i],2):"< "+fmt(b[1],2)}`).join(" &nbsp; ")}
+$("hideDist").onclick=()=>{distOn=false;$("distBox").style.display="none";map.setLayoutProperty("dist-fill","visibility","none")};
+
+function legend(ramp){const r=ramps[ramp];if(!r){$("legend").style.display="none";return}
+  const st=r.stops,max=st[st.length-1][0];const grad=st.map(s=>`rgb(${s[1].join(",")}) ${s[0]/max*100}%`).join(",");
+  $("legend").style.display="block";$("legend").innerHTML=`<b>${r.label}</b><div class="ramp" style="background:linear-gradient(90deg,${grad})"></div><div style="display:flex;justify-content:space-between;color:var(--mute)"><span>${st[0][0]}</span><span>${max}</span></div>`}
+
+function showTile(id,ramp){if(map.getLayer("nat"))map.removeLayer("nat");if(map.getSource("nat"))map.removeSource("nat");natOn=null;
+  if(!id){legend(runLayer&&runLayer.ramp);return}
+  map.addSource("nat",{type:"raster",tiles:[`${location.origin}/tiles/${id}/{z}/{x}/{y}.png`],tileSize:256,maxzoom:12});
+  map.addLayer({id:"nat",type:"raster",source:"nat",paint:{"raster-opacity":+$("op").value}});natOn=id;legend(ramp)}
+$("op").oninput=()=>{const v=+$("op").value;if(map.getLayer("nat"))map.setPaintProperty("nat","raster-opacity",v);if(map.getLayer("run"))map.setPaintProperty("run","raster-opacity",v)};
+
+function clearRun(){if(map.getLayer("run"))map.removeLayer("run");if(map.getSource("run"))map.removeSource("run");runLayer=null;$("runl").textContent="Run an analysis first.";$("res").innerHTML=""}
+async function showRun(layer){if(map.getLayer("run"))map.removeLayer("run");if(map.getSource("run"))map.removeSource("run");
+  const r=await fetch(`/api/run/${runId}/overlay/${layer}`);const coords=JSON.parse(r.headers.get("X-Coordinates"));const url=URL.createObjectURL(await r.blob());
+  map.addSource("run",{type:"image",url,coordinates:coords});map.addLayer({id:"run",type:"raster",source:"run",paint:{"raster-opacity":+$("op").value,"raster-fade-duration":0}});
+  runLayer={layer,ramp:layer};legend(layer)}
+const LAB={min_fs_p50:"Median minimum FS",frac_lt1:"Share of members FS<1",lsm_prob:"National susceptibility",newmark_cm:"Newmark displacement (cm)",runout_freq:"Run-out envelope",slope_deg:"Slope",risk_index:"Risk index"};
+
+function renderSummary(s,w){const rows=(o)=>Object.entries(o).filter(([k,v])=>typeof v!=="object"&&k!=="note").map(([k,v])=>`<span>${k.replace(/_/g," ")}</span><span>${typeof v==="number"?fmt(v,3):v}</span>`).join("");
+  let h=`<fieldset><legend>Result</legend><div class="kv"><span>area km²</span><span>${fmt(s.area_km2,0)}</span><span>resolution</span><span>${s.resolution_m} m</span></div></fieldset>`;
+  for(const k of ["stability","susceptibility","seismic","runout","exposure"])if(s[k])h+=`<fieldset><legend>${k}</legend><div class="kv">${rows(s[k])}</div>${s[k].note?`<div class="warn">${s[k].note}</div>`:""}</fieldset>`;
+  h+=w.map(x=>`<div class="warn">⚠ ${x}</div>`).join("");$("res").innerHTML=h}
+
+$("bRun").onclick=async()=>{clearRun();$("bRun").disabled=true;$("status").textContent="queued…";
+  const p={rain_mm_h:+$("rain").value,duration_h:+$("dur").value,texture:$("tex").value,strength_preset:$("pre").value,n_members:+$("nm").value,
+    pga_g:$("pga").value?+$("pga").value:null,runout:$("ro").checked,volume_m3:+$("vol").value,alpha_min_deg:+$("a0").value,alpha_max_deg:+$("a1").value};
+  const {job}=await (await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({geometry:aoi,params:p})})).json();
+  const t=setInterval(async()=>{const j=await (await fetch("/api/job/"+job)).json();
+    $("bar").firstElementChild.style.width=(j.frac*100)+"%";$("status").textContent=j.state==="running"||j.state==="queued"?`${j.stage}…`:"";
+    if(["queued","running"].includes(j.state))return;clearInterval(t);$("bRun").disabled=false;
+    if(j.state!=="done"){$("status").innerHTML=`<span class="err">${j.state}: ${j.error}</span>`;return}
+    runId=j.run_id;renderSummary(j.summary,j.warnings);
+    $("runl").innerHTML=j.layers.map(l=>`<label><span>${LAB[l]||l}</span><input type="radio" name="rl" value="${l}"></label>`).join("");
+    document.querySelectorAll("[name=rl]").forEach(e=>e.onchange=()=>{showTile(null);showRun(e.value)});
+    const first=j.layers.includes("min_fs_p50")?"min_fs_p50":j.layers[0];document.querySelector(`[name=rl][value=${first}]`).checked=true;showTile(null);showRun(first);
+    const b=j.summary.bbox;map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:40})},1000)};
+
+(async()=>{const pr=await (await fetch("/api/presets")).json();
+  $("tex").innerHTML=pr.textures.map(t=>`<option ${t==="sandy loam"?"selected":""}>${t}</option>`).join("");
+  $("pre").innerHTML=Object.keys(pr.strength).map(t=>`<option>${t}</option>`).join("");
+  const L=await (await fetch("/api/layers")).json();ramps=L.ramps;
+  $("nat").innerHTML=`<label><span>None</span><input type="radio" name="nl" value="" checked></label>`+L.layers.map(l=>`<label><span>${l.label}</span><input type="radio" name="nl" value="${l.id}" data-r="${l.ramp}"></label>`).join("");
+  document.querySelectorAll("[name=nl]").forEach(e=>e.onchange=()=>{if(map.getLayer("run"))map.removeLayer("run");showTile(e.value,e.dataset.r)})})();
+</script></body></html>

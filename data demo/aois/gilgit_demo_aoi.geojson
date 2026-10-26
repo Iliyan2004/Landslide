@@ -1,0 +1,14 @@
+{
+  "type": "FeatureCollection",
+  "name": "illustrative_gilgit_demo_rectangle_NOT_official_boundary",
+  "features": [{
+    "type": "Feature",
+    "properties": {
+      "name": "Gilgit City pilot illustration",
+      "boundary_status": "illustrative_only_replace_with_real_AOI"
+    },
+    "geometry": {"type": "Polygon", "coordinates": [[
+      [74.25,35.88],[74.37,35.88],[74.37,35.98],[74.25,35.98],[74.25,35.88]
+    ]]}
+  }]
+}

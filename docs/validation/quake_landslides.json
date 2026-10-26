@@ -1,0 +1,59 @@
+{
+ "n_events": 31,
+ "n_controls": 319,
+ "earthquakes": 7,
+ "events_per_quake": {
+  "us10003re5": 18,
+  "us20005gsg": 5,
+  "usp000e12e": 4,
+  "us7000rqik": 1,
+  "usp000bj2e": 1,
+  "usp000cm59": 1,
+  "us100049i1": 1
+ },
+ "auc": {
+  "pga_mean": {
+   "auc": 0.6130043482657498,
+   "ci95": [
+    0.5298152338086605,
+    0.8667774113321799
+   ]
+  },
+  "pga_p90": {
+   "auc": 0.6025887349580342,
+   "ci95": [
+    0.5273521336525748,
+    0.8496590909090908
+   ]
+  },
+  "slope_mean": {
+   "auc": 0.5841844473657599,
+   "ci95": [
+    0.3617152344808891,
+    0.698716787860425
+   ]
+  },
+  "slope_p90": {
+   "auc": 0.6252401658408332,
+   "ci95": [
+    0.37466794136958104,
+    0.7491629576326819
+   ]
+  },
+  "newmark_p90": {
+   "auc": 0.5596116897562948,
+   "ci95": [
+    0.4761409976120733,
+    0.8448564425770307
+   ]
+  },
+  "newmark_bssa_p90": {
+   "auc": 0.5734149054505006,
+   "ci95": [
+    0.4987540558328643,
+    0.8565934065934065
+   ]
+  }
+ },
+ "note": "controls come from the SAME shaking field, so shaking only wins if reports sit where shaking is strongest; reports cluster at roads and villages (report-aware)"
+}

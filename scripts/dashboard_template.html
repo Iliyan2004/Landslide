@@ -1,0 +1,1344 @@
+<title>Pakistan Landslide Dashboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: operations dashboard. Left control panel, WebGL map stage (Mapbox GL, or MapLibre GL without a token), cards below.
+   Dark committed look: near-black base, cyan accent, violet secondary, glass panels (same family as SAILAB). */
+:root{color-scheme:dark;--bg:#080c10;--bg2:#0e151b;--panel:rgba(20,30,38,.78);--line:#24323c;--fg:#e4edf2;--muted:#8da0ac;
+--cyan:#2fd0d6;--cyan-d:#0c7f86;--violet:#8b7cf6;--ok:#5fcf8a;--warn:#e6b84a;--off:#6c7b86;
+--display:'Sora','Segoe UI',sans-serif;--body:'IBM Plex Sans','Segoe UI',sans-serif;--mono:'IBM Plex Mono',Consolas,monospace}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:radial-gradient(1200px 600px at 70% -10%,#12303a 0,transparent 60%),var(--bg);color:var(--fg);font:15px/1.5 var(--body);height:100vh;overflow:hidden;
+padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:none;height:100%;margin:0;display:flex;flex-direction:column;gap:10px}
+.top{flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;flex-direction:column;gap:2px;min-width:0}
+.brand h1{font:700 1.5rem var(--display);margin:0;letter-spacing:.01em}
+.brand span{font:500 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}
+.badge{font:500 .72rem var(--mono);padding:5px 10px;border:1px solid var(--warn);color:var(--warn);background:rgba(230,184,74,.08)}
+.grid{display:grid;grid-template-columns:370px minmax(0,1fr);gap:12px;align-items:stretch;flex:1;min-height:0}
+@media(max-width:900px){body{height:auto;overflow:auto}.wrap{height:auto}.grid{grid-template-columns:minmax(0,1fr)}.side{max-height:70vh}.mapbox{min-height:70vh}}
+.glass{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(6px)}
+.side{display:flex;flex-direction:column;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+.tabs{display:flex;flex:none;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:0;z-index:3;background:#0d141a}
+.tab{flex:1;white-space:nowrap;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:500 .82rem var(--body);padding:12px 10px;cursor:pointer}
+.tab:hover{color:var(--fg)}
+.tab[aria-selected="true"]{color:var(--cyan);border-bottom-color:var(--cyan)}
+.pane{padding:16px;display:flex;flex-direction:column;gap:14px}
+.pane[hidden]{display:none}
+h2{font:600 .78rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:.88rem}
+.kv b{font:500 .88rem var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:500 .8rem var(--body);color:var(--fg);background:var(--bg2);border:1px solid var(--line);padding:7px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:linear-gradient(135deg,var(--cyan-d),#14606a);border-color:var(--cyan);color:#fff}
+.chip:hover{border-color:var(--cyan)}
+.lg{display:flex;flex-direction:column;gap:8px}
+.lgi{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;font-size:.86rem}
+.sw{width:14px;height:14px}
+.bar{height:6px;background:var(--bg2);grid-column:2/4}
+.bar i{display:block;height:100%}
+.note{font-size:.8rem;color:var(--muted);border-left:2px solid var(--violet);padding-left:10px}
+.stage{display:flex;flex-direction:column;min-width:0;min-height:0}
+.mapbox{position:relative;width:100%;flex:1;min-height:0;background:#05080b;overflow:hidden}
+#map{position:absolute;inset:0}
+#rain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.ctl{position:absolute;top:10px;left:10px;z-index:4}
+.ctl button{width:34px;height:34px;background:rgba(8,12,16,.88);border:1px solid var(--line);color:var(--fg);font:600 1rem var(--body);cursor:pointer;padding:0}
+.ctl button:hover{border-color:var(--cyan);color:var(--cyan)}
+.mapbar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:10px 14px;border-top:1px solid var(--line);font:400 .74rem var(--mono);color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px}
+.card{padding:12px 14px}
+.card b{display:block;font:600 1.35rem var(--display);font-variant-numeric:tabular-nums}
+.card span{font-size:.78rem;color:var(--muted)}
+.scroll{overflow-x:auto;max-height:340px;overflow-y:auto}
+table{border-collapse:collapse;width:100%;font-size:.82rem;min-width:300px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 .68rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);position:sticky;top:0;background:#0f171d}
+.st{font:500 .7rem var(--mono);padding:2px 8px;white-space:nowrap}
+.st.on{color:var(--ok);background:rgba(95,207,138,.1)}.st.part{color:var(--warn);background:rgba(230,184,74,.1)}.st.off{color:var(--off);background:rgba(108,123,134,.14)}
+.sl{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:.84rem}
+.sl input[type=range]{grid-column:1/3;width:100%;accent-color:var(--cyan)}
+.sl b{font:500 .82rem var(--mono)}
+.run{background:linear-gradient(135deg,var(--cyan-d),#14606a);border:1px solid var(--cyan);color:#fff;font:600 .85rem var(--body);padding:9px 14px;cursor:pointer}
+.run.sec{background:var(--bg2);border-color:var(--line)}
+.run:disabled{opacity:.45;cursor:default}
+select{background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:7px 8px;font:400 .8rem var(--body);width:100%}
+.readout{background:var(--bg2);border:1px solid var(--line);padding:10px 12px;font:400 .78rem/1.6 var(--mono);min-height:2.5rem}
+.readout:empty{display:none}
+.seg{display:flex}.seg button{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--fg);padding:7px 10px;font:500 .8rem var(--body);cursor:pointer}
+.seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--cyan-d),#14606a);border-color:var(--cyan);color:#fff}
+#quakeBox:not([hidden]),#custBox:not([hidden]){display:flex}
+.sites{display:flex;flex-wrap:wrap;gap:6px}
+.mk{width:28px;height:28px;border-radius:50%;background:#d83a3a;border:2.5px solid #fff;color:#fff;font:700 13px var(--body);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 0 6px rgba(255,70,70,.25)}
+.evrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.84rem}
+.hud{position:absolute;left:10px;bottom:10px;z-index:5;width:min(360px,calc(100% - 20px));max-height:calc(100% - 20px);overflow-y:auto;background:rgba(8,12,16,.9);border:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.hud[hidden]{display:none}
+body.nongil .gil{display:none}
+.hudhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pill{font:600 .7rem var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;background:rgba(47,208,214,.15);color:var(--cyan)}
+.pill.fail{background:rgba(222,126,52,.2);color:#ffab5e}.pill.after{background:rgba(139,124,246,.2);color:#b6abff}
+.prog{height:5px;background:var(--bg2)}.prog i{display:block;height:100%;width:0;background:var(--cyan)}
+.hr{font:400 .74rem/1.55 var(--mono)}
+.hud .run{padding:6px 10px;font-size:.78rem}
+.hleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.72rem;color:var(--muted)}.hleg i{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
+.tokenbox{position:absolute;right:10px;bottom:34px;z-index:5;width:min(320px,calc(100% - 20px));background:rgba(8,12,16,.92);border:1px solid var(--line);padding:8px 10px;font-size:.74rem;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.tokenbox[hidden]{display:none}
+.tokenbox input{background:var(--bg2);border:1px solid var(--line);color:var(--fg);padding:6px 8px;font:400 .76rem var(--mono);width:100%}
+.mapboxgl-popup-content,.maplibregl-popup-content{background:#05090d;color:var(--fg);border:1px solid var(--cyan);border-radius:0;font:400 .78rem/1.45 var(--body);padding:8px 10px}
+.mapboxgl-popup-tip,.maplibregl-popup-tip{display:none}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+</style>
+<div class="wrap">
+<div class="top">
+<div class="brand"><span>Landslide intelligence · Pakistan · <span id="aoiName" style="color:var(--warn)"></span></span><h1>Pakistan Landslide Dashboard</h1></div>
+<div class="badge">Demonstration · scenario simulation · not a hazard forecast</div>
+</div>
+
+<div class="grid">
+<aside class="side glass">
+<div class="tabs" role="tablist" aria-label="Dashboard sections">
+<button class="tab" role="tab" id="t-terrain" aria-selected="true" data-p="terrain">Terrain</button>
+<button class="tab" role="tab" id="t-sim" aria-selected="false" data-p="sim">Simulate</button>
+<button class="tab" role="tab" id="t-trig" aria-selected="false" data-p="trig">Events</button>
+<button class="tab" role="tab" id="t-imp" aria-selected="false" data-p="imp">Impact</button>
+<button class="tab" role="tab" id="t-stats" aria-selected="false" data-p="stats">Statistics</button>
+<button class="tab" role="tab" id="t-val" aria-selected="false" data-p="val">Validation</button>
+<button class="tab" role="tab" id="t-data" aria-selected="false" data-p="data" hidden>Modules</button>
+</div>
+
+<section class="pane" id="p-terrain" role="tabpanel">
+<h2>Area of interest</h2>
+<div class="kv" id="aoiKV"></div>
+<div class="btnrow"><button class="chip" id="a-rect" aria-pressed="false">Draw rectangle</button><button class="chip" id="a-poly" aria-pressed="false">Draw polygon</button><button class="chip" id="a-view">Use map view</button><button class="chip" id="a-clear">Clear</button></div>
+<input id="a-name" placeholder="Name for this area" autocomplete="off" style="background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:7px 8px;font:400 .8rem var(--body);width:100%">
+<label style="font-size:.8rem;display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="a-deep" checked style="margin-top:3px"><span>Include satellite layers (embedding similarity, Sentinel-2 scars and soil calibration). Slower.</span></label>
+<button class="run" id="a-fetch" disabled>Fetch details for this area</button>
+<div class="readout" id="a-status" hidden></div>
+<p class="note" id="a-note"></p>
+<h2>Saved areas</h2>
+<div id="a-list"></div>
+<h2>Basemap</h2>
+<select id="s-style" aria-label="Basemap style"></select>
+<div class="note" id="mapNote"></div>
+<div class="sl"><label for="s-ex">Terrain exaggeration</label><b id="v-ex">1.3×</b><input id="s-ex" type="range" min="1" max="3" step="0.1" value="1.3"></div>
+<h2>Layers</h2>
+<div class="btnrow">
+<button class="chip" id="l-scr" aria-pressed="true">Screening</button>
+<button class="chip" id="l-inv" aria-pressed="true">Historical events</button>
+<button class="chip" id="l-all" aria-pressed="true">All Pakistan reports</button>
+<button class="chip" id="l-eq" aria-pressed="false" hidden>USGS quakes</button>
+<button class="chip" id="l-flt" aria-pressed="false" hidden>Faults</button>
+<button class="chip" id="l-scar" aria-pressed="false">Sentinel-2 scars</button>
+</div>
+<p class="note" id="scarNote" hidden></p>
+<div class="sl"><label for="s-op">Screening opacity</label><b id="v-op">55 %</b><input id="s-op" type="range" min="0" max="100" step="5" value="55"></div>
+<div class="lg" id="mapLegend"></div>
+<div class="note" id="baseNote"></div>
+<p class="note">Drag to pan, scroll or pinch to zoom, right-drag or Ctrl-drag to tilt and rotate. After a simulation run, click a numbered failure site on the map: the map flies to it and replays rainfall, failure and aftermath on the 3D terrain.</p>
+<h2>Terrain, from your DEM</h2>
+<div class="kv" id="terrainKV"></div>
+<p class="note" id="demNote"></p>
+</section>
+
+<section class="pane" id="p-sim" role="tabpanel" hidden>
+<h2>Trigger</h2>
+<div class="seg" id="trig"><button data-t="rain" aria-pressed="true">Rain</button><button data-t="quake" aria-pressed="false">Earthquake</button><button data-t="both" aria-pressed="false">Rain + earthquake</button></div>
+<div id="rainBox" style="display:flex;flex-direction:column;gap:14px">
+<h2>Rainfall</h2>
+<div class="sl"><label for="s-int">Rain intensity</label><b id="v-int"></b><input id="s-int" type="range" min="2" max="80" step="1" value="10"></div>
+<div class="sl"><label for="s-dur">Duration</label><b id="v-dur"></b><input id="s-dur" type="range" min="1" max="72" step="1" value="24"></div>
+<div class="sl"><label for="s-sat">Starting saturation</label><b id="v-sat"></b><input id="s-sat" type="range" min="0" max="0.9" step="0.05" value="0.3"></div>
+</div>
+<h2>Assumed soil (scenario, not measured)</h2>
+<div class="sl"><label for="s-z">Soil depth</label><b id="v-z"></b><input id="s-z" type="range" min="0.5" max="3" step="0.1" value="1.5"></div>
+<div class="sl"><label for="s-c">Cohesion</label><b id="v-c"></b><input id="s-c" type="range" min="0" max="25" step="1" value="6"></div>
+<div class="sl"><label for="s-phi">Friction angle</label><b id="v-phi"></b><input id="s-phi" type="range" min="20" max="42" step="1" value="32"></div>
+<div id="quakeBox" hidden style="flex-direction:column;gap:14px">
+<h2>Earthquake</h2>
+<label for="s-eq" style="font-size:.84rem">Shaking source</label>
+<select id="s-eq"><option value="-2">Custom shaking (set below)</option></select>
+<div id="custBox" hidden style="flex-direction:column;gap:14px">
+<div class="sl"><label for="s-pga">Peak ground acceleration</label><b id="v-pga"></b><input id="s-pga" type="range" min="1" max="60" step="1" value="10"></div>
+<div class="sl"><label for="s-mag">Magnitude (sets the duration)</label><b id="v-mag"></b><input id="s-mag" type="range" min="4.5" max="8" step="0.1" value="6.5"></div>
+</div>
+<div class="sl"><label for="s-ac">Crest amplification of shaking</label><b id="v-ac"></b><input id="s-ac" type="range" min="1" max="1.8" step="0.05" value="1.3"></div>
+<div class="sl"><label for="s-as">Soft-ground amplification of shaking</label><b id="v-as"></b><input id="s-as" type="range" min="1" max="2" step="0.05" value="1.4"></div>
+</div>
+<div class="btnrow"><button class="chip" id="s-root" aria-pressed="true">Root cohesion from land cover</button><button class="chip" id="s-rain" aria-pressed="true" hidden>Rain animation</button><button class="chip" id="s-joint" aria-pressed="false" hidden>Joints (kinematic test)</button></div>
+<div class="btnrow"><button class="chip" id="s-ent" aria-pressed="true" hidden title="Moving debris scours soil from the bed and grows">Entrainment</button><button class="chip" id="s-frag" aria-pressed="true" hidden title="Blocks can break on hard impacts">Block fragmentation</button></div>
+<div class="btnrow"><button class="chip" id="b-calib" hidden title="Set soil depth, cohesion, friction, saturation and storm to the best-scoring values from the Sentinel-2 calibration">Use calibrated soil</button></div>
+<div class="btnrow"><button class="run" id="b-play">Run simulation</button><button class="run sec" id="b-reset">Reset</button></div>
+<div class="sl"><label for="s-t">Time</label><b id="v-t">0 h</b><input id="s-t" type="range" min="0" max="24" step="0.25" value="0"></div>
+<div class="readout" id="readout"></div>
+<h2>Failure sites</h2>
+<div class="sites" id="sites"><span class="note" style="border:0;padding:0">Run the simulation to list the largest failure sites.</span></div>
+<div hidden><h2>Rock-mass joint sets (assumed, not measured)</h2>
+<div class="sl"><label for="j-ad">Set A dip</label><b id="v-jad">55°</b><input id="j-ad" type="range" min="20" max="85" step="1" value="55"></div>
+<div class="sl"><label for="j-ar">Set A dip direction</label><b id="v-jar">140°</b><input id="j-ar" type="range" min="0" max="355" step="5" value="140"></div>
+<div class="sl"><label for="j-bd">Set B dip</label><b id="v-jbd">70°</b><input id="j-bd" type="range" min="20" max="85" step="1" value="70"></div>
+<div class="sl"><label for="j-br">Set B dip direction</label><b id="v-jbr">40°</b><input id="j-br" type="range" min="0" max="355" step="5" value="40"></div>
+<div class="sl"><label for="j-phi">Joint friction angle</label><b id="v-jphi">30°</b><input id="j-phi" type="range" min="15" max="45" step="1" value="30"></div>
+<p class="note" id="kinNote">Turn on "Joints" to colour the steep ground where planar or wedge sliding is kinematically possible for these two joint sets (Markland test, 30-member ensemble), and to start rockfall blocks only from such ground. The joint orientations are placeholders until field measurements exist.</p>
+</div>
+<h2>Site replay settings</h2>
+<div class="seg" id="v3mode"><button data-m="slide" aria-pressed="false">Landslide</button><button data-m="rock" aria-pressed="false">Rockfall</button><button data-m="both" aria-pressed="true">Both</button></div>
+<div class="sl"><label for="v3tl">Time limit for the failure animation</label><b id="v3tlv">90 s</b><input id="v3tl" type="range" min="30" max="300" step="10" value="90"></div>
+<div class="sl"><label for="v3mu">Flow friction (μ)</label><b id="v3muv">0.20</b><input id="v3mu" type="range" min="0.05" max="0.5" step="0.01" value="0.2"></div>
+<div class="sl"><label for="v3n">Rock blocks</label><b id="v3nv">30</b><input id="v3n" type="range" min="5" max="80" step="5" value="30"></div>
+<div class="sl"><label for="v3dia">Block diameter</label><b id="v3dv">1.5 m</b><input id="v3dia" type="range" min="0.5" max="4" step="0.1" value="1.5"></div>
+<div class="sl"><label for="v3e">Bounce (restitution)</label><b id="v3ev">0.35</b><input id="v3e" type="range" min="0.1" max="0.6" step="0.05" value="0.35"></div>
+<div class="sl"><label for="v3rough">Ground roughness (bounce scatter)</label><b id="v3roughv">0.40</b><input id="v3rough" type="range" min="0" max="1" step="0.05" value="0.4"></div>
+<label for="v3shape" style="font-size:.84rem">Block shape</label>
+<select id="v3shape"><option value="round">Rounded</option><option value="angular">Angular</option><option value="platy">Platy (flat slab)</option></select>
+<div class="sl"><label for="v3sp">Replay speed</label><b id="v3spv">6×</b><input id="v3sp" type="range" min="1" max="20" step="1" value="6"></div>
+<p class="note">Infinite-slope stability with rain filling the soil, run as a 40-member ensemble (cohesion and depth ±25 %, friction ±3°). Only slopes of 10–50° are treated as soil-covered, and snow, ice and open water are excluded using ESA WorldCover. Steeper cells are rock and are excluded, as are cells already unstable before rain. With the root-cohesion button on, WorldCover adds assumed root cohesion (trees 5, shrub 3, grass 2, crop 1 kPa). Unit weight 18 kN/m³, porosity 0.4 and half the rain infiltrating are assumed. Cells are 160 m, so the map shows where the scenario fails, not individual landslides. WorldPop is smoothed over 100 m, so it can put people on steep cells that hold no buildings. With an earthquake selected, a pseudostatic horizontal force of 0.5 × the ShakeMap PGA (assumed) acts on every cell on top of the rain. The PGA is multiplied by an assumed amplification: crest cells (more than 40 m above their 800 m neighbourhood) take the crest factor and unconsolidated sediment takes the soft-ground factor. Building codes use factors of the order 1.2 to 1.4 for ridges (Eurocode 8, Part 5), but these are placeholders until site data exist. ShakeMap values are for average ground and do not include either effect.</p>
+<p class="note">Ground roughness scatters each bounce sideways, and block shape raises rolling resistance and lowers bounce (angular and platy blocks stop sooner); the shape multipliers are assumed. If the deposit blocks a river (HydroRIVERS reaches), the panel reports the dam height, the lake behind it, a stability index and a peak breach outflow, and the Breach flood button routes that outflow down the valley inside the window. The Uncertainty button repeats the replay 12 times with friction, soil depth, bounce and roughness varied, and shows how often each cell is reached plus ranges for run-out and deposit. The site replay runs a depth-averaged debris flow and bouncing rigid blocks on your 53 m DEM, draped on the map's 3D terrain. It stops at the time limit or when everything has settled, then shows the deposit, scar and rock rest positions. Both models are illustrative and not calibrated against any event.</p>
+</section>
+
+<section class="pane" id="p-trig" role="tabpanel" hidden>
+<h2>Recorded events</h2>
+<div class="kv" id="evKV"></div>
+<h2>Strongest ShakeMaps at the area</h2>
+<div class="scroll glass"><table><thead><tr><th>Date</th><th>M</th><th>PGA mean / max</th></tr></thead><tbody id="shBody"></tbody></table></div>
+<h2>Historical landslides: pick one to replay</h2>
+<div id="evList"></div>
+<p class="note">Each replay rebuilds one reported landslide on your terrain: where it started, how it moved, its speed, and where the debris stopped. Only the date, type, trigger, size class and an approximate position are reported (NASA COOLR). The release zone, volume and friction are assumptions, so a replay is a reconstruction and not a record. Positions are often rounded to a village or a few kilometres, so "reached the reported place" is a weak test.</p>
+</section>
+
+<section class="pane" id="p-imp" role="tabpanel" hidden>
+<h2>Impact assessment</h2>
+<div id="impBody"></div>
+<h2>Assumptions (change a value to recompute)</h2>
+<div class="kv" style="align-items:center">
+<label for="i-cost">Replacement cost, PKR per m² of floor</label><input id="i-cost" type="number" min="1" step="1000" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+<label for="i-floors">Floors per building</label><input id="i-floors" type="number" min="1" step="0.5" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+<label for="i-hh">People per household</label><input id="i-hh" type="number" min="1" step="0.1" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+<label for="i-rho">Debris density, kg/m³</label><input id="i-rho" type="number" min="1000" step="50" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+<label for="i-crop">Cropland value, PKR per ha</label><input id="i-crop" type="number" min="1" step="10000" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+<label for="i-road0">Highway clearance and repair, million PKR per km</label><input id="i-road0" type="number" min="0.1" step="0.5" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+<label for="i-inc">Income per person per day, PKR</label><input id="i-inc" type="number" min="1" step="100" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+<label for="i-clr">Road clearing rate, km per day</label><input id="i-clr" type="number" min="0.01" step="0.1" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+<label for="i-dis">Displacement duration, days</label><input id="i-dis" type="number" min="1" step="10" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+<label for="i-bridge">Bridge replacement, PKR per m of length</label><input id="i-bridge" type="number" min="1" step="10000" style="width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)">
+</div>
+<p class="note">All of these, the damage fragility functions and the damage ratios are assumptions, not measurements (Technical Reference, Part XII). Other road classes scale with the highway value.</p>
+</section>
+
+<section class="pane" id="p-stats" role="tabpanel" hidden>
+<h2>Screening: slope + lithology</h2>
+<div class="lg" id="legend"></div>
+<div class="kv" id="scrKV"></div>
+<p class="note" id="scrNote"></p>
+<h2 hidden>Lithology (GLiM)</h2>
+<div class="lg" id="litLegend" hidden></div>
+<h2 hidden>Slope classes</h2>
+<div class="lg" id="slopeLegend" hidden></div>
+<h2>Satellite embedding scar similarity</h2>
+<div class="kv" id="embKV"></div>
+<p class="note" id="embNote"></p>
+<h2>Exposure in the extent</h2>
+<div class="kv" id="expKV"></div>
+<h2 hidden>Buildings by slope class</h2>
+<div class="lg" id="bslope" hidden></div>
+<h2 hidden>Land cover (WorldCover 2021)</h2>
+<div class="lg" id="lcLegend" hidden></div>
+<h2>Rainfall, CHIRPS areal mean</h2>
+<div class="kv" id="rainKV"></div>
+<div id="rainChart"></div>
+<h2>Rainfall threshold from the event dates</h2>
+<div class="kv" id="thrKV"></div>
+<div id="thrChart"></div>
+<p class="note" id="thrNote"></p>
+<h2>Active faults (GEM)</h2>
+<div class="kv" id="faultKV"></div>
+<p class="note" id="ctxNote"></p>
+</section>
+
+<section class="pane" id="p-val" role="tabpanel" hidden>
+<h2>Status</h2>
+<div class="kv" id="valKV"></div>
+<p class="note" id="valNote"></p>
+<h2>Verification: does the code solve its equations?</h2>
+<div class="scroll glass"><table><thead><tr><th>Test</th><th>Expected</th><th>Got</th><th></th></tr></thead><tbody id="valTests"></tbody></table></div>
+<h2 class="gil">Validation: does it match observations?</h2>
+<div class="scroll glass gil"><table><thead><tr><th>Predictor vs 17 inventory points</th><th>AUC</th><th>95 %</th></tr></thead><tbody id="valRoc"></tbody></table></div>
+<div class="lg gil" id="valObs"></div>
+<h2>Hourly rain, soil water and snowmelt</h2>
+<p class="note" id="hrNote"></p>
+<div class="scroll glass"><table><thead><tr><th>Predictor (rain-type reports)</th><th>AUC</th><th>Threshold</th><th>Hits</th><th>False alarms</th></tr></thead><tbody id="hrTab"></tbody></table></div>
+<div class="kv" id="hrMod"></div>
+<h2 class="gil">Replays of reported landslides</h2>
+<div class="kv gil" id="valEvSum"></div>
+<div class="scroll glass gil"><table><thead><tr><th>Date</th><th>Type · size</th><th>Peak m/s</th><th>Reached</th></tr></thead><tbody id="valEv"></tbody></table></div>
+<p class="note gil" id="valEvNote"></p>
+<h2>Sentinel-2 scars and calibration</h2>
+<div class="kv" id="valCal"></div>
+<p class="note" id="valCalNote"></p>
+<h2 class="gil">Modelled impact of the reconstructions against recorded casualties</h2>
+<div class="scroll glass gil"><table><thead><tr><th>Date</th><th>Type</th><th>Recorded deaths / injuries</th><th>Buildings reached</th><th>People in them</th><th>Road blocked (km)</th><th>Loss (million PKR)</th></tr></thead><tbody id="valImp"></tbody></table></div>
+<p class="note gil" id="valImpNote"></p>
+<h2 class="gil">Run-out against published relations</h2>
+<div class="scroll glass gil"><table><thead><tr><th>Site</th><th>Volume</th><th>L</th><th>H</th><th>H/L</th><th>vs debris flow</th></tr></thead><tbody id="valFlow"></tbody></table></div>
+<p class="note gil" id="valRock"></p>
+<h2 class="gil">Discrete-element mode: feasibility</h2>
+<div class="kv gil" id="valBench"></div>
+<h2>Not validated</h2>
+<ul class="note" id="valGaps" style="padding-left:1.2rem;display:grid;gap:4px"></ul>
+</section>
+
+<section class="pane" id="p-data" role="tabpanel" hidden>
+<h2>Module status</h2>
+<div class="scroll glass"><table><thead><tr><th>Module</th><th>State</th></tr></thead><tbody id="modBody"></tbody></table></div>
+<p class="note">Status follows <code>configs/gilgit_demo.yaml</code> and the data check. A module stays off until its required inputs exist.</p>
+</section>
+<div class="cards" id="cards"></div>
+</aside>
+
+<main class="stage glass">
+<div class="mapbox" id="mapbox">
+<div id="map"></div>
+<canvas id="rain"></canvas>
+<div class="ctl"><button id="z-fit" aria-label="Back to the area of interest" title="Back to the area of interest">⌂</button><button id="z-pk" aria-label="Whole of Pakistan" title="Whole of Pakistan" style="font-size:.7rem;margin-left:6px">PK</button></div>
+<div class="hud" id="hud" hidden>
+<div class="hudhead"><span class="pill" id="hphase">Rainfall</span><b id="hsite" style="font:600 .85rem var(--display)">Site 1</b><button class="run sec" id="hclose">Back to overview</button></div>
+<div class="prog"><i id="hbar"></i></div>
+<div class="hr" id="hevt" style="color:var(--fg)"></div>
+<div id="hchart"></div>
+<div class="hr" id="hread"></div>
+<div class="seg" id="hview" hidden><button data-v="deposit" aria-pressed="true">Deposit</button><button data-v="speed" aria-pressed="false">Peak speed</button><button data-v="depth" aria-pressed="false">Peak depth</button><button data-v="press" aria-pressed="false">Impact</button></div>
+<div class="sl" id="htlwrap" hidden><label for="htl">Timeline</label><b id="htlv">0 s</b><input id="htl" type="range" min="0" max="0" step="1" value="0"></div>
+<div class="hleg" id="hleg"></div>
+<div class="btnrow"><button class="run" id="hplay">Pause</button><button class="run sec" id="hskip">Skip to aftermath</button><button class="run sec" id="hreplay">Replay</button><button class="run sec" id="hens" disabled>Uncertainty (12 runs)</button><button class="run sec" id="hdam" hidden>Breach flood</button><button class="run sec" id="hprob" hidden>Show single run</button><button class="run sec" id="himp" hidden>Impact assessment</button></div>
+</div>
+<div class="tokenbox" id="tokenbox" hidden></div>
+</div>
+<div class="mapbar"><span id="coord">hover the map</span><span id="engine"></span></div>
+</main>
+</div>
+
+</div>
+
+<script>
+const D=__DATA__;
+const S=D.stats,[X0,Y0,X1,Y1]=S.bounds,WID=X1-X0,HGT=Y1-Y0;
+const NAMES=['Low','Moderate','High','Very high'],RANGES=['under 15 %','15–35 %','35–70 %','70 % and above'],COL=['#60a06e','#dec454','#de7e34','#b02828'];
+const fmt=(n,d=0)=>n.toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d});
+const evDate=s=>{const n=Number(s);const d=isFinite(n)?new Date(n*1000):new Date(s);return isNaN(d)?'unknown':d.toISOString().slice(0,10)};
+const el=id=>document.getElementById(id);
+const dec=b64=>Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+const SOILC=D.soil_c?dec(D.soil_c):null,SOILP=D.soil_p?dec(D.soil_p):null,ASP=dec(D.aspect),TPI=dec(D.tpi),SITE=dec(D.site),SL=dec(D.slope_deg),NC=D.w*D.h,LC=dec(D.lc),BLD=(D.bld_scale>1?Float32Array.from(dec(D.bld),v=>v*D.bld_scale):dec(D.bld)),POP=dec(D.pop),POPD=D.pop_scale||10,SHK=D.shake.map(e=>dec(e.pga));
+const CELLKM2=(D.cell_m/1000)**2;
+const val=id=>parseFloat(el(id).value);
+function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
+function loadCSS(h){const l=document.createElement('link');l.rel='stylesheet';l.href=h;document.head.appendChild(l)}
+
+// ---------- tabs and side panels
+const tabs=[...document.querySelectorAll('.tab')];
+tabs.forEach(t=>t.addEventListener('click',()=>{tabs.forEach(x=>x.setAttribute('aria-selected',x===t));document.querySelectorAll('.pane').forEach(p=>p.hidden=p.id!=='p-'+t.dataset.p)}));
+el('demNote').textContent=`National 30 m surface model (Copernicus GLO-30 based)${S.res>30?', averaged to '+fmt(S.res,0)+' m for this large area':''}. Buildings and trees affect slope. Cells outside the drawn area are left out.`;
+el('terrainKV').innerHTML=[['Valid area',fmt(S.area_km2)+' km²'],['Grid',S.W+' × '+S.H+' cells'],['Cell size',fmt(S.res,1)+' m'],['Elevation',fmt(S.zmin)+'–'+fmt(S.zmax)+' m'],['Mean elevation',fmt(S.zmean)+' m'],['Mean slope',fmt(S.slope_mean_pct)+' %'],['CRS','EPSG:32643']].map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('');
+const mx=Math.max(...S.cls_pct);
+el('slopeLegend').innerHTML=S.cls_pct.map((p,k)=>`<div class="lgi"><i class="sw" style="background:${COL[k]}"></i><span>${NAMES[k]} <small style="color:var(--muted)">· slope ${RANGES[k]}</small></span><b style="font:500 .85rem var(--mono)">${fmt(p,1)} %</b><div class="bar"><i style="width:${p/mx*100}%;background:${COL[k]}"></i></div></div>`).join('');
+const inside=D.pts.filter(p=>p.inside);
+const cnt={};inside.forEach(p=>{const t=(p.trig||'unknown').toLowerCase();const g=/rain|downpour|monsoon|flood/.test(t)?'Rain or monsoon':/earthquake/.test(t)?'Earthquake':'Other or unknown';cnt[g]=(cnt[g]||0)+1});
+el('evKV').innerHTML=`<span>Inventory points in extent</span><b>${inside.length}</b><span>Within 50 km</span><b>${D.pts.length}</b><span>All Pakistan reports</span><b>${(D.allpts||D.pts).length}</b>`+Object.entries(cnt).map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('')+`<span>USGS events in extent</span><b>${D.qs.length}</b>`;
+void 0;
+const MODS=[['Terrain layers','on','DEM, slope, aspect ready'],['Screening (slope + lithology)','part','Uses placeholder lithology ratings pending expert review'],['Basemap and 3D terrain (Mapbox GL / MapLibre GL)','on','WebGL map with live tiles and terrain'],['Rainfall scenario simulation','part','Runs on assumed soil strength, not measurements'],['Site replay: debris flow and rockfall','part','Illustrative models, not calibrated'],['Embedding scar similarity','part','Template from 17 report points, tested by leave-one-out'],['Exposure (buildings, population)','part','Counted per simulation, not damage or loss'],['ML susceptibility','off','Needs a larger inventory'],
+['Rainfall stability with real forcing','off','Needs rainfall history and measured soil strength'],['Earthquake shaking (ShakeMap PGA)','part','Real PGA grids; pseudostatic only'],['Earthquake displacement (Newmark)','off','Needs yield acceleration from measured strength'],['Runout calibration','off','Needs mapped release and deposit polygons'],['Sediment','off','Needs river discharge and bed grain size']];
+el('modBody').innerHTML=MODS.map(([n,s,d])=>`<tr><td>${n}<br><small style="color:var(--muted)">${d}</small></td><td><span class="st ${s}">${{on:'ready',part:'partial',off:'needs data'}[s]}</span></td></tr>`).join('');
+el('cards').innerHTML=[[fmt(S.cls_pct[2]+S.cls_pct[3],0)+' %','of cells steeper than 35 % slope'],[inside.length+' of '+D.pts.length,'inventory points in extent vs within 50 km'],[D.qs.length+' of '+fmt(S.eq_total),'USGS events in extent vs catalogue'],[fmt(D.bld_total),'Open Buildings footprints (confidence 0.7+)'],[fmt(D.pop_total/1000)+'k','people, WorldPop 2020 (rescaled)']].map(([b,s])=>`<div class="card glass"><b>${b}</b><span>${s}</span></div>`).join('');
+
+// ---------- statistics
+const LCCOL={1:'#006400',2:'#ffbb22',3:'#ffff4c',4:'#f096ff',5:'#fa0000',6:'#b4b4b4',7:'#f0f0f0',8:'#0064c8',9:'#0096a0',10:'#fae6a0'};
+const LCNAME={1:'Tree cover',2:'Shrubland',3:'Grassland',4:'Cropland',5:'Built-up',6:'Bare / sparse vegetation',7:'Snow and ice',8:'Open water',9:'Herbaceous wetland',10:'Moss and lichen'};
+const LITNAME={su:'Unconsolidated sediments',ss:'Siliciclastic sedimentary',sm:'Mixed sedimentary',sc:'Carbonate sedimentary',py:'Pyroclastics',va:'Acid volcanics',vi:'Intermediate volcanics',vb:'Basic volcanics',pa:'Acid plutonics',pi:'Intermediate plutonics',pb:'Basic plutonics',mt:'Metamorphics',ev:'Evaporites',wb:'Water bodies',ig:'Ice and glaciers',nd:'No data'};
+const LITRANK={su:5,ss:3,sm:3,sc:2,py:4,va:2,vi:2,vb:2,pa:1,pi:1,pb:1,mt:3,ev:3};
+el('baseNote').textContent='Overlay: screening classes from slope and GLiM lithology. Grey cells have no lithology rating.';
+el('mapLegend').innerHTML=D.scr_pct.map((p,k)=>`<div class="lgi"><i class="sw" style="background:${COL[k]}"></i><span>${NAMES[k]}</span><b style="font:500 .82rem var(--mono)">${fmt(p,1)} %</b></div>`).join('')+`<div class="lgi"><i class="sw" style="background:#6e7880"></i><span>No lithology rating</span><b style="font:500 .82rem var(--mono)">${fmt(D.unk_pct,1)} %</b></div>`;
+const smx=Math.max(...D.scr_pct);
+el('legend').innerHTML=D.scr_pct.map((p,k)=>`<div class="lgi"><i class="sw" style="background:${COL[k]}"></i><span>${NAMES[k]}</span><b style="font:500 .85rem var(--mono)">${fmt(p,1)} %</b><div class="bar"><i style="width:${p/smx*100}%;background:${COL[k]}"></i></div></div>`).join('');
+const V=D.scr_val;
+el('scrKV').innerHTML=[['Cells with a rating',fmt(100-D.unk_pct,1)+' %'],['Inventory points scored',V.n+' of '+inside.length],['Median rank, slope + lithology',V.median==null?'n/a':fmt(V.median*100)+' / 100'],['Median rank, slope only',V.slope_median==null?'n/a':fmt(V.slope_median*100)+' / 100'],['Points in unrated cells',V.in_unknown]].map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('');
+el('scrNote').textContent='Score = 0.6 × slope class + 0.4 × lithology rank, cut at 0.25, 0.5 and 0.75, from legacy_susceptibility.yaml. Those lithology ratings are placeholders waiting for an engineering geologist. GLiM is a 1:3.75 million map, so its boundaries are coarse; cells with no lithology data show grey, never "low". This is a relative screening score, not a probability, and the inventory ranks above (50 is chance) show how the points score, not that the score predicts landslides.';
+const lmax=Math.max(...Object.values(D.lit_area));
+el('litLegend').innerHTML=Object.entries(D.lit_area).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="lgi"><i class="sw" style="background:${LITRANK[k]?COL[Math.min(3,Math.round((LITRANK[k]-1)*.75))]:'#6e7880'}"></i><span>${LITNAME[k]||k} <small style="color:var(--muted)">· ${LITRANK[k]?'rank '+LITRANK[k]:'unrated'}</small></span><b style="font:500 .82rem var(--mono)">${fmt(v)} km²</b><div class="bar"><i style="width:${v/lmax*100}%;background:#8b7cf6"></i></div></div>`).join('');
+const EM=D.emb;
+if(!EM){el('embKV').innerHTML='<span>Not computed</span><b>—</b>';el('embNote').textContent='Embedding similarity needs the satellite layers and at least 3 report points in the area.'}else{
+el('embKV').innerHTML=[['Template points',EM.n_template],['Held-out tests',EM.loo_n],['Median rank of held-out point',fmt(EM.loo_median*100)+' / 100'],['In the top 10 %',fmt(EM.loo_hit_top10*100)+' %'],['In the top 25 %',fmt(EM.loo_hit_top25*100)+' %'],['Slope-only median rank',fmt(EM.slope_median*100)+' / 100']].map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('');
+el('embNote').textContent='Each inventory point was hidden in turn, the template built from points more than 800 m away, and the hidden point ranked against every cell (50 is chance). Where the report points rank high on embedding similarity but low on slope (as in Gilgit), they are reports from valleys, roads and settlements, so the embedding is likely describing that setting rather than scars. This is a lead for review, not a validated predictor.';}
+const lcTot=Object.values(D.lc_area).reduce((a,b)=>a+b,0),lcMax=Math.max(...Object.values(D.lc_area));
+el('lcLegend').innerHTML=Object.entries(D.lc_area).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="lgi"><i class="sw" style="background:${LCCOL[k/10]}"></i><span>${LCNAME[k/10]||k}</span><b style="font:500 .82rem var(--mono)">${fmt(v/lcTot*100,1)} %</b><div class="bar"><i style="width:${v/lcMax*100}%;background:${LCCOL[k/10]}"></i></div></div>`).join('');
+const bsl=[0,0,0,0];let bsum=0;for(let i=0;i<NC;i++)if(BLD[i]&&SL[i]!==255){const sp=Math.tan(SL[i]*Math.PI/180)*100;bsl[sp<15?0:sp<35?1:sp<70?2:3]+=BLD[i];bsum+=BLD[i]}
+const bmax=Math.max(...bsl);
+el('bslope').innerHTML=bsl.map((n,k)=>`<div class="lgi"><i class="sw" style="background:${COL[k]}"></i><span>${NAMES[k]} <small style="color:var(--muted)">· slope ${RANGES[k]}</small></span><b style="font:500 .82rem var(--mono)">${fmt(n)}</b><div class="bar"><i style="width:${n/bmax*100}%;background:${COL[k]}"></i></div></div>`).join('');
+el('expKV').innerHTML=[['Buildings (conf. 0.7+)',D.bld_skipped?'not counted (large area)':fmt(D.bld_total)],['On slopes over 35 %',fmt((bsl[2]+bsl[3])/bsum*100,1)+' %'],['People, WorldPop 2020',fmt(D.pop_total)],['Built-up land',fmt((D.lc_area['50']||0),1)+' km²']].map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('');
+const RR=D.rain;
+el('rainKV').innerHTML=[['Record',RR.first.slice(0,4)+'–'+RR.last.slice(0,4)],['Largest day (area mean)',RR.max1+' mm · '+RR.max1_date],['Largest 3 days',RR.max3+' mm'],['Largest 7 days',RR.max7+' mm'],['Wet-day 99th percentile',RR.p99_wet+' mm'],['Share of days over 1 mm',fmt(RR.wet_frac*100,1)+' %']].map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('');
+(function(){const w=300,h=110,pl=28,pb=16,n=RR.annmax.length,mxv=Math.max(...RR.annmax),bw=(w-pl)/n;
+ const bars=RR.annmax.map((v,i)=>`<rect x="${pl+i*bw+.5}" y="${h-pb-(v/mxv)*(h-pb-8)}" width="${bw-1}" height="${(v/mxv)*(h-pb-8)}" fill="#2fd0d6"/>`).join('');
+ const mm=Math.max(...RR.monthly),bw2=(w-pl)/12,mon=RR.monthly.map((v,i)=>`<rect x="${pl+i*bw2+2}" y="${h-pb-(v/mm)*(h-pb-8)}" width="${bw2-4}" height="${(v/mm)*(h-pb-8)}" fill="#8b7cf6"/><text x="${pl+i*bw2+bw2/2}" y="${h-3}" font-size="8" fill="#8da0ac" text-anchor="middle">${'JFMAMJJASOND'[i]}</text>`).join('');
+ const ax=(m)=>`<text x="${pl-4}" y="12" font-size="8" fill="#8da0ac" text-anchor="end">${fmt(m)}</text><text x="${pl-4}" y="${h-pb}" font-size="8" fill="#8da0ac" text-anchor="end">0</text><line x1="${pl}" y1="${h-pb}" x2="${w}" y2="${h-pb}" stroke="#24323c"/>`;
+ el('rainChart').innerHTML=`<div style="font-size:.76rem;color:var(--muted)">Highest daily rain each year (mm)</div><svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Annual maximum daily rainfall">${ax(mxv)}${bars}<text x="${pl}" y="${h-3}" font-size="8" fill="#8da0ac">${RR.years[0]}</text><text x="${w}" y="${h-3}" font-size="8" fill="#8da0ac" text-anchor="end">${RR.years[n-1]}</text></svg><div style="font-size:.76rem;color:var(--muted);margin-top:8px">Mean monthly rain (mm)</div><svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Monthly rainfall">${ax(mm)}${mon}</svg>`})();
+el('faultKV').innerHTML=`<span>Mapped in extent</span><b>${D.faults.length}</b><span>Within 50 km</span><b>${D.faults_near}</b>`+D.faults.map(f=>`<span>${f.name} · ${f.slip.toLowerCase()}</span><b>${f.km} km</b>`).join('');
+el('expKV').innerHTML+=`<span>Crest cells (shaking amplified)</span><b>${fmt(D.amp_stats.crest_pct,1)} %</b><span>Unconsolidated-sediment cells</span><b>${fmt(D.amp_stats.soft_pct,1)} %</b>`;
+el('ctxNote').textContent='The GEM catalogue does not map every fault, so a missing fault is a coverage gap and not evidence that the area is quiet. CHIRPS is a 0.05° area mean, which understates point rainfall in the mountains. WorldPop and building counts show where people are, not what a landslide would damage.';
+const evLabel=e=>`${e.date} · M${e.mag} · ${e.place}`;
+D.shake.forEach((e,i)=>{const o=document.createElement('option');o.value=i;o.textContent=(e.recent?'Most recent · ':'')+evLabel(e);el('s-eq').insertBefore(o,el('s-eq').lastChild)});el('s-eq').value=D.shake.length?'0':'-2';
+el('shBody').innerHTML=D.shake.map(e=>`<tr><td>${e.date}${e.recent?' <small style="color:var(--cyan)">most recent</small>':''}</td><td>${e.mag}</td><td>${e.pga_mean} / ${e.pga_max} %g</td></tr>`).join('')||'<tr><td colspan="3">No ShakeMap grids downloaded</td></tr>';
+
+// ---------- historical landslide events (reported by NASA COOLR) rebuilt on the terrain
+const isoOf=v=>{const n=Number(v);const d=isFinite(n)?new Date(n>1e11?n:n*1000):new Date(v);return isNaN(d)?'':d.toISOString().slice(0,10)};
+const SIZE_V={unknown:3e4,small:3e3,medium:3e4,large:3e5,very_large:3e6,catastrophic:3e7};                 // order-of-magnitude volume per size class (assumed)
+const SIZE_ROCK={unknown:[24,1.2],small:[14,.8],medium:[28,1.4],large:[45,2.2],very_large:[60,3],catastrophic:[80,4]};   // blocks and diameter (assumed)
+const TYPE_MODE={rock_fall:'rock',debris_flow:'slide',mudslide:'slide',landslide:'slide',complex:'both'};
+const TYPE_MU={rock_fall:.25,debris_flow:.12,mudslide:.1,landslide:.22,complex:.2};                         // basal friction by type (assumed)
+const ACC_M={exact:250,'1km':1000,'5km':5000,'10km':10000,'25km':25000,unknown:5000};
+const EVENTS=D.pts.filter(p=>p.inside).map((p,i)=>Object.assign({idx:i,iso:isoOf(p.date)},p)).sort((a,b)=>a.iso<b.iso?1:-1);
+const CHD=D.chirps?new Uint16Array(dec(D.chirps.v).buffer):null,CH0=D.chirps?Date.parse(D.chirps.start):0;
+function chirpsWindow(iso,n){if(!CHD)return null;const di=Math.round((Date.parse(iso)-CH0)/86400000);if(di<n||di>=CHD.length)return null;const a=[];for(let k=n-1;k>=0;k--)a.push(CHD[di-k]/10);return a}
+function shakeFor(iso){let best=-1,bd=9;D.shake.forEach((e,i)=>{const d=Math.abs(Date.parse(e.date)-Date.parse(iso))/86400000;if(d<bd){bd=d;best=i}});return bd<=1.01?best:-1}
+el('evList').innerHTML=EVENTS.map(e=>`<div class="evrow"><div><b>${e.iso}</b> · ${e.cat.replace('_',' ')}<br><small style="color:var(--muted)">${e.trig} · size ${e.size.replace('_',' ')} · position ${e.acc}${e.loc&&e.loc!=='None'?' · '+e.loc:''}</small></div><button class="chip" data-e="${e.idx}">Replay</button></div>`).join('');
+if(!EVENTS.length)el('evList').innerHTML='<p class="note">No reported landslides fall inside this area. All reports in Pakistan are shown on the map in grey: click one to fetch an area around it.</p>';
+el('evList').addEventListener('click',ev=>{const b=ev.target.closest('button[data-e]');if(b)startEvent(parseInt(b.dataset.e))});
+
+// ---------- validation tab
+(function(){const V=D.validation;if(!V){el('valNote').textContent='No validation results were found. Run scripts/validate_simulation.py, then rebuild the page.';return}
+ const S0=V.summary,E=V.empirical,ok=t=>t.pass?'<span class="st on">pass</span>':'<span class="st off" style="color:#e58a8a">FAIL</span>';
+ el('valKV').innerHTML=[['Verification tests passed',S0.verification_passed+' of '+S0.verification_total],['Validation status','screening only'],['Observations used',E.n_inventory+' inventory points, CHIRPS, ShakeMap, published run-out relations']].map(([k,v])=>`<span>${k}</span><b style="text-align:right">${v}</b>`).join('');
+ el('valNote').textContent=((D.aoi&&D.aoi.id&&D.aoi.id!=='gilgit')?'The verification tests were run on the Gilgit build of this same code. The checks against observations (report points, rain, reconstructions, run-out) were computed for the Gilgit sample only and are hidden here; the soil calibration below is computed for this area. ':'')+'Verified means the code reproduces analytic results and conserves mass. It does not mean the model predicts real landslides. Against the little observed data held locally the scenario simulation shows no skill, so its output stays labelled as a demonstration.';
+ el('valTests').innerHTML=V.tests.map(t=>`<tr><td>${t.id} · ${t.name}<br><small style="color:var(--muted)">${t.tol} · ${t.note||''}</small></td><td>${t.expected}</td><td>${typeof t.got==='number'?+t.got.toPrecision(3):t.got}</td><td>${ok(t)}</td></tr>`).join('');
+ el('valRoc').innerHTML=E.roc.map(r=>`<tr><td>${r.name}${r.failing_cells?`<br><small style="color:var(--muted)">${fmt(r.failing_cells)} failing cells</small>`:''}</td><td>${r.auc==null?'n/a':r.auc.toFixed(2)}</td><td>${r.lo==null?'':r.lo.toFixed(2)+'–'+r.hi.toFixed(2)}</td></tr>`).join('');
+ const rw=E.rain,w3=rw.w3||{},w1=rw.w1||{},q=E.quakes.matched||[];
+ el('valObs').innerHTML=[`<div style="font-size:.84rem"><b>Rain on event dates.</b> ${rw.n} rain-triggered reports. Median 3-day rain at the event ${w3.median_event} mm against ${w3.median_season} mm on a typical June to September day (p = ${w3.p_value}). ${fmt((w3.pod_p90||0)*100)} % of events were at or above the 90th percentile. The default scenario uses ${rw.scenario_mm} mm, while the largest area-mean 3 days on record is ${rw.record_max_3d} mm.</div>`,
+ `<div style="font-size:.84rem"><b>Shaking at earthquake reports.</b> ${q.length?q.map(x=>`${x.date}: ${x.pga_at_report} %g at the report, higher than ${x.pct_of_area} % of the area`).join('; '):'No report matched a downloaded ShakeMap.'}. Shaking at the reports was not unusual for the area, and the pseudostatic model has no topographic amplification.</div>`].join('');
+ el('valFlow').innerHTML=E.flow.map(f=>`<tr><td>${f.site}</td><td>${fmt(f.volume_m3)} m³</td><td>${fmt(f.L_m)} m</td><td>${fmt(f.H_m)} m</td><td>${f.HL}</td><td>${f.H_ratio_debris}×</td></tr>`).join('');
+ const rk=E.rock;el('valRock').textContent=`Debris flow: ratio to the Corominas (1996) height-length fit, 1 is a match. Rockfall: ${rk.n} blocks, reach angle median ${rk.median_deg}° (10th to 90th percentile ${rk.p10_deg}° to ${rk.p90_deg}°), ${fmt(rk.below27_5*100)} % below 27.5°, ${fmt(rk.within_factor2*100)} % within a factor of 2 of the rockfall relation. The friction, drag and bounce values were tuned to give plausible speeds, so this agreement is partly by construction.`;
+ (function(){const H=D.hourly;if(!H){el('hrNote').textContent='Run scripts/download_hourly_climate.py and analyze_hourly_climate.py to add this section.';return}
+  const G=H.groups['rain-type triggers'];
+  el('hrNote').textContent=`ERA5-Land hourly (about 9 km) at ${H.n_reports} Pakistan landslide reports, compared with ${H.n_controls} no-report windows at the same places and season in other years. These are Pakistan-wide, not Gilgit-only, and 9 km reanalysis smooths short bursts, so intensity over 1 to 6 hours is weak. Rain accumulated over the previous 7 days is the best single predictor.`;
+  el('hrTab').innerHTML=G.rows.map(r=>`<tr><td>${r.feature}</td><td>${r.auc.toFixed(2)}</td><td>${r.threshold}</td><td>${fmt(r.pod*100,0)} %</td><td>${fmt(r.pofd*100,0)} %</td></tr>`).join('');
+  const M=H.models['rain-type triggers'];el('hrMod').innerHTML=Object.keys(M).map(k=>`<span>${k} (cross-validated AUC)</span><b style="text-align:right">${M[k].toFixed(2)}</b>`).join('')})();
+ (function(){const E=V.empirical.events,ES=V.empirical.events_summary;if(!E){el('valEvNote').textContent='Run scripts/validate_simulation.py to add this section.';return}
+  el('valEvSum').innerHTML=[['Reported landslides rebuilt',ES.n],['Reached the reported place',ES.reached+' of '+ES.n+' (not independent)'],['Median peak flow speed',ES.median_flow_vmax+' m/s'],['Median fastest block',ES.median_rock_vmax+' m/s'],['Fall height vs Corominas (1996), median ratio',ES.median_H_ratio+' ('+fmt((ES.within_factor3||0)*100)+' % within ×3)']].map(([k,v])=>`<span>${k}</span><b style="text-align:right">${v}</b>`).join('');
+  el('valEv').innerHTML=E.map(e=>`<tr><td>${e.iso}</td><td>${e.cat.replace('_',' ')} · ${e.size.replace('_',' ')}</td><td>${e.mode==='rock'?(e.rock_vmax.toFixed(1)+' rock'):e.vmax.toFixed(1)}</td><td>${e.reach?'yes':'no'}</td></tr>`).join('');
+  el('valEvNote').textContent='The release zone is placed uphill of the reported point, so reaching that point is partly built in. Reports are rounded to a village or several kilometres, so '+ES.tolerance_limited+' of '+ES.n+' cannot be tested at their stated accuracy inside a 6.4 km window. No reported event has a mapped deposit or measured speed, so speed and run-out are checked only against general published relations.'})();
+ (function(){const E=V.empirical.events_impact;if(!E){el('valImpNote').textContent='Run scripts/validate_simulation.py to add this section.';return}
+  el('valImp').innerHTML=E.map(e=>`<tr><td>${e.iso}</td><td>${e.cat.replace('_',' ')}</td><td>${e.fat==null?'—':e.fat} / ${e.inj==null?'—':e.inj}</td><td>${e.affected==null?'n/a':fmt(e.affected)}</td><td>${e.people==null?'n/a':fmt(e.people)}</td><td>${fmt(e.blockedKm,2)}</td><td>${fmt(e.loss/1e6,1)}</td></tr>`).join('');
+  const w=E.filter(e=>e.fat!=null),nf=w.filter(e=>e.fat>0).length;el('valImpNote').textContent=`${w.length} of ${E.length} reports record a death count and ${nf} of them record any deaths, so there is almost nothing to test the modelled damage against. The records hold no property, road or loss figures at all. The table shows what the assumed damage functions give for each reconstruction; it is not a validation.`})();
+ (function(){const C=D.calib;if(!C){el('valCalNote').textContent='Run scripts/download_s2_change.py and scripts/calibrate_stability.py to add this section.';return}
+  const cb=C.calibration,f2=x=>x==null||!isFinite(x)?'n/a':x.toFixed(2);
+  if(!cb){el('valCal').innerHTML=[['Scar candidates 2017–2020',fmt(C.windows.A.scar_km2,1)+' km²'],['Scar candidates 2020–2024',fmt(C.windows.B.scar_km2,1)+' km²']].map(([k,v])=>`<span>${k}</span><b style="text-align:right">${v}</b>`).join('');el('valCalNote').textContent='The soil calibration was not run for this area: it needs enough scar candidates (at least 20 coarse cells in each window) and soil-covered cells.';return}
+  el('valCal').innerHTML=[['Scar candidates 2017–2020',fmt(C.windows.A.scar_km2,1)+' km²'],['Scar candidates 2020–2024',fmt(C.windows.B.scar_km2,1)+' km²'],['Inventory points near a candidate',fmt(C.inventory_vs_candidates.A.points_near_candidate*100)+' % / '+fmt(C.inventory_vs_candidates.B.points_near_candidate*100)+' % (area share '+fmt(C.inventory_vs_candidates.A.area_share*100)+' % / '+fmt(C.inventory_vs_candidates.B.area_share*100)+' %)'],
+   ['Slope alone: train / new ground / new window AUC',f2(cb.slope_only.auc_train)+' / '+f2(cb.slope_only.auc_test_new_ground)+' / '+f2(cb.slope_only.auc_test_new_window)],
+   ['Default soil: train / new ground / new window',f2(cb.default.auc_train)+' / '+f2(cb.default.auc_test_new_ground)+' / '+f2(cb.default.auc_test_new_window)],
+   ['Calibrated soil: train / new ground / new window',f2(cb.best.auc_train)+' / '+f2(cb.best.auc_test_new_ground)+' / '+f2(cb.best.auc_test_new_window)],
+   ['Best parameters (depth, cohesion, friction, saturation, storm)',cb.best.theta.join(', ')]].map(([k,v])=>`<span>${k}</span><b style="text-align:right">${v}</b>`).join('');
+  el('valCalNote').textContent=`${cb.n_samples} Latin-hypercube draws. Trained on 2017–2020 scars in half of 36 map blocks; tested on 2020–2024 scars on the other blocks (different ground and window) and on the same blocks (different window). The scars are candidates mapped by change detection, not field-confirmed, so these scores measure agreement with Sentinel-2 change, not with true landslides. Top 5 % of draws span: ${Object.entries(cb.top5pct_ranges).map(([k,v])=>k.replace(/_/g,' ')+' '+v[0]+'–'+v[1]).join('; ')}.`})();
+ el('valBench').innerHTML=V.bench.map(b=>`<span>${fmt(b.N)} particles</span><b>${b.ms_per_step.toFixed(1)} ms / step</b>`).join('');
+ el('valGaps').innerHTML=['No mapped deposit or scar polygons, so run-out extent and depth cannot be scored.','Soil strength, depth and groundwater are assumed, so absolute failure probability is unvalidated.','Report positions are rounded and clustered near roads and settlements. With so few points the intervals above are optimistic.','Debris-flow and rockfall parameters are not calibrated to any event.'].map(t=>`<li>${t}</li>`).join('')})();
+
+// ---------- rainfall intensity-duration threshold
+function thrAt(dDays){const P=D.rthr.per;if(dDays<=P[0].d)return P[0].thr;for(let k=1;k<P.length;k++){if(dDays<=P[k].d){const a=P[k-1],b=P[k],t=(Math.log(dDays)-Math.log(a.d))/(Math.log(b.d)-Math.log(a.d));return Math.exp(Math.log(a.thr)*(1-t)+Math.log(b.thr)*t)}}return P[P.length-1].thr}
+function drawThr(){const T=D.rthr;if(!T)return;const w=300,h=170,pl=34,pb=22,pt=8,pr=8,x0=Math.log10(.04),x1=Math.log10(12),y0=Math.log10(.05),y1=Math.log10(400);
+ const X=d=>pl+(Math.log10(d)-x0)/(x1-x0)*(w-pl-pr),Y=i=>h-pb-(Math.log10(Math.max(i,.05))-y0)/(y1-y0)*(h-pb-pt);
+ let g='';[.1,1,10].forEach(d=>g+=`<line x1="${X(d)}" y1="${pt}" x2="${X(d)}" y2="${h-pb}" stroke="#24323c"/><text x="${X(d)}" y="${h-8}" font-size="8" fill="#8da0ac" text-anchor="middle">${d} d</text>`);
+ [.1,1,10,100].forEach(i=>g+=`<line x1="${pl}" y1="${Y(i)}" x2="${w-pr}" y2="${Y(i)}" stroke="#24323c"/><text x="${pl-3}" y="${Y(i)+3}" font-size="8" fill="#8da0ac" text-anchor="end">${i}</text>`);
+ const ds=[.04,...T.per.map(r=>r.d),12];const line=`<polyline points="${ds.map(d=>X(d)+','+Y(thrAt(d))).join(' ')}" fill="none" stroke="#e6b84a" stroke-width="1.6"/>`;
+ const pts=T.events.map(e=>T.durations.map(d=>`<circle cx="${X(d)}" cy="${Y(e.I[d])}" r="2.2" fill="#2fd0d6" opacity=".75"/>`).join('')).join('');
+ const Dd=Math.max(.04,val('s-dur')/24),Is=val('s-int')*24;const sc=`<circle cx="${X(Dd)}" cy="${Y(Is)}" r="4.5" fill="#d83a3a" stroke="#fff"/><text x="${X(Dd)+7}" y="${Y(Is)+3}" font-size="9" fill="#ffb3b3">scenario</text>`;
+ el('thrChart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Rainfall intensity-duration threshold">${g}${line}${pts}${sc}<text x="${(pl+w-pr)/2}" y="${h-0}" font-size="8" fill="#8da0ac" text-anchor="middle">duration (days)</text><text x="6" y="${pt+8}" font-size="8" fill="#8da0ac">mm/day</text></svg>`;
+ const above=Is>=thrAt(Dd);return above}
+(function(){const T=D.rthr;if(!T){return}
+ const B=T.per.find(r=>r.d===T.best_d);
+ el('thrKV').innerHTML=[['Rain-triggered event dates',T.n_events],['Best duration (highest AUC)',B.d+' days'],['Threshold at that duration',B.thr.toFixed(1)+' mm/day'],['AUC, event vs other days',B.auc.toFixed(2)],['Events above it',fmt(B.pod*100)+' %'],['Other season days above it',fmt(B.pofd*100)+' %'],['Days per year above it',fmt(T.exceed_days_per_year,1)]].map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('')+T.per.map(r=>`<span style="color:var(--muted)">${r.d}-day mean</span><b style="color:var(--muted)">≥ ${r.thr.toFixed(1)} mm/day · AUC ${r.auc.toFixed(2)}</b>`).join('');
+ el('thrNote').textContent='For each duration the threshold is the mean daily rain that best separates the report dates from other April to September days (largest true-positive rate minus false-positive rate). CHIRPS is a 0.05° area mean, so mountain rain is understated and thresholds are low. The inventory misses most landslides, so the false-positive rate is an upper bound on a true false-alarm rate. Thirteen events is a small sample: treat the thresholds as indicative.'})();
+
+// ---------- projection: WGS84 <-> UTM 43N (Krueger series)
+const UA=6378137,UF=1/298.257223563,UK0=.9996,UL0=((D.proj&&D.proj.lon0)||75)*Math.PI/180,UN=UF/(2-UF),UAA=UA/(1+UN)*(1+UN*UN/4+UN**4/64);
+const UAL=[UN/2-2*UN*UN/3+5*UN**3/16,13*UN*UN/48-3*UN**3/5,61*UN**3/240],UBE=[UN/2-2*UN*UN/3+37*UN**3/96,UN*UN/48+UN**3/15,17*UN**3/480],UDL=[2*UN-2*UN*UN/3-2*UN**3,7*UN*UN/3-8*UN**3/5,56*UN**3/15];
+function ll2utm(lon,lat){const p=lat*Math.PI/180,l=lon*Math.PI/180-UL0,q=2*Math.sqrt(UN)/(1+UN);
+ const t=Math.sinh(Math.atanh(Math.sin(p))-q*Math.atanh(q*Math.sin(p))),x0=Math.atan2(t,Math.cos(l)),h0=Math.atanh(Math.sin(l)/Math.sqrt(1+t*t));let x=x0,h=h0;
+ for(let j=1;j<=3;j++){x+=UAL[j-1]*Math.sin(2*j*x0)*Math.cosh(2*j*h0);h+=UAL[j-1]*Math.cos(2*j*x0)*Math.sinh(2*j*h0)}return[500000+UK0*UAA*h,UK0*UAA*x]}
+function utm2ll(E_,N_){const x=N_/(UK0*UAA),h=(E_-500000)/(UK0*UAA);let x1=x,h1=h;
+ for(let j=1;j<=3;j++){x1-=UBE[j-1]*Math.sin(2*j*x)*Math.cosh(2*j*h);h1-=UBE[j-1]*Math.cos(2*j*x)*Math.sinh(2*j*h)}
+ const ch=Math.asin(Math.sin(x1)/Math.cosh(h1));let p=ch;for(let j=1;j<=3;j++)p+=UDL[j-1]*Math.sin(2*j*ch);
+ return[(UL0+Math.atan2(Math.sinh(h1),Math.cos(x1)))*180/Math.PI,p*180/Math.PI]}
+const CORN=(x0,y0,x1,y1)=>[utm2ll(x0,y1),utm2ll(x1,y1),utm2ll(x1,y0),utm2ll(x0,y0)];   // top-left, top-right, bottom-right, bottom-left
+const AOI_C=CORN(X0,Y0,X1,Y1),uv2ll=(u,v)=>utm2ll(X0+u*WID,Y1-v*HGT);
+const AOI_B=[[Math.min(...AOI_C.map(c=>c[0])),Math.min(...AOI_C.map(c=>c[1]))],[Math.max(...AOI_C.map(c=>c[0])),Math.max(...AOI_C.map(c=>c[1]))]];
+
+// ---------- 2D scenario simulation (infinite slope + rain filling the soil, ensemble)
+const oc=document.createElement('canvas');oc.width=D.w;oc.height=D.h;
+let sim=null,frame=null,lastFlag=null,lastProb=null,curSites=[],timer=null;
+const GAM=18,GW=9.81,POR=.4,INF=.5,NMEM=40,ROOTC={1:5,2:3,3:2,4:1};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const sliders=[['s-int','v-int',v=>v+' mm/h'],['s-dur','v-dur',v=>v+' h'],['s-sat','v-sat',v=>fmt(v*100)+' %'],['s-z','v-z',v=>(+v).toFixed(1)+' m'],['s-c','v-c',v=>v+' kPa'],['s-phi','v-phi',v=>v+'°'],['s-ac','v-ac',v=>(+v).toFixed(2)+'×'],['s-as','v-as',v=>(+v).toFixed(2)+'×'],['s-pga','v-pga',v=>v+' %g'],['s-mag','v-mag',v=>(+v).toFixed(1)]];
+function clearOverlay(){oc.getContext('2d').clearRect(0,0,D.w,D.h);el('readout').textContent='';el('s-t').value=0;el('v-t').textContent='0 h';curSites=[];updateSiteMarkers();
+ el('sites').innerHTML='<span class="note" style="border:0;padding:0">Run the simulation to list the largest failure sites.</span>'}
+function stopPlay(){if(timer){clearInterval(timer);timer=null}el('b-play').textContent='Run simulation';rainOff()}
+sliders.forEach(([i,o,f])=>{const u=()=>el(o).textContent=f(el(i).value);el(i).addEventListener('input',()=>{u();sim=null;frame=null;stopPlay();clearOverlay();if(typeof drawThr==='function')drawThr()});u()});
+// shaking amplification: crests take the full crest factor, mid-slopes half of it, valleys none; soft ground and semi-soft ground take the full and half soft-ground factor
+function ampAt(ci){const ac=val('s-ac'),as_=val('s-as'),t=TPI[ci],g=SITE[ci];return(t===2?ac:t===1?1+(ac-1)*.5:1)*(g===2?as_:g===1?1+(as_-1)*.5:1)}
+function prepare(){const evi=quakeIdx();const rn=rng(7),z0=val('s-z'),c0=val('s-c'),p0=val('s-phi'),m0=val('s-sat');
+ const idx=[];for(let i=0;i<NC;i++){const s=SL[i];if(s===255)continue;const l=LC[i];if(s>=10&&s<=50&&l!==7&&l!==8&&l!==0)idx.push(i)}
+ const mem=[];for(let m=0;m<NMEM;m++)mem.push({z:z0*(1+(rn()*2-1)*.25),c:c0*(1+(rn()*2-1)*.25),p:p0+(rn()*2-1)*3});
+ let valid=0;for(let i=0;i<NC;i++)if(SL[i]!==255)valid++;
+ const cells=[],pc=[];let pre=0;
+ idx.forEach(ci=>{const b=SL[ci]*Math.PI/180,cs2=Math.cos(b)**2,sc=Math.sin(b)*Math.cos(b);let dry=0;const loc=new Float32Array(NMEM);const cf=SOILC&&SOILC[ci]!==255?SOILC[ci]/100:1,dp=SOILP&&SOILP[ci]!==255?SOILP[ci]/20-4:0;const rc=el('s-root').getAttribute('aria-pressed')==='true'?(ROOTC[LC[ci]]||0):0;const kh=evi>=0?.5*(SHK[evi][ci]===255?0:SHK[evi][ci]/1000)*ampAt(ci):evi===-2?.5*(val('s-pga')/100)*ampAt(ci):0;
+  mem.forEach((q,m)=>{const tt=Math.tan((q.p+dp)*Math.PI/180),qc=q.c*cf,den=GW*q.z*cs2*tt,mc0=(GAM*q.z*cs2*tt+qc+rc-GAM*q.z*sc)/den,mc=(GAM*q.z*cs2*tt+qc+rc-kh*GAM*q.z*sc*tt-GAM*q.z*sc-kh*GAM*q.z*cs2)/den;
+   if(mc0<=m0)dry++;let P=Infinity;if(mc<=m0)P=0;else if(mc<=1)P=(mc-m0)*POR*q.z*1000/INF;loc[m]=P});
+  if(dry/NMEM>=.5){pre++;return}cells.push(ci);pc.push(loc)});
+ sim={cells,pc,valid,pre,eligible:cells.length,T:trigRain()?val('s-dur'):1,I:trigRain()?val('s-int'):0,evi};el('s-t').max=sim.T}
+function near2(flag,x,y){for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<D.w&&yy<D.h&&flag[yy*D.w+xx])return true}return false}
+function renderAt(t){const P=sim.I*Math.min(t,sim.T);const ctx=oc.getContext('2d');const im=ctx.createImageData(D.w,D.h);const d=im.data;
+ const flag=new Uint8Array(NC),prob=new Float32Array(NC);let nf=0;
+ for(let j=0;j<sim.cells.length;j++){const loc=sim.pc[j];let n=0;for(let m=0;m<NMEM;m++)if(loc[m]<=P)n++;const p=n/NMEM;if(p>0){const ci=sim.cells[j];prob[ci]=p;
+  const o=ci*4,a=Math.min(255,60+p*195);d[o]=255;d[o+1]=Math.round(210-p*170);d[o+2]=Math.round(60-p*40);d[o+3]=p>=.5?a:Math.round(a*.45);if(p>=.5){flag[ci]=1;nf++}}}
+ ctx.putImageData(im,0,0);
+ const B=10,gw=Math.ceil(D.w/B),cl=new Map();
+ for(let ci=0;ci<NC;ci++)if(flag[ci]){const x=ci%D.w,y=(ci/D.w)|0,k=((y/B)|0)*gw+((x/B)|0);let q=cl.get(k);if(!q){q={n:0,sx:0,sy:0,pmax:0};cl.set(k,q)}q.n++;q.sx+=x;q.sy+=y;if(prob[ci]>q.pmax)q.pmax=prob[ci]}
+ const clusters=[...cl.values()].filter(q=>q.n>=3).map(q=>({u:(q.sx/q.n+.5)/D.w,v:(q.sy/q.n+.5)/D.h,n:q.n,pmax:q.pmax}));
+ let nb=0,np=0;for(let ci=0;ci<NC;ci++)if(flag[ci]){nb+=BLD[ci];np+=POP[ci]/POPD}
+ let hit=0,tot=0;D.pts.forEach(p=>{if(!p.inside)return;tot++;if(near2(flag,Math.floor(p.u*D.w),Math.floor(p.v*D.h)))hit++});
+ let near=0;if(nf>0)for(let ci=0;ci<NC;ci++){if(SL[ci]!==255&&near2(flag,ci%D.w,(ci/D.w)|0))near++}
+ frame={clusters,t};lastFlag=flag;lastProb=prob;
+ curSites=clusters.filter(q=>q.n>=5).sort((a,b)=>b.n-a.n).slice(0,6);updateSiteMarkers();
+ el('sites').innerHTML=curSites.length?curSites.map((q,k)=>`<button class="chip" data-k="${k}">Site ${k+1} · ${fmt(q.n*CELLKM2,2)} km² · replay</button>`).join(''):'<span class="note" style="border:0;padding:0">No failing cells yet at this time.</span>';
+ el('readout').innerHTML=[`Elapsed <b>${t.toFixed(1)} h</b> · rain so far <b>${fmt(P)} mm</b>`,`Failing cells <b>${fmt(nf)}</b> (${fmt(nf*CELLKM2,1)} km²)`,`Failure sites <b>${clusters.length}</b>`,
+ `Soil-covered cells modelled <b>${fmt(sim.eligible)}</b> of ${fmt(sim.valid)}`,`Excluded as unstable before rain <b>${fmt(sim.pre)}</b>`,
+ quakeLine(sim),`Buildings in failing cells <b>${fmt(nb)}</b> · people <b>${fmt(np)}</b>`,`Scenario rain <b>${fmt(P)} mm</b> vs largest CHIRPS area-mean day <b>${D.rain.max1} mm</b>, 3 days <b>${D.rain.max3} mm</b>`,(D.rthr?`Fitted event threshold at this duration <b>${thrAt(Math.max(.04,val('s-dur')/24)).toFixed(1)} mm/day</b>; scenario <b>${fmt(val('s-int')*24)} mm/day</b> (${val('s-int')*24>=thrAt(Math.max(.04,val('s-dur')/24))?'above':'below'})`:'No fitted rainfall threshold here (it needs 5 rain-triggered reports in the area)'),`Inventory points within 320 m of a failing cell <b>${hit} of ${tot}</b>`,`Area within 320 m of a failing cell <b>${fmt(near/sim.valid*100,1)} %</b>`,`A random map with that area would catch about <b>${fmt(near/sim.valid*tot,1)}</b>`].join('<br>');
+ el('v-t').textContent=t.toFixed(1)+' h'}
+el('b-play').addEventListener('click',()=>{if(timer){stopPlay();return}
+ if(!sim)prepare();
+ let t=val('s-t');if(t>=sim.T-1e-6)t=0;
+ el('b-play').textContent='Pause';const step=sim.T/60;if(rainWanted())rainOn(val('s-int'));
+ timer=setInterval(()=>{t=Math.min(sim.T,t+step);el('s-t').value=t;renderAt(t);if(t>=sim.T)stopPlay()},90)});
+el('s-t').addEventListener('input',()=>{stopPlay();if(!sim)prepare();renderAt(val('s-t'))});
+el('s-root').addEventListener('click',()=>{const b=el('s-root');b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true');sim=null;frame=null;stopPlay();clearOverlay()});
+el('s-eq').addEventListener('change',()=>{sim=null;frame=null;stopPlay();clearOverlay()});
+['s-ac','s-as'].forEach(i=>el(i).addEventListener('input',()=>{}));
+el('b-reset').addEventListener('click',()=>{stopPlay();sim=null;frame=null;clearOverlay()});
+el('sites').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(b)goToSite(parseInt(b.dataset.k))});
+
+// ---------- rain animation (canvas overlay above the WebGL map)
+const RN={on:false,I:10,parts:[],raf:0,cv:el('rain')};
+const rainWanted=()=>trigRain();   // rain falls on the map whenever rain is part of the trigger
+function rainOn(I){RN.I=I;if(RN.on)return;RN.on=true;RN.last=0;RN.parts=[];RN.raf=requestAnimationFrame(rainLoop)}
+function rainOff(){RN.on=false;cancelAnimationFrame(RN.raf);const c=RN.cv.getContext('2d');c.clearRect(0,0,RN.cv.width,RN.cv.height)}
+function rainLoop(ts){if(!RN.on)return;RN.raf=requestAnimationFrame(rainLoop);const cv=RN.cv,b=el('mapbox'),w=b.clientWidth,h=b.clientHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+ if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+ const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+ const target=Math.min(2600,Math.round(40+RN.I*30));while(RN.parts.length<target)RN.parts.push({x:Math.random()*w,y:Math.random()*h,l:10+Math.random()*16,v:700+Math.random()*500});
+ RN.parts.length=Math.min(RN.parts.length,target);const dt=RN.last?Math.min(.05,(ts-RN.last)/1000):.016;RN.last=ts;
+ c.fillStyle=`rgba(12,24,40,${Math.min(.28,.08+RN.I/300)})`;c.fillRect(0,0,w,h);
+ c.strokeStyle='rgba(200,222,255,.55)';c.lineWidth=1.1;c.beginPath();
+ RN.parts.forEach(p=>{p.y+=p.v*dt;p.x-=p.v*dt*.18;if(p.y>h+20){p.y=-20;p.x=Math.random()*w+40}if(p.x<-20)p.x=w+10;c.moveTo(p.x,p.y);c.lineTo(p.x+p.l*.18,p.y-p.l)});c.stroke()}
+
+// ---------- the WebGL map: Mapbox GL with a token, MapLibre GL (free) without
+const TOKEN=(()=>{try{return(window.MAPBOX_TOKEN||new URLSearchParams(location.search).get('token')||localStorage.getItem('mbtoken')||'').trim()}catch(e){return(window.MAPBOX_TOKEN||'').trim()}})();
+const MODE=TOKEN?'mapbox':'maplibre';
+const MB_STYLES={sat:['Satellite with streets','mapbox://styles/mapbox/satellite-streets-v12'],out:['Outdoors (topographic)','mapbox://styles/mapbox/outdoors-v12'],str:['Streets','mapbox://styles/mapbox/streets-v12'],dark:['Dark','mapbox://styles/mapbox/dark-v11']};
+const rasterStyle=(t,a,mz)=>({version:8,sources:{base:{type:'raster',tiles:[t],tileSize:256,maxzoom:mz,attribution:a}},layers:[{id:'base',type:'raster',source:'base'}]});
+const FB_STYLES={sat:['Satellite (Esri)',rasterStyle('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}','Imagery © Esri, Maxar, Earthstar Geographics',18)],
+ out:['Topographic (OpenTopoMap)',rasterStyle('https://tile.opentopomap.org/{z}/{x}/{y}.png','© OpenStreetMap contributors, SRTM · OpenTopoMap (CC-BY-SA)',17)],
+ str:['Streets (OpenStreetMap)',rasterStyle('https://tile.openstreetmap.org/{z}/{x}/{y}.png','© OpenStreetMap contributors',19)],
+ dark:['Dark (CARTO)',rasterStyle('https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png','© OpenStreetMap contributors © CARTO',19)]};
+const STYLES=MODE==='mapbox'?MB_STYLES:FB_STYLES;
+Object.entries(STYLES).forEach(([k,[n]])=>{const o=document.createElement('option');o.value=k;o.textContent=n;el('s-style').appendChild(o)});
+let map=null,GL=null,mapReady=false;
+const siteMarkers=[];let popup=null;
+const scarCv=document.createElement('canvas');scarCv.width=D.w;scarCv.height=D.h;
+const kinCv=document.createElement('canvas');kinCv.width=D.w;kinCv.height=D.h;
+const flowCv=document.createElement('canvas');flowCv.width=161;flowCv.height=161;
+const visOn=id=>el(id).getAttribute('aria-pressed')==='true';
+const geoInv={type:'FeatureCollection',features:EVENTS.map(p=>({type:'Feature',geometry:{type:'Point',coordinates:uv2ll(p.u,p.v)},properties:{i:p.idx,k:/earthquake/.test((p.trig||'').toLowerCase())?'q':/rain|downpour|monsoon|flood/.test((p.trig||'').toLowerCase())?'r':'o',t:`<b>${p.cat.replace('_',' ')}</b> · ${p.iso}<br>trigger: ${p.trig} · size ${p.size.replace('_',' ')}<br>${p.title||''}<br><span style="color:#2fd0d6">Click to replay this landslide</span>`}}))};
+const geoEq={type:'FeatureCollection',features:D.qs.map(q=>({type:'Feature',geometry:{type:'Point',coordinates:uv2ll(q.u,q.v)},properties:{m:q.m,t:`<b>M${q.m}</b> earthquake<br>${q.t} · depth ${fmt(q.d)} km`}}))};
+const geoFlt={type:'FeatureCollection',features:D.faults.map(f=>({type:'Feature',geometry:{type:'LineString',coordinates:f.xy.map(([u,v])=>uv2ll(u,v))},properties:{}}))};
+const emptyFC={type:'FeatureCollection',features:[]};
+const RPS={coords:AOI_C,rocks:emptyFC,trails:emptyFC};   // current replay state shared with the map layers
+
+function installLayers(){
+ if(!map.getSource('dem')){map.addSource('dem',MODE==='mapbox'?{type:'raster-dem',url:'mapbox://mapbox.mapbox-terrain-dem-v1',tileSize:512,maxzoom:14}:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:14})}
+ map.setTerrain({source:'dem',exaggeration:val('s-ex')});
+ if(MODE==='mapbox'&&!map.getLayer('sky'))map.addLayer({id:'sky',type:'sky',paint:{'sky-type':'atmosphere','sky-atmosphere-sun':[0,0],'sky-atmosphere-sun-intensity':8}});
+ map.addSource('screen',{type:'image',url:'data:image/png;base64,'+D.screen,coordinates:AOI_C});
+ map.addLayer({id:'screen',type:'raster',source:'screen',layout:{visibility:visOn('l-scr')?'visible':'none'},paint:{'raster-opacity':val('s-op')/100,'raster-resampling':'linear','raster-fade-duration':0}});
+ map.addSource('fail',{type:'canvas',canvas:oc,coordinates:AOI_C,animate:true});
+ map.addLayer({id:'fail',type:'raster',source:'fail',paint:{'raster-opacity':.9,'raster-resampling':'nearest','raster-fade-duration':0}});
+ map.addSource('flow',{type:'canvas',canvas:flowCv,coordinates:RPS.coords,animate:true});
+ map.addLayer({id:'flow',type:'raster',source:'flow',paint:{'raster-opacity':1,'raster-resampling':'linear','raster-fade-duration':0}});
+ map.addSource('scar',{type:'canvas',canvas:scarCv,coordinates:AOI_C,animate:false});
+ map.addLayer({id:'scar',type:'raster',source:'scar',layout:{visibility:visOn('l-scar')?'visible':'none'},paint:{'raster-opacity':.85,'raster-resampling':'nearest','raster-fade-duration':0}});
+ map.addSource('kin',{type:'canvas',canvas:kinCv,coordinates:AOI_C,animate:true});
+ map.addLayer({id:'kin',type:'raster',source:'kin',layout:{visibility:visOn('s-joint')?'visible':'none'},paint:{'raster-opacity':.8,'raster-resampling':'nearest','raster-fade-duration':0}});
+ map.addSource('flt',{type:'geojson',data:geoFlt});map.addLayer({id:'flt',type:'line',source:'flt',layout:{visibility:visOn('l-flt')?'visible':'none'},paint:{'line-color':'#ff9ad5','line-width':2.2,'line-dasharray':[3,2]}});
+ map.addSource('eq',{type:'geojson',data:geoEq});map.addLayer({id:'eq',type:'circle',source:'eq',layout:{visibility:visOn('l-eq')?'visible':'none'},paint:{'circle-radius':['+',3,['*',['get','m'],1.8]],'circle-color':'rgba(139,124,246,.35)','circle-stroke-color':'#8b7cf6','circle-stroke-width':1.5}});
+ map.addSource('inv',{type:'geojson',data:geoInv});map.addLayer({id:'inv',type:'circle',source:'inv',layout:{visibility:visOn('l-inv')?'visible':'none'},paint:{'circle-radius':6.5,'circle-color':['match',['get','k'],'q','#8b7cf6','r','#2fd0d6','#c0ccd4'],'circle-stroke-color':'#04141a','circle-stroke-width':1.6}});
+ map.addSource('trails',{type:'geojson',data:RPS.trails});map.addLayer({id:'trails',type:'line',source:'trails',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffe08a','line-width':['interpolate',['linear'],['zoom'],11,1,15,2.4],'line-opacity':.9}});
+ map.addSource('rocks',{type:'geojson',data:RPS.rocks});map.addLayer({id:'rocks',type:'circle',source:'rocks',paint:{'circle-radius':['interpolate',['linear'],['zoom'],11,3,15,8],'circle-color':['case',['==',['get','s'],1],'#e04848',['interpolate',['linear'],['get','v'],0,'#8fe9ff',25,'#ffd24a']],'circle-stroke-color':'#fff','circle-stroke-width':1.3}});
+ aoiLayers();impactLayers();barrierLayers();histLayers();mapReady=true}
+function hoverPopups(){['inv','eq'].forEach(id=>{map.on('mouseenter',id,e=>{map.getCanvas().style.cursor='pointer'});map.on('mouseleave',id,()=>{map.getCanvas().style.cursor='';popup.remove()});
+  map.on('mousemove',id,e=>{popup.setLngLat(e.lngLat).setHTML(e.features[0].properties.t).addTo(map)})});
+ map.on('click','inv',e=>{if(AD.mode)return;popup.remove();startEvent(e.features[0].properties.i)})}
+function updateSiteMarkers(){if(!map||!GL)return;siteMarkers.forEach(m=>m.remove());siteMarkers.length=0;
+ curSites.forEach((q,k)=>{const d=document.createElement('div');d.className='mk';d.textContent=String(k+1);d.title=`Failure site ${k+1}: ${fmt(q.n*CELLKM2,2)} km². Click to replay.`;d.addEventListener('click',e=>{e.stopPropagation();goToSite(k)});
+  siteMarkers.push(new GL.Marker({element:d}).setLngLat(uv2ll(q.u,q.v)).addTo(map))})}
+function overview(){stopReplayLoop();map.fitBounds(AOI_B,{padding:18,pitch:0,bearing:0,duration:1600,essential:true})}
+async function initMap(){
+ try{
+  if(MODE==='mapbox'){loadCSS('https://api.mapbox.com/mapbox-gl-js/v3.9.4/mapbox-gl.css');await loadScript('https://api.mapbox.com/mapbox-gl-js/v3.9.4/mapbox-gl.js');GL=window.mapboxgl;GL.accessToken=TOKEN}
+  else{loadCSS('https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css');await loadScript('https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js');GL=window.maplibregl}
+ }catch(e){el('mapNote').textContent=e.message+'. The map library needs internet access.';return}
+ const first=Object.keys(STYLES)[0];el('s-style').value=first;
+ map=new GL.Map({container:'map',style:MODE==='mapbox'?STYLES[first][1]:STYLES[first][1],bounds:((D.aoi&&D.aoi.id&&D.aoi.id!=='gilgit')?AOI_B:PK_B),fitBoundsOptions:{padding:18},pitch:0,maxPitch:80,antialias:true,attributionControl:true});
+ map.addControl(new GL.NavigationControl({visualizePitch:true}),'top-right');
+ map.addControl(new GL.ScaleControl({unit:'metric'}),'bottom-left');
+ popup=new GL.Popup({closeButton:false,closeOnClick:false,offset:12});
+ map.on('style.load',()=>{installLayers();if(!map._hoverSet){hoverPopups();aoiHandlers();map._hoverSet=true}});
+ map.on('mousemove',e=>{const [E,N]=ll2utm(e.lngLat.lng,e.lngLat.lat);el('coord').textContent=`UTM 43N · E ${fmt(E)}  N ${fmt(N)}`});
+ map.on('error',e=>{const st=e&&e.error&&e.error.status;if(MODE==='mapbox'&&(st===401||st===403)){el('mapNote').textContent='Mapbox rejected the token (HTTP '+st+'). Check it, or clear it to use the free fallback.'}});
+ el('engine').textContent=MODE==='mapbox'?'Mapbox GL JS':'MapLibre GL JS (free fallback, no Mapbox token)';
+ el('mapNote').textContent=MODE==='mapbox'?'Mapbox basemaps with Mapbox terrain.':'No Mapbox token set, so the free MapLibre engine with open tile sources and terrain is used. Add a Mapbox token (box on the map) to switch to Mapbox.';
+ el('s-style').addEventListener('change',()=>{mapReady=false;map.setStyle(STYLES[el('s-style').value][1])});
+ el('z-fit').addEventListener('click',overview);
+ el('s-ex').addEventListener('input',()=>{el('v-ex').textContent=val('s-ex').toFixed(1)+'×';if(mapReady)map.setTerrain({source:'dem',exaggeration:val('s-ex')})});
+ el('s-op').addEventListener('input',()=>{el('v-op').textContent=el('s-op').value+' %';if(mapReady)map.setPaintProperty('screen','raster-opacity',val('s-op')/100)});
+ [['l-scr','screen'],['l-inv','inv'],['l-all','allinv'],['l-eq','eq'],['l-flt','flt'],['l-scar','scar']].forEach(([b,l])=>el(b).addEventListener('click',()=>{const on=!visOn(b);el(b).setAttribute('aria-pressed',on);if(mapReady)map.setLayoutProperty(l,'visibility',on?'visible':'none')}));
+ const tb=el('tokenbox');tb.hidden=false;
+ tb.innerHTML=MODE==='mapbox'?'Using your Mapbox token. <a href="#" id="tkclear" style="color:var(--cyan)">Clear it</a>':'<span>Paste a Mapbox public token (pk.…) to use Mapbox basemaps. It is stored in this browser only.</span><input id="tkin" placeholder="pk.eyJ…" autocomplete="off"><button class="run" id="tkgo">Use Mapbox</button>';
+ if(el('tkgo'))el('tkgo').addEventListener('click',()=>{const v=el('tkin').value.trim();if(v){try{localStorage.setItem('mbtoken',v)}catch(e){}location.reload()}});
+ if(el('tkclear'))el('tkclear').addEventListener('click',e=>{e.preventDefault();try{localStorage.removeItem('mbtoken')}catch(x){}location.href=location.pathname});
+}
+el('v-ex').textContent='1.3×';
+
+// ---------- 53 m heightfield for the site replay
+let HF=null;
+async function loadHeightfield(){if(HF)return HF;const E=D.elev53;if(typeof DecompressionStream==='undefined')throw new Error('This browser cannot unpack the terrain data (DecompressionStream missing).');
+ const bin=dec(E.z);const buf=await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('deflate'))).arrayBuffer();
+ const a=new Int16Array(buf),w=E.w,h=E.h;
+ for(let j=1;j<h;j++)for(let i=0;i<w;i++)a[j*w+i]=(a[j*w+i]+a[(j-1)*w+i])<<16>>16;
+ for(let j=0;j<h;j++)for(let i=1;i<w;i++)a[j*w+i]=(a[j*w+i]+a[j*w+i-1])<<16>>16;
+ HF={a,w,h,res:E.res,x0:E.x0,y1:E.y1};return HF}
+function hfAt(E_,N_){const g=HF,fx=(E_-g.x0)/g.res-.5,fy=(g.y1-N_)/g.res-.5;const i=Math.max(0,Math.min(g.w-2,Math.floor(fx))),j=Math.max(0,Math.min(g.h-2,Math.floor(fy)));
+ const tx=Math.max(0,Math.min(1,fx-i)),ty=Math.max(0,Math.min(1,fy-j)),a=g.a,w=g.w;
+ return (a[j*w+i]*(1-tx)+a[j*w+i+1]*tx)*(1-ty)+(a[(j+1)*w+i]*(1-tx)+a[(j+1)*w+i+1]*tx)*ty}
+
+// ---------- site replay: rainfall -> failure (time limited) -> static aftermath
+const RP={R:null,phase:'idle',raf:0,last:0,rt:0,paused:false,busy:false,k:-1};
+const RAIN_REAL=4.5;   // seconds of real time for the rainfall phase
+function sampleZ(R,x,y){const n=R.n,fx=(x+R.HALF)/R.DXW,fy=(y+R.HALF)/R.DXW;const i=Math.max(0,Math.min(n-2,Math.floor(fx))),j=Math.max(0,Math.min(n-2,Math.floor(fy))),tx=Math.max(0,Math.min(1,fx-i)),ty=Math.max(0,Math.min(1,fy-j)),Z=R.Z;
+ return (Z[j*n+i]*(1-tx)+Z[j*n+i+1]*tx)*(1-ty)+(Z[(j+1)*n+i]*(1-tx)+Z[(j+1)*n+i+1]*tx)*ty}
+function normalAt(R,x,y){const e=R.DXW*.6,zx=(sampleZ(R,x+e,y)-sampleZ(R,x-e,y))/(2*e),zy=(sampleZ(R,x,y+e)-sampleZ(R,x,y-e))/(2*e);const l=Math.sqrt(zx*zx+zy*zy+1);return[-zx/l,-zy/l,1/l]}
+function buildWindow(u,v,opts){const HALF=3200,DXW=40,n=Math.round(2*HALF/DXW)+1;
+ let E0=X0+u*WID,N0=Y1-v*HGT;E0=Math.max(X0+HALF,Math.min(X1-HALF,E0));N0=Math.max(Y0+HALF,Math.min(Y1-HALF,N0));
+ const Z=new Float32Array(n*n);for(let j=0;j<n;j++)for(let i=0;i<n;i++)Z[j*n+i]=hfAt(E0-HALF+i*DXW,N0-HALF+j*DXW);   // j increases northwards
+ const sl=new Float32Array(n*n);
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const ia=Math.max(0,i-1),ib=Math.min(n-1,i+1),ja=Math.max(0,j-1),jb=Math.min(n-1,j+1);
+  const gx=(Z[j*n+ib]-Z[j*n+ia])/((ib-ia)*DXW),gy=(Z[jb*n+i]-Z[ja*n+i])/((jb-ja)*DXW);sl[j*n+i]=Math.atan(Math.hypot(gx,gy))*57.2958}
+ const H0=new Float32Array(n*n);let nrel=0,rx=0,ry=0,gE=0,gN=0;const zsoil=(opts&&opts.zsoil)||val('s-z');
+ if(lastProb&&!(opts&&opts.noRelease)){for(let j=0;j<n;j++)for(let i=0;i<n;i++){const Ee=E0-HALF+i*DXW,Nn=N0-HALF+j*DXW,fx=(Ee-X0)/WID*D.w-.5,fy=(Y1-Nn)/HGT*D.h-.5;
+   const ci=Math.max(0,Math.min(D.w-2,Math.floor(fx))),cj=Math.max(0,Math.min(D.h-2,Math.floor(fy))),tx=Math.max(0,Math.min(1,fx-ci)),ty=Math.max(0,Math.min(1,fy-cj)),P=lastProb,w_=D.w;
+   const p=(P[cj*w_+ci]*(1-tx)+P[cj*w_+ci+1]*tx)*(1-ty)+(P[(cj+1)*w_+ci]*(1-tx)+P[(cj+1)*w_+ci+1]*tx)*ty;
+   if(p>=.5&&lastFlag[Math.min(D.h-1,Math.round(fy))*w_+Math.min(w_-1,Math.round(fx))]){H0[j*n+i]=zsoil;nrel++;rx+=i;ry+=j;
+    const ia=Math.max(0,i-1),ib=Math.min(n-1,i+1),ja=Math.max(0,j-1),jb=Math.min(n-1,j+1);gE+=(Z[j*n+ib]-Z[j*n+ia])/((ib-ia)*DXW);gN+=(Z[jb*n+i]-Z[ja*n+i])/((jb-ja)*DXW)}}}
+ const R={n,DXW,HALF,Z,sl,H0,nrel,E0,N0,zsoil,cx:nrel?rx/nrel:(n-1)/2,cy:nrel?ry/nrel:(n-1)/2};
+ R.bearing=nrel?((Math.atan2(-gE,-gN)*180/Math.PI)+360)%360:0;   // look downslope, along the flow
+ R.coords=CORN(E0-HALF,N0-HALF,E0+HALF,N0+HALF);
+ return R}
+function initPhysics(R){const n=R.n,N=n*n;
+ R.fl={H:Float32Array.from(R.H0),Qx:new Float32Array((n+1)*n),Qy:new Float32Array(n*(n+1)),V:new Float32Array(N),Hmax:new Float32Array(N),Vmax:new Float32Array(N),out:new Float32Array(N),Hfx:new Float32Array((n+1)*n),Hfy:new Float32Array(n*(n+1))};
+ R.tsim=0;R.rocks=[];R.rockInfo=0;R.moving=0;R.vmaxFlow=0;R.rng=rng(99);R.pend=[];R.nfrag=0;R.entrained=0;
+ if(R.entrain==null)R.entrain=visOn('s-ent');if(R.frag==null)R.frag=1;if(R.lambda==null)R.lambda=val('s-sat')*.6;
+ R.ero=new Float32Array(N);for(let c=0;c<N;c++){const t=Math.max(0,Math.min(1,(R.sl[c]-25)/30));R.ero[c]=(R.zsoil||1.5)*(1-t)}   // erodible soil on the bed: full on gentle ground, none on cliffs
+ R.nextRec=undefined;R.hist=[];R.frames=[];
+ const mode=V3.mode;if(mode!=='slide')initRocks(R)}
+const V3={mode:'both'};
+function initRocks(R){const n=R.n,rn=rng(R.seed||11),cand=[];const zs=[...R.Z].sort((a,b)=>a-b),zmed=zs[zs.length>>1];
+ for(let j=2;j<n-2;j++)for(let i=2;i<n-2;i++){if(R.sl[j*n+i]>=45&&R.Z[j*n+i]>=zmed)cand.push([i,j])}
+ if(cand.length<5){for(let j=2;j<n-2;j++)for(let i=2;i<n-2;i++)if(R.sl[j*n+i]>=35)cand.push([i,j])}
+ if(R.rockCells&&R.rockCells.length)cand.splice(0,cand.length,...R.rockCells);
+ if(JK.P){const kc=cand.filter(([i,j])=>kinWin(R,i,j)>=.25);if(kc.length>=5)cand.splice(0,cand.length,...kc)}
+ R.rockInfo=cand.length;if(!cand.length)return;
+ const N=R.rockN||parseInt(el('v3n').value),r=(R.rockDia||parseFloat(el('v3dia').value))/2;
+ for(let q=0;q<N;q++){const [i,j]=cand[Math.floor(rn()*cand.length)];const x=-R.HALF+(i+rn()-.5)*R.DXW,y=-R.HALF+(j+rn()-.5)*R.DXW;const rr=r*(.7+.6*rn());
+  R.rocks.push({x,y,z:sampleZ(R,x,y)+rr,vx:0,vy:0,vz:0,r:rr,stopped:false,trav:0,vmax:0,x0:x,y0:y,tt:0,delay:rn()*6,trail:[[x,y]],tv:[0],tr:[rr],lt:0})}}
+function stepFlow(R,dt){const MUE=(R.mu!=null?R.mu:val('v3mu'))*(1-.6*(R.lambda||0)),NM=R.manning||.06,WATER=!!R.water,upd=(q,hf,cs)=>{let m;if(WATER){m=Math.abs(q)/(1+dt*9.81*NM*NM*Math.abs(q)/Math.pow(hf,7/3))}else{m=Math.abs(q)/(1+dt*9.81*Math.abs(q)/((R.xi||400)*hf*hf));m=Math.max(0,m-hf*MUE*9.81*cs*dt)}return Math.sign(q)*Math.min(m,hf*25)};
+ const {H,Qx,Qy,V:Vv,Hmax,out}=R.fl,Hfx=R.fl.Hfx,Hfy=R.fl.Hfy,Z=R.Z,n=R.n,dx=R.DXW,G=9.81,MU=(R.mu!=null?R.mu:val('v3mu')),XI=400,VMAX=25;
+ for(let j=0;j<n;j++)for(let i=1;i<n;i++){const f=j*(n+1)+i,a=j*n+i-1,b=a+1;const eA=Z[a]+H[a],eB=Z[b]+H[b];const hf=Math.max(eA,eB)-Math.max(Z[a],Z[b]);
+  if(hf<=.02){Qx[f]=0;Hfx[f]=0;continue}Hfx[f]=hf;let q=Qx[f]-G*hf*dt*(eB-eA)/dx;const bs=(Z[b]-Z[a])/dx,cs=1/Math.sqrt(1+bs*bs);
+  Qx[f]=upd(q,hf,cs)}
+ for(let j=1;j<n;j++)for(let i=0;i<n;i++){const f=j*n+i,a=(j-1)*n+i,b=a+n;const eA=Z[a]+H[a],eB=Z[b]+H[b];const hf=Math.max(eA,eB)-Math.max(Z[a],Z[b]);
+  if(hf<=.02){Qy[f]=0;Hfy[f]=0;continue}Hfy[f]=hf;let q=Qy[f]-G*hf*dt*(eB-eA)/dx;const bs=(Z[b]-Z[a])/dx,cs=1/Math.sqrt(1+bs*bs);
+  Qy[f]=upd(q,hf,cs)}
+ out.fill(0);
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const c=j*n+i,qe=Qx[j*(n+1)+i+1],qw=Qx[j*(n+1)+i],qn=Qy[(j+1)*n+i],qs=Qy[j*n+i];out[c]=(qe>0?qe:0)+(qw<0?-qw:0)+(qn>0?qn:0)+(qs<0?-qs:0)}
+ for(let c=0;c<n*n;c++){const o=out[c]*dt/dx;out[c]=o>H[c]&&o>0?H[c]/o:1}
+ for(let j=0;j<n;j++)for(let i=1;i<n;i++){const f=j*(n+1)+i,q=Qx[f];if(q>0)Qx[f]=q*out[j*n+i-1];else if(q<0)Qx[f]=q*out[j*n+i]}
+ for(let j=1;j<n;j++)for(let i=0;i<n;i++){const f=j*n+i,q=Qy[f];if(q>0)Qy[f]=q*out[(j-1)*n+i];else if(q<0)Qy[f]=q*out[j*n+i]}
+ let vmx=0;
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const c=j*n+i;const qe=Qx[j*(n+1)+i+1],qw=Qx[j*(n+1)+i],qn=Qy[(j+1)*n+i],qs=Qy[j*n+i];
+  let h=H[c]-dt/dx*(qe-qw+qn-qs);if(h<0)h=0;H[c]=h;
+  if(h>.3){const fe=j*(n+1)+i+1,fw=j*(n+1)+i,fn=(j+1)*n+i,fs=j*n+i,ue=Hfx[fe]>.05?qe/Hfx[fe]:0,uw=Hfx[fw]>.05?qw/Hfx[fw]:0,un=Hfy[fn]>.05?qn/Hfy[fn]:0,us=Hfy[fs]>.05?qs/Hfy[fs]:0;Vv[c]=Math.min(30,Math.hypot((ue+uw)*.5,(un+us)*.5))}else Vv[c]=0;   // speed from the depth at the faces the flux crosses
+  if(R.entrain&&!WATER&&h>.5&&Vv[c]>2&&R.ero[c]>0){const e=Math.min(R.ero[c],.0015*Vv[c]*dt*Math.min(1,h/2));R.ero[c]-=e;Z[c]-=e;H[c]+=e;h+=e;R.entrained+=e*dx*dx}   // scour: the bed gives up soil, the flow gains it
+  if(Vv[c]>vmx)vmx=Vv[c];if(h>Hmax[c])Hmax[c]=h;if(Vv[c]>R.fl.Vmax[c])R.fl.Vmax[c]=Vv[c]}
+ R.vmaxFlow=vmx}
+const SHAPES={round:[1,1,1],angular:[1.25,.8,.9],platy:[1.5,.6,.8]};   // rolling resistance, restitution and tangential-keeping multipliers (assumed)
+function stepRocks(R,dt){if(!R.pend)R.pend=[];const G=9.81,SHp=SHAPES[el('v3shape').value]||SHAPES.round,e=(R.e!=null?R.e:val('v3e'))*SHp[1],et=.6*SHp[2],MR=.5*SHp[0],rough=(R.rough!=null?R.rough:val('v3rough'));let moving=0;if(!R.rng)R.rng=rng(99);
+ R.rocks.forEach(b=>{if(b.stopped||R.tsim<b.delay)return;moving++;
+  const ox=b.x,oy=b.y;b.vz-=G*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;
+  const gz=sampleZ(R,b.x,b.y);let contact=false;
+  if(b.z-b.r<gz){const nn=normalAt(R,b.x,b.y);b.z=gz+b.r;const vn=b.vx*nn[0]+b.vy*nn[1]+b.vz*nn[2];
+   if(vn<0){let tx=b.vx-vn*nn[0],ty=b.vy-vn*nn[1],tz=b.vz-vn*nn[2];const bounce=-e*vn;
+    if(bounce>1.5){tx*=et;ty*=et;tz*=et;let rn_=nn;
+     if(rough>0){rn_=[nn[0]+(R.rng()-.5)*2*rough*.4,nn[1]+(R.rng()-.5)*2*rough*.4,nn[2]];const l=Math.hypot(rn_[0],rn_[1],rn_[2]);rn_=[rn_[0]/l,rn_[1]/l,rn_[2]/l]}
+     b.vx=tx+bounce*rn_[0];b.vy=ty+bounce*rn_[1];b.vz=tz+bounce*rn_[2];
+     if(R.frag&&bounce>3&&b.r>.3&&R.rocks.length+R.pend.length<160&&R.rng()<Math.min(.5,bounce/40)){const r2=b.r*Math.pow(.5,1/3),k0=[(R.rng()-.5)*6,(R.rng()-.5)*6,2+R.rng()*3];b.r=r2;
+      R.pend.push({x:b.x,y:b.y,z:b.z,vx:b.vx+k0[0],vy:b.vy+k0[1],vz:b.vz+k0[2],r:r2,stopped:false,trav:b.trav,vmax:b.vmax,x0:b.x0,y0:b.y0,tt:b.tt,delay:0,trail:[[b.x,b.y]],tv:[0],tr:[r2],lt:b.tt});b.vx-=k0[0];b.vy-=k0[1];b.vz-=k0[2]}   // a hard hit splits a block in two of equal volume
+    }else{b.vx=tx;b.vy=ty;b.vz=tz;contact=true}}
+   else contact=true;
+   if(contact){const sp=Math.hypot(b.vx,b.vy,b.vz);if(sp>1e-6){const cs=nn[2],dc=Math.max(0,1-MR*G*cs*dt/sp-.004*sp*dt);b.vx*=dc;b.vy*=dc;b.vz*=dc;
+     if(rough>0&&sp>1){const px_=nn[1]*b.vz-nn[2]*b.vy,py_=nn[2]*b.vx-nn[0]*b.vz,pz_=nn[0]*b.vy-nn[1]*b.vx,pl=Math.hypot(px_,py_,pz_)||1,kk=(R.rng()-.5)*2*rough*4*dt;b.vx+=px_/pl*kk;b.vy+=py_/pl*kk;b.vz+=pz_/pl*kk}}
+    const slopeDeg=Math.acos(Math.max(-1,Math.min(1,nn[2])))*57.2958;if(sp<.35&&slopeDeg<38){b.stopped=true;b.vx=b.vy=b.vz=0}}}
+  const sp=Math.hypot(b.vx,b.vy,b.vz);if(sp>b.vmax)b.vmax=sp;b.trav=Math.hypot(b.x-b.x0,b.y-b.y0);b.tt+=dt;
+  if(R.barrier)barrierCheck(R,b,ox,oy);
+  if(b.tt-b.lt>.12&&b.trail.length<500){b.lt=b.tt;b.trail.push([b.x,b.y]);if(b.tv){b.tv.push(Math.hypot(b.vx,b.vy,b.vz));b.tr.push(b.r)}}});
+ if(R.pend.length){R.rocks.push(...R.pend);R.nfrag=(R.nfrag||0)+R.pend.length;R.pend=[]}
+ R.moving=moving}
+function stepSim(R,simDt){const mode=V3.mode;
+ if(mode!=='rock'&&R.nrel>0){let rem=simDt;while(rem>1e-6){let hm=1.5;for(let c=0;c<R.fl.H.length;c++)if(R.fl.H[c]>hm)hm=R.fl.H[c];const dt=Math.min(rem,.1,.3*R.DXW/Math.sqrt(9.81*hm+400));stepFlow(R,dt);rem-=dt}}
+ if(mode!=='slide'&&R.rocks.length){let rem=simDt;while(rem>1e-6){const dt=Math.min(rem,1/120);stepRocks(R,dt);rem-=dt}}
+ R.tsim+=simDt}
+const R2LL=(R,x,y)=>utm2ll(R.E0+x,R.N0+y);
+function paintFlow(R,mode,prog){const n=R.n,ctx=flowCv.getContext('2d'),im=ctx.createImageData(n,n),d=im.data,{H,V:Vv,Hmax}=R.fl;
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const k=j*n+i,o=((n-1-j)*n+i)*4,h=H[k];let r=0,g=0,b=0,a=0;
+  const scar=R.H0[k]>0;
+  if(mode==='rain'){if(scar){r=255;g=140;b=40;a=Math.round(200*prog)}}
+  else if(mode==='live'){if(h>.06){const s=Math.min(1,Vv[k]/18);r=Math.round(90+165*s);g=Math.round(55+120*s);b=Math.round(30+25*s);a=Math.round(Math.min(1,.4+h*.5)*235)}else if(scar){r=170;g=50;b=40;a=110}}
+  else if(mode==='speed'){const vm=R.fl.Vmax[k];if(Hmax[k]>.3&&vm>0){const t=Math.min(1,vm/20);r=Math.round(40+215*t);g=Math.round(120+100*(1-Math.abs(t-.5)*2));b=Math.round(230*(1-t));a=210}}
+  else if(mode==='depth'){const hm=Hmax[k];if(hm>.3){const t=Math.min(1,hm/15);r=Math.round(230-150*t);g=Math.round(210-150*t);b=Math.round(120-60*t);a=215}}
+  else if(mode==='press'){const vm=R.fl.Vmax[k];if(Hmax[k]>.3&&vm>0){const kp=1.8*vm*vm;if(kp<5){r=250;g=225;b=130;a=170}else if(kp<30){r=240;g=140;b=40;a=210}else{r=200;g=30;b=40;a=230}}}
+  else{if(h>.3){const t=Math.min(1,h/6);r=Math.round(222-130*t);g=Math.round(186-120*t);b=Math.round(126-90*t);a=225}
+   else if(Hmax[k]>.3){r=255;g=190;b=110;a=95}else if(scar){r=170;g=40;b=40;a=150}}
+  d[o]=r;d[o+1]=g;d[o+2]=b;d[o+3]=a}
+ ctx.putImageData(im,0,0)}
+function updateRockSources(R,final){const pts=[],lines=[];
+ R.rocks.forEach(b=>{const p=R2LL(R,b.x,b.y);pts.push({type:'Feature',geometry:{type:'Point',coordinates:p},properties:{s:b.stopped||final?1:0,v:Math.hypot(b.vx,b.vy,b.vz)}});
+  if(b.trail.length>1)lines.push({type:'Feature',geometry:{type:'LineString',coordinates:b.trail.map(t=>R2LL(R,t[0],t[1]))},properties:{}})});
+ const s1=map.getSource('rocks'),s2=map.getSource('trails');if(s1)s1.setData(RPS.rocks={type:'FeatureCollection',features:pts});if(s2)s2.setData(RPS.trails={type:'FeatureCollection',features:lines})}
+function setPhase(ph){RP.phase=ph;const p=el('hphase');p.className='pill'+(ph==='fail'?' fail':ph==='after'||ph==='dam'?' after':'');p.textContent=ph==='rain'?(RP.trigger==='quake'?'Earthquake':RP.trigger==='both'?'Rain + shaking':'Rainfall'):({fail:'Failure',after:'Aftermath',dam:'Dam breach'}[ph]||ph);
+ el('hplay').disabled=(ph==='after');el('hskip').disabled=(ph==='after');el('hens').disabled=(ph!=='after');if(ph!=='after'&&ph!=='dam')el('hdam').hidden=true;if(ph!=='after'){el('hprob').hidden=true;RP.ens=null}
+ el('hview').hidden=(ph!=='after');el('htlwrap').hidden=(ph!=='after');
+ el('hleg').innerHTML=ph==='after'?'<span><i style="background:#9b6a3a"></i>Deposit</span><span><i style="background:#ffbe6e"></i>Path</span><span><i style="background:#aa2828"></i>Scar</span><span><i style="background:#e04848;border-radius:50%"></i>Block at rest</span>':ph==='fail'?'<span><i style="background:#ffd24a"></i>Fast flow</span><span><i style="background:#5a371e"></i>Slow flow</span><span><i style="background:#8fe9ff;border-radius:50%"></i>Rock block</span>':'<span><i style="background:#ff8c28"></i>Failing cells</span>'}
+function hudRead(R){const rows=[];const T=val('v3tl');
+ if(RP.phase==='rain'&&(RP.ev||RP.trigger!=='rain')){rows.push(...eventTriggerRows(R))}
+ else if(RP.phase==='rain'){const P=val('s-int')*val('s-dur')*Math.min(1,RP.rt/RAIN_REAL);rows.push(`Rain so far <b>${fmt(P)} mm</b> of ${fmt(val('s-int')*val('s-dur'))} mm`,`Release area <b>${fmt(R.nrel*R.DXW*R.DXW/1e6,2)} km²</b> · soil depth ${R.zsoil.toFixed(1)} m`)}
+ else{rows.push(`Time <b>${R.tsim.toFixed(0)} s</b> of ${T} s limit`);
+  if(V3.mode!=='rock'&&R.nrel>0){let vol=0,hmax=0;const F=R.fl;for(let c=0;c<F.H.length;c++){vol+=F.H[c];if(F.H[c]>hmax)hmax=F.H[c]}rows.push(`Flow volume <b>${fmt(vol*R.DXW*R.DXW)} m³</b> · deepest <b>${hmax.toFixed(1)} m</b>`,`Fastest flow <b>${R.vmaxFlow.toFixed(1)} m/s</b>${R.hist&&R.hist.length?` · front <b>${R.hist[R.hist.length-1].vfront.toFixed(1)} m/s</b>`:''}`);if(R.entrain)rows.push(`Scoured from the bed <b>${fmt(R.entrained)} m³</b>`)}
+  if(V3.mode!=='slide'&&R.rocks.length){const st=R.rocks.filter(b=>b.stopped).length;rows.push(`Blocks <b>${R.rocks.length}</b> · at rest <b>${st}</b> · longest travel <b>${fmt(Math.max(...R.rocks.map(b=>b.trav)))} m</b>${R.nfrag?` · broke ${R.nfrag} times`:''}`)}
+  if(V3.mode!=='slide'&&!R.rocks.length)rows.push('No slope of 35° or more in this window for rockfall.');
+  if(V3.mode!=='rock'&&!R.nrel)rows.push('No failing cells in this window: run the simulation and pick a site.')}
+ el('hread').innerHTML=rows.join('<br>');
+ el('hbar').style.width=(RP.phase==='rain'?Math.min(100,RP.rt/RAIN_REAL*100):RP.phase==='after'?100:Math.min(100,R.tsim/T*100))+'%'}
+function aftermath(R){stopReplayLoop(true);setPhase('after');rainOff();paintFlow(R,'after');updateRockSources(R,true);
+ const n=R.n,F=R.fl;let vol=0,area=0,hmax=0,far=0,farI=-1,nb=0,np=0,zlow=1e9;
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const k=j*n+i,h=F.H[k];if(h>.3){vol+=h;area++;if(h>hmax)hmax=h}if(h>.5){const Ee=R.E0-R.HALF+i*R.DXW,Nn=R.N0-R.HALF+j*R.DXW,ci=Math.max(0,Math.min(D.w-1,Math.floor((Ee-X0)/WID*D.w))),cj=Math.max(0,Math.min(D.h-1,Math.floor((Y1-Nn)/HGT*D.h)));nb+=BLD[cj*D.w+ci]/16;np+=POP[cj*D.w+ci]/POPD/16}
+  if(F.Hmax[k]>.3){const d=Math.hypot((i-R.cx)*R.DXW,(j-R.cy)*R.DXW);if(d>far){far=d;farI=k}if(R.Z[k]<zlow)zlow=R.Z[k]}}
+ const rows=[`<b>Aftermath at ${R.tsim.toFixed(0)} s</b> (${R.ended})`];
+ if(V3.mode!=='rock'&&R.nrel>0){rows.push(`Deposit <b>${fmt(vol*R.DXW*R.DXW)} m³</b> over <b>${fmt(area*R.DXW*R.DXW/1e6,2)} km²</b>, up to <b>${hmax.toFixed(1)} m</b> thick`,`Run-out <b>${fmt(far)} m</b> from the release centre${zlow<1e8?` · vertical drop ${fmt(Math.max(0,R.Z[Math.round(R.cy)*n+Math.round(R.cx)]-zlow))} m`:''}`,`Under the deposit (rough, 160 m data): ≈<b>${fmt(nb)}</b> buildings, ≈<b>${fmt(np)}</b> people`)}
+ if(V3.mode!=='slide'&&R.rocks.length){const L=R.rocks;rows.push(`Blocks at rest <b>${L.filter(b=>b.stopped).length} of ${L.length}</b> · longest travel <b>${fmt(Math.max(...L.map(b=>b.trav)))} m</b> · fastest <b>${Math.max(...L.map(b=>b.vmax)).toFixed(1)} m/s</b>`)}
+ if(R.entrain&&V3.mode!=='rock')rows.push(`Scoured from the bed <b>${fmt(R.entrained)} m³</b> (the deposit is bigger than the release by this much)`);
+ if(R.nfrag)rows.push(`Block fragmentation: <b>${R.nfrag}</b> breaks`);
+ if(RP.ev){const ck=eventCheck(R);R.check=ck;const where=ck.tol<ck.acc?` (the report is only good to ${fmt(ck.acc)} m, so the test uses ${fmt(ck.tol)} m, the most this window can check)`:` (reported position good to ${fmt(ck.acc)} m)`;rows.push('<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">',`<b>${ck.reach?'The reconstruction reaches the reported place':'The reconstruction stops short of the reported place'}</b>: nearest debris ${fmt(Math.min(ck.dmin,9e4))} m away${where}`)}
+ R.view='deposit';recordStep(R);const fl_=R.frames.length;el('htl').max=Math.max(0,fl_-1);el('htl').value=Math.max(0,fl_-1);el('htlv').textContent=(R.hist.length?R.hist[R.hist.length-1].t:0)+' s';speedChart(R,null);document.querySelectorAll('#hview button').forEach(o=>o.setAttribute('aria-pressed',o.dataset.v==='deposit'));
+ try{R.impact=computeImpact(R);renderImpact(R)}catch(e){console.error(e);R.impact=null}
+ R.dam=damAnalysis(R);if(R.dam){rows.push('<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">',...damRows(R.dam));el('hdam').hidden=false;el('hdam').disabled=R.dam.Qp<=0}else el('hdam').hidden=true;
+ if(R.impact){rows.push('<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">',impactSummary(R.impact));el('himp').hidden=false}
+ el('hread').innerHTML=rows.join('<br>');el('hbar').style.width='100%'}
+function replayLoop(ts){RP.raf=requestAnimationFrame(replayLoop);const R=RP.R;if(!R)return;const dt=RP.last?Math.min(.05,(ts-RP.last)/1000):0;RP.last=ts;if(RP.paused)return;
+ if(RP.phase==='dam'){const B=R.breach;if(B.t<B.Tb*1.5){breachStep(R,dt*Math.max(10,B.Tb/12));paintFlood(R,false);el('hread').innerHTML=[`<b>Breach flood</b> at ${fmt(B.t/60)} of ${fmt(B.Tb*1.5/60)} min`].join('');el('hbar').style.width=Math.min(100,B.t/(B.Tb*1.5)*100)+'%'}else{stopReplayLoop();paintFlood(R,true);el('hread').innerHTML=floodSummary(R).join('<br>');el('hbar').style.width='100%';try{R.floodImpact=computeFloodImpact(R);R.net=null;renderImpact(R)}catch(e){console.error(e)}}return}
+ if(RP.phase==='rain'){RP.rt+=dt;const prog=Math.min(1,RP.rt/RAIN_REAL);
+  if((RP.trigger==='quake'||RP.trigger==='both')&&R.newmark){const A=R.newmark.acc.a,ai=A[Math.min(A.length-1,Math.floor(prog*A.length))]/(R.quake.pga*9.81||1),amp=Math.min(9,R.quake.pga*100*.9+1);el('map').style.transform=`translate(${(ai*amp).toFixed(1)}px,${(Math.sin(prog*90)*amp*.5).toFixed(1)}px)`;trigChart(R,prog)}
+  else if(RP.ev&&RP.trigger==='rain')trigChart(R,prog);
+  paintFlow(R,'rain',prog);hudRead(R);if(prog>=1){rainOff();el('map').style.transform='';setPhase('fail');RP.last=0}return}
+ if(RP.phase==='fail'){stepSim(R,dt*val('v3sp'));recordStep(R);if(!RP.chartT||ts-RP.chartT>300){RP.chartT=ts;speedChart(R,R.tsim)}paintFlow(R,'live');updateRockSources(R,false);hudRead(R);
+  const lim=val('v3tl'),settled=R.tsim>15&&R.vmaxFlow<.4&&R.moving===0;if(R.tsim>=lim||settled){R.ended=R.tsim>=lim?'time limit reached':'everything has settled';aftermath(R)}}}
+function stopReplayLoop(keep){if(RP.raf)cancelAnimationFrame(RP.raf);RP.raf=0}
+function replayLook(on){if(!mapReady)return;map.setPaintProperty('fail','raster-opacity',on?0:.9);map.setPaintProperty('screen','raster-opacity',val('s-op')/100*(on?.3:1))}
+function clearReplay(){if(typeof impactClear==='function'){impactClear();el('himp').hidden=true;HIST.res=null;HIST.err=null;histOverlayShow(false)}replayLook(false);stopReplayLoop();rainOff();RP.R=null;RP.phase='idle';RP.ev=null;el('hud').hidden=true;el('hevt').innerHTML='';el('hchart').innerHTML='';el('map').style.transform='';const c=flowCv.getContext('2d');c.clearRect(0,0,161,161);
+ if(mapReady){map.getSource('rocks')&&map.getSource('rocks').setData(emptyFC);map.getSource('trails')&&map.getSource('trails').setData(emptyFC)}RPS.rocks=emptyFC;RPS.trails=emptyFC}
+function startReplay(R,k,ev){clearReplay();RP.R=R;RP.k=k;RP.ev=ev||null;initPhysics(R);RPS.coords=R.coords;map.getSource('flow').setCoordinates(R.coords);
+ el('hud').hidden=false;el('hsite').textContent=ev?'Event · '+ev.iso:'Site '+(k+1);RP.rt=0;RP.last=0;RP.paused=false;el('hplay').textContent='Pause';replayLook(true);el('hevt').innerHTML=ev?eventInfoHTML(R):'';
+ RP.trigger='rain';if(ev){if(R.quake)RP.trigger='quake';else if(/earthquake/.test((ev.trig||'').toLowerCase())||!R.rain)RP.trigger='none'}
+ else{R.quake=quakeForSite(R);if(R.quake&&trigRain())RP.trigger='both';else if(R.quake)RP.trigger='quake';else if(!trigRain())RP.trigger='none'}
+ if(RP.trigger==='quake'||RP.trigger==='both')prepareQuake(R);setPhase('rain');
+ if(RP.trigger==='rain'||RP.trigger==='both'){if((ev||rainWanted())&&R.nrel>0){const pk=ev&&R.rain?Math.max(...R.rain):val('s-int');rainOn(ev?Math.max(1.5,pk/24*10):val('s-int'))}else if(RP.trigger==='rain')RP.rt=RAIN_REAL}else if(RP.trigger==='none')RP.rt=RAIN_REAL;
+ R.ended='';RP.raf=requestAnimationFrame(replayLoop)}
+// camera for a replay: stand below the slope and look uphill so the face of the slope and the flow path come toward the viewer
+function camFor(R){const b=R.bearing*Math.PI/180,sh=450;return{center:utm2ll(R.E0-R.HALF+R.cx*R.DXW+sh*Math.sin(b),R.N0-R.HALF+R.cy*R.DXW+sh*Math.cos(b)),bearing:(R.bearing+180)%360}}
+async function goToSite(k){if(RP.busy||!curSites[k]||!mapReady)return;RP.busy=true;stopPlay();clearReplay();
+ try{const q=curSites[k];await loadHeightfield();const R=buildWindow(q.u,q.v);
+  const c=utm2ll(R.E0-R.HALF+R.cx*R.DXW,R.N0-R.HALF+R.cy*R.DXW);
+  await new Promise(ok=>{map.once('moveend',ok);{const cam=camFor(R);map.flyTo({center:cam.center,zoom:13.2,pitch:62,bearing:cam.bearing,duration:2800,essential:true})}});
+  RP.busy=false;RP.make=o=>buildWindow(q.u,q.v,o);startReplay(R,k,null)}catch(e){RP.busy=false;el('readout').innerHTML+=`<br><span style="color:var(--warn)">${e.message}</span>`}}
+el('hclose').addEventListener('click',()=>{clearReplay();if(mapReady)overview()});
+el('hplay').addEventListener('click',()=>{RP.paused=!RP.paused;el('hplay').textContent=RP.paused?'Resume':'Pause';if(RN.on&&RP.paused)RN.last=0});
+el('hskip').addEventListener('click',()=>{const R=RP.R;if(!R||RP.phase==='after')return;rainOff();setPhase('fail');const lim=val('v3tl');
+ while(R.tsim<lim){stepSim(R,.5);recordStep(R);if(R.tsim>15&&R.vmaxFlow<.4&&R.moving===0)break}el('map').style.transform='';R.ended=R.tsim>=lim?'time limit reached':'everything has settled';aftermath(R)});
+
+
+// ---------- rock-mass joints: Markland kinematic test for planar and wedge sliding
+const RAD=Math.PI/180,JK={P:null,share:0};
+function kinPlanar(psiF,aF,psiP,aP,phi){const d=Math.abs(((aP-aF+540)%360)-180);return d<=20&&psiP<psiF&&psiP>phi}      // aligned within 20 degrees, daylights, steeper than friction
+function kinWedge(psiF,aF,d1,a1,d2,a2,phi){const nv=(d,a)=>[Math.sin(d*RAD)*Math.sin(a*RAD),Math.sin(d*RAD)*Math.cos(a*RAD),Math.cos(d*RAD)];const n1=nv(d1,a1),n2=nv(d2,a2);
+ let I=[n1[1]*n2[2]-n1[2]*n2[1],n1[2]*n2[0]-n1[0]*n2[2],n1[0]*n2[1]-n1[1]*n2[0]];const l=Math.hypot(I[0],I[1],I[2]);if(l<1e-6)return false;if(I[2]>0)I=I.map(v=>-v);
+ const plunge=Math.asin(Math.min(1,-I[2]/l))/RAD,trend=(Math.atan2(I[0],I[1])/RAD+360)%360,cosd=Math.cos((trend-aF)*RAD);if(cosd<=0)return false;
+ const psiFi=Math.atan(Math.tan(psiF*RAD)*cosd)/RAD;return plunge>phi&&plunge<psiFi}
+function kinRender(){const N=30,rn=rng(31),A=[val('j-ad'),val('j-ar')],Bs=[val('j-bd'),val('j-br')],phi0=val('j-phi'),P=new Float32Array(NC),ctx=kinCv.getContext('2d'),im=ctx.createImageData(D.w,D.h),d=im.data;
+ const mem=[];for(let m=0;m<N;m++){const g=()=>(rn()+rn()+rn()-1.5)*2;mem.push({a:[A[0]+g()*7,A[1]+g()*10],b:[Bs[0]+g()*7,Bs[1]+g()*10],phi:phi0+g()*3})}
+ let steep=0,feas=0;
+ for(let ci=0;ci<NC;ci++){const s=SL[ci];if(s===255||s<35||LC[ci]===7||LC[ci]===8)continue;steep++;const aF=ASP[ci]/254*360;let n=0;
+  for(const q of mem){if(kinPlanar(s,aF,q.a[0],q.a[1],q.phi)||kinPlanar(s,aF,q.b[0],q.b[1],q.phi)||kinWedge(s,aF,q.a[0],q.a[1],q.b[0],q.b[1],q.phi))n++}
+  const p=n/N;P[ci]=p;if(p>=.5)feas++;if(p>0){const o=ci*4,t=Math.min(1,p);d[o]=Math.round(160+80*t);d[o+1]=Math.round(90-40*t);d[o+2]=Math.round(255-80*t);d[o+3]=Math.round(70+170*t)}}
+ ctx.putImageData(im,0,0);JK.P=P;JK.share=steep?feas/steep:0;
+ el('kinNote').innerHTML=`Joints are on: <b>${fmt(JK.share*100,1)} %</b> of the ${fmt(steep)} cells steeper than 35° are kinematically feasible in at least half of 30 joint-set draws (planar on set A or B, or a wedge from the two). Rockfall blocks now start only from cells with a feasibility of 0.25 or more. The joint orientations are placeholders until field measurements exist.`}
+function kinClear(){kinCv.getContext('2d').clearRect(0,0,D.w,D.h);JK.P=null}
+function kinWin(R,i,j){if(!JK.P)return 1;const Ee=R.E0-R.HALF+i*R.DXW,Nn=R.N0-R.HALF+j*R.DXW,ci=Math.max(0,Math.min(D.w-1,Math.floor((Ee-X0)/WID*D.w))),cj=Math.max(0,Math.min(D.h-1,Math.floor((Y1-Nn)/HGT*D.h)));return JK.P[cj*D.w+ci]}
+[['j-ad','v-jad',v=>v+'°'],['j-ar','v-jar',v=>v+'°'],['j-bd','v-jbd',v=>v+'°'],['j-br','v-jbr',v=>v+'°'],['j-phi','v-jphi',v=>v+'°']].forEach(([i,o,f])=>el(i).addEventListener('input',()=>{el(o).textContent=f(el(i).value);if(visOn('s-joint')){clearTimeout(kinTimer);kinTimer=setTimeout(kinRender,250)}}));
+let kinTimer=0;
+el('s-joint').addEventListener('click',()=>{const on=!visOn('s-joint');el('s-joint').setAttribute('aria-pressed',on);if(on)kinRender();else{kinClear();el('kinNote').textContent='Turn on "Joints" to colour the steep ground where planar or wedge sliding is kinematically possible for these two joint sets (Markland test, 30-member ensemble), and to start rockfall blocks only from such ground. The joint orientations are placeholders until field measurements exist.'}if(mapReady)map.setLayoutProperty('kin','visibility',on?'visible':'none')});
+
+
+// ---------- landslide dam: does the deposit block a river, how big is the lake, how stable is the dam, and what does a breach do?
+function froehlichQp(V,h){return 0.607*Math.pow(V,0.295)*Math.pow(h,1.24)}                 // Froehlich (1995), peak breach outflow in m3/s
+function dbiClass(Ab_m2,Hd,Vd){const dbi=Math.log10(Ab_m2*Hd/Vd);return {dbi,cls:dbi<2.75?'likely stable':dbi>3.08?'likely unstable':'uncertain'}}   // Ermini and Casagli (2003)
+function riverCells(R){const n=R.n,mask=new Uint8Array(n*n),Q=new Float32Array(n*n),UP=new Float32Array(n*n);
+ (D.rivers||[]).forEach(r=>{const a=r.xy;for(let k=0;k+3<a.length;k+=2){const e1=X0+a[k]/1e4*WID,n1=Y1-a[k+1]/1e4*HGT,e2=X0+a[k+2]/1e4*WID,n2=Y1-a[k+3]/1e4*HGT,L=Math.hypot(e2-e1,n2-n1),st=Math.max(1,Math.ceil(L/15));
+   for(let q=0;q<=st;q++){const e=e1+(e2-e1)*q/st,nn=n1+(n2-n1)*q/st,i=Math.round((e-(R.E0-R.HALF))/R.DXW),j=Math.round((nn-(R.N0-R.HALF))/R.DXW);if(i<0||j<0||i>=n||j>=n)continue;
+    for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=n||jj>=n)continue;const c=jj*n+ii;mask[c]=1;if(r.q>Q[c]){Q[c]=r.q;UP[c]=r.up}}}}});
+ return {mask,Q,UP}}
+function lakeFill(Z,n,dx,seed,crest,thal,block,center,udir){const seen=new Uint8Array(n*n),st=[];let vol=0,cells=0;const up=k=>!udir||((k%n-center[0])*udir[0]+(((k/n)|0)-center[1])*udir[1])>=-1;seed.forEach(c=>{seen[c]=1;st.push(c)});
+ while(st.length){const c=st.pop(),i=c%n,j=(c/n)|0;for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){if(!di&&!dj)continue;const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=n||jj>=n)continue;const k=jj*n+ii;
+  if(seen[k]||block.has(k))continue;if(Z[k]<crest&&Z[k]>thal&&up(k)){seen[k]=1;st.push(k);vol+=(crest-Z[k])*dx*dx;cells++}}}
+ return {vol,cells,area:cells*dx*dx}}
+function damAnalysis(R){const rc=riverCells(R),n=R.n,F=R.fl;const bc=[];let Hd=0,qin=0,up=0;
+ for(let c=0;c<n*n;c++)if(rc.mask[c]&&F.H[c]>=1){bc.push(c);if(F.H[c]>Hd)Hd=F.H[c];if(rc.Q[c]>qin)qin=rc.Q[c];if(rc.UP[c]>up)up=rc.UP[c]}
+ if(bc.length<3)return null;
+ const dep=new Set(bc);for(const c of bc){const i=c%n,j=(c/n)|0;for(let dj=-3;dj<=3;dj++)for(let di=-3;di<=3;di++){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=n||jj>=n)continue;const k=jj*n+ii;if(F.H[k]>=.5)dep.add(k)}}
+ let Vd=0;dep.forEach(k=>Vd+=F.H[k]*R.DXW*R.DXW);let thal=1e9,cthal=bc[0];for(const c of bc){if(R.Z[c]<thal){thal=R.Z[c];cthal=c}}
+ Hd=F.H[cthal];const crest=thal+Hd;   // the lake spills at the dam's downstream end: river bed there plus the deposit thickness there
+ let cxm=0,cym=0;bc.forEach(c=>{cxm+=c%n;cym+=(c/n)|0});cxm/=bc.length;cym/=bc.length;let ux=0,uy=0;
+ for(let c=0;c<n*n;c++)if(rc.mask[c]&&R.Z[c]>thal+1){const dxm=(c%n-cxm),dym=((c/n)|0)-cym,d=Math.hypot(dxm,dym);if(d>0&&d<=15){ux+=dxm/d;uy+=dym/d}}
+ const ul=Math.hypot(ux,uy),udir=ul>0?[ux/ul,uy/ul]:null;
+ const lake=lakeFill(R.Z,n,R.DXW,bc,crest,thal,dep,[cxm,cym],udir);const Ab=Math.max(1,up)*1e6,db=dbiClass(Ab,Hd,Vd),Qp=lake.vol>0?froehlichQp(lake.vol,Math.max(1,crest-thal)):0;
+ return {bc,dep,Hd,Vd,qin:qin||.1,up,crest,thal,lake,dbi:db.dbi,cls:db.cls,Qp,Tb:Qp>0?2*lake.vol/Qp:0,fillDays:lake.vol/(Math.max(.1,qin)*86400)}}
+function damRows(m){return [`<b>Landslide dam</b> across a river reach (${m.bc.length} cells blocked)`,`Dam height <b>${m.Hd.toFixed(1)} m</b> · volume <b>${fmt(m.Vd)} m³</b>`,
+ `Lake behind it (inside this window) <b>${fmt(m.lake.vol)} m³</b>, <b>${fmt(m.lake.area/1e4)} ha</b>`,`River inflow <b>${fmt(m.qin,1)} m³/s</b> mean, so the lake fills in about <b>${m.fillDays<1?fmt(m.fillDays*24,1)+' h':fmt(m.fillDays,1)+' days'}</b>`,
+ `Dam stability index <b>${m.dbi.toFixed(2)}</b> (${m.cls}; Ermini and Casagli 2003, stable below 2.75, unstable above 3.08)`,`Peak breach outflow <b>${fmt(m.Qp)} m³/s</b> over about <b>${fmt(m.Tb/60)} min</b>`]}
+function startBreach(R){const m=R.dam;if(!m||m.Qp<=0)return;const F=R.fl,n=R.n;F.H.fill(0);F.Qx.fill(0);F.Qy.fill(0);F.V.fill(0);F.Hmax.fill(0);R.water=true;R.manning=.06;R.tsim=0;
+ R.breach={t:0,Tb:m.Tb,Qp:m.Qp,cells:[...m.bc],injected:0,arr:{}};let cx=0,cy=0;m.bc.forEach(c=>{cx+=c%n;cy+=(c/n)|0});R.breach.cx=cx/m.bc.length;R.breach.cy=cy/m.bc.length;
+ RP.paused=false;RP.last=0;setPhase('dam');el('hleg').innerHTML='<span><i style="background:#58a6ff"></i>Flood depth</span><span><i style="background:#aa2828"></i>Dam</span>';stopReplayLoop();RP.raf=requestAnimationFrame(replayLoop)}
+function breachStep(R,simDt){const B=R.breach,F=R.fl,n=R.n,dx=R.DXW;let rem=simDt;
+ while(rem>1e-6){let hm=1;for(let c=0;c<F.H.length;c++)if(F.H[c]>hm)hm=F.H[c];const dt=Math.min(rem,2,.3*dx/Math.sqrt(9.81*hm));
+  const t=B.t,Q=t<.1*B.Tb?B.Qp*t/(.1*B.Tb):t<B.Tb?B.Qp*(B.Tb-t)/(.9*B.Tb):0,dV=Q*dt;B.injected+=dV;const per=dV/(B.cells.length*dx*dx);B.cells.forEach(c=>F.H[c]+=per);
+  stepFlow(R,dt);B.t+=dt;rem-=dt;R.tsim+=dt;
+  const dd=Math.hypot(0,0);for(const D_ of [500,1000,2000]){if(B.arr[D_]!==undefined)continue;for(let c=0;c<n*n;c++){if(F.H[c]>.3){const i=c%n,j=(c/n)|0;if(Math.hypot((i-B.cx)*dx,(j-B.cy)*dx)>=D_){B.arr[D_]=B.t;break}}}}}}
+function paintFlood(R,final){const n=R.n,ctx=flowCv.getContext('2d'),im=ctx.createImageData(n,n),d=im.data,F=R.fl,src=final?F.Hmax:F.H;
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const c=j*n+i,o=((n-1-j)*n+i)*4,h=src[c];if(R.dam.dep.has(c)&&!final&&F.H[c]<.3&&false){continue}
+  if(h>.3){const t=Math.min(1,h/10);d[o]=Math.round(120-90*t);d[o+1]=Math.round(190-100*t);d[o+2]=255;d[o+3]=Math.round(120+120*Math.min(1,h/3))}else if(R.dam.dep.has(c)){d[o]=170;d[o+1]=40;d[o+2]=40;d[o+3]=150}}
+ ctx.putImageData(im,0,0)}
+function floodSummary(R){const B=R.breach,F=R.fl,n=R.n;let area=0,hmax=0,nb=0,np=0;for(let j=0;j<n;j++)for(let i=0;i<n;i++){const c=j*n+i,h=F.Hmax[c];if(h>.3){area++;if(h>hmax)hmax=h}
+  if(h>.5){const Ee=R.E0-R.HALF+i*R.DXW,Nn=R.N0-R.HALF+j*R.DXW,ci=Math.max(0,Math.min(D.w-1,Math.floor((Ee-X0)/WID*D.w))),cj=Math.max(0,Math.min(D.h-1,Math.floor((Y1-Nn)/HGT*D.h)));nb+=BLD[cj*D.w+ci]/16;np+=POP[cj*D.w+ci]/POPD/16}}
+ const arr=Object.entries(B.arr).map(([d,t])=>`${fmt(+d/1000,1)} km after ${fmt(t/60)} min`).join(', ');
+ return [`<b>Breach flood at ${fmt(B.t/60)} min</b> (clear water, Manning n 0.06, inside this window only)`,`Flooded <b>${fmt(area*R.DXW*R.DXW/1e6,2)} km²</b>, deepest <b>${hmax.toFixed(1)} m</b>`,`Front reached: ${arr||'less than 500 m from the dam'}`,`Under the flood (rough, 160 m data): ≈<b>${fmt(nb)}</b> buildings, ≈<b>${fmt(np)}</b> people`,`<span style="color:var(--muted)">Flow further downstream than this window is not modelled.</span>`]}
+
+el('hview').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');const R=RP.R;if(!b||!R||RP.phase!=='after')return;R.view=b.dataset.v;document.querySelectorAll('#hview button').forEach(o=>o.setAttribute('aria-pressed',o===b));
+ paintFlow(R,R.view==='deposit'?'after':R.view);updateRockSources(R,true);
+ el('hleg').innerHTML={deposit:'<span><i style="background:#9b6a3a"></i>Deposit</span><span><i style="background:#ffbe6e"></i>Path</span><span><i style="background:#aa2828"></i>Scar</span><span><i style="background:#e04848;border-radius:50%"></i>Block at rest</span>',speed:'<span><i style="background:#2878e6"></i>slow</span><span><i style="background:#7fdc7f"></i>10 m/s</span><span><i style="background:#ff7800"></i>20 m/s or more</span> (peak speed in each cell)',depth:'<span><i style="background:#e6d278"></i>thin</span><span><i style="background:#503c3c"></i>15 m or more</span> (deepest flow in each cell)',press:'<span><i style="background:#fae182"></i>under 5 kPa</span><span><i style="background:#f08c28"></i>5–30 kPa</span><span><i style="background:#c81e28"></i>over 30 kPa</span> (peak 1.8 v², a rough impact pressure)'}[R.view]});
+el('htl').addEventListener('input',()=>{const R=RP.R;if(!R||!R.frames||!R.frames.length)return;RP.paused=true;el('hplay').textContent='Resume';const k=Math.min(R.frames.length-1,parseInt(el('htl').value)),fr=R.frames[k];
+ if(RP.phase==='after'&&k===R.frames.length-1){paintFlow(R,R.view==='deposit'?'after':R.view);updateRockSources(R,true)}else paintFrame(R,fr);el('htlv').textContent=fr.t+' s';speedChart(R,fr.t)});
+el('hdam').addEventListener('click',()=>{const R=RP.R;if(R&&R.dam&&RP.phase==='after')startBreach(R)});
+
+
+// ---------- Sentinel-2 scar candidates and the calibrated soil preset
+(function(){const C=D.calib;if(!C){el('l-scar').disabled=true;el('b-calib').disabled=true;return}
+ const A=dec(C.maps.A),B=dec(C.maps.B),ctx=scarCv.getContext('2d'),im=ctx.createImageData(D.w,D.h),d=im.data;
+ for(let i=0;i<NC;i++){const a=A[i]/255*.5>=.04,b=B[i]/255*.5>=.04;if(!a&&!b)continue;const o=i*4;if(a&&b){d[o]=200;d[o+1]=70;d[o+2]=255}else if(b){d[o]=235;d[o+1]=60;d[o+2]=60}else{d[o]=255;d[o+1]=170;d[o+2]=40}d[o+3]=225}
+ ctx.putImageData(im,0,0);
+ const wA=C.windows.A,wB=C.windows.B;
+ el('l-scar').addEventListener('click',()=>{const n=el('scarNote');n.hidden=!visOn('l-scar');n.innerHTML=`Candidate scars from Sentinel-2 change (unreviewed): <span style="color:#ffaa28">2017 to 2020, ${fmt(wA.scar_km2,1)} km²</span>, <span style="color:#eb3c3c">2020 to 2024, ${fmt(wB.scar_km2,1)} km²</span>, <span style="color:#c846ff">both</span>. Vegetation loss plus bare-soil gain on slopes of 15° or more, outside snow and water. Seasonal snow, floods, farming and cloud shadow also show up, so these are leads for review and not confirmed landslides.`});
+ el('b-calib').addEventListener('click',()=>{const t=C.calibration.best.theta;const set=(id,v)=>{el(id).value=v;el(id).dispatchEvent(new Event('input'))};set('s-z',+t[0].toFixed(1));set('s-c',Math.round(t[1]));set('s-phi',Math.round(t[2]));set('s-sat',+(Math.round(t[3]*20)/20).toFixed(2));set('s-dur',24);set('s-int',Math.max(2,Math.min(80,Math.round(t[4]/24))));
+  el('readout').innerHTML=`Calibrated soil loaded: depth ${t[0].toFixed(1)} m, cohesion ${t[1].toFixed(0)} kPa, friction ${t[2].toFixed(0)}°, saturation ${(t[3]*100).toFixed(0)} %, storm ${t[4].toFixed(0)} mm. Score against Sentinel-2 scars: ${C.calibration.best.auc_train.toFixed(2)} on the training window, ${C.calibration.best.auc_test_new_ground.toFixed(2)} on different ground and a different window. See the Validation tab.`})})();
+
+
+// ---------- earthquake: synthetic shaking and a Newmark sliding block
+function accelerogram(pga,T,seed){const dt=.02,n=Math.round(T/dt),rn=rng(seed||5),f=[],ph=[],am=[];for(let k=0;k<8;k++){f.push(.8+rn()*5);ph.push(rn()*6.283);am.push(.5+rn())}
+ const a=new Float32Array(n);let mx=1e-9;for(let i=0;i<n;i++){const t=i*dt,env=Math.min(1,t/(.1*T))*Math.exp(-Math.max(0,t-.4*T)/(.25*T));let q=0;for(let k=0;k<8;k++)q+=am[k]*Math.sin(6.283*f[k]*t+ph[k]);a[i]=q*env;if(Math.abs(a[i])>mx)mx=Math.abs(a[i])}
+ for(let i=0;i<n;i++)a[i]=a[i]/mx*pga;return {a,dt}}
+function newmarkD(a,dt,ay,series){let v=0,d=0,t0=-1;for(let i=0;i<a.length;i++){if(v>0||a[i]>ay){if(t0<0&&a[i]>ay)t0=i*dt;v+=(a[i]-ay)*dt;if(v<0)v=0;d+=v*dt}if(series)series.push(d)}return {d,t0}}
+function ayStatic(betaDeg,z,c,phiDeg,m){const b=betaDeg*RAD,cs2=Math.cos(b)**2,sc=Math.sin(b)*Math.cos(b),t=Math.tan(phiDeg*RAD);const FS=(c+(GAM*z*cs2-m*GW*z*cs2)*t)/(GAM*z*sc);return {FS,ay:Math.max(0,FS-1)*9.81*Math.sin(b)}}
+function prepareQuake(R){const q=R.quake,n=R.n,sls=[];for(let c=0;c<n*n;c++)if(R.H0[c]>0)sls.push(R.sl[c]);sls.sort((a,b)=>a-b);const beta=sls.length?sls[sls.length>>1]:30;
+ const st=ayStatic(beta,R.zsoil,val('s-c'),val('s-phi'),val('s-sat')),acc=accelerogram(q.pga*9.81,q.T,R.ev?R.ev.idx+3:5),series=[],nm=newmarkD(acc.a,acc.dt,st.ay,series);
+ R.newmark={FS:st.FS,ay:st.ay,D:nm.d,t0:nm.t0,acc,series,beta}}
+
+// ---------- charts: trigger, speed history
+function trigChart(R,prog){const w=330,h=92,pl=26,pb=14,pt=6;let g='';
+ if(RP.trigger==='quake'&&R.newmark){const A=R.newmark.acc.a,dtq=R.newmark.acc.dt,T=A.length*dtq,pga=R.quake.pga*9.81,sd=R.newmark.series,dm=Math.max(.01,sd[sd.length-1]);const X=t=>pl+t/T*(w-pl-4),Ya=a=>pt+(h-pt-pb)/2*(1-a/pga),Yd=d=>h-pb-d/dm*(h-pt-pb)*.45;
+  g+=`<polyline fill="none" stroke="#8b7cf6" stroke-width=".8" points="${Array.from(A).filter((_,i)=>i%4===0).map((a,i)=>X(i*4*dtq)+','+Ya(a)).join(' ')}"/>`;
+  g+=`<polyline fill="none" stroke="#ffb02e" stroke-width="1.4" points="${sd.filter((_,i)=>i%4===0).map((d,i)=>X(i*4*dtq)+','+Yd(d)).join(' ')}"/>`;
+  g+=`<line x1="${X(prog*T)}" y1="${pt}" x2="${X(prog*T)}" y2="${h-pb}" stroke="#fff" stroke-dasharray="2 2"/>`;if(R.newmark.t0>=0)g+=`<circle cx="${X(R.newmark.t0)}" cy="${Ya(R.newmark.ay)}" r="3" fill="#ff5a5a"/>`;
+  g+=`<text x="${pl}" y="${h-2}" font-size="8" fill="#8da0ac">ground acceleration (purple) and sliding displacement (orange), ${T.toFixed(0)} s, peak ${(pga/9.81*100).toFixed(1)} %g</text>`}
+ else if(R.rain){const r=R.rain,mx=Math.max(5,...r),bw=(w-pl-4)/r.length;g+=r.map((v,i)=>`<rect x="${pl+i*bw+2}" y="${h-pb-v/mx*(h-pt-pb)}" width="${bw-4}" height="${v/mx*(h-pt-pb)}" fill="${i===r.length-1?'#2fd0d6':'#3a8f9a'}"/><text x="${pl+i*bw+bw/2}" y="${h-4}" font-size="8" fill="#8da0ac" text-anchor="middle">${i===r.length-1?'day':'-'+(r.length-1-i)}</text>`).join('');
+  g+=`<text x="2" y="${pt+8}" font-size="8" fill="#8da0ac">${fmt(mx)}</text><text x="${pl}" y="${pt+8}" font-size="8" fill="#8da0ac">CHIRPS area-mean rain, mm per day</text>`}
+ el('hchart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Trigger">${g}</svg>`}
+function speedChart(R,cursor){const H=R.hist||[];if(H.length<2){el('hchart').innerHTML='';return}const w=330,h=100,pl=24,pb=14,pt=6,T=Math.max(10,H[H.length-1].t),mxv=Math.max(8,...H.map(p=>Math.max(p.vf,p.vr,p.vfront)));
+ const X=t=>pl+t/T*(w-pl-4),Y=v=>h-pb-v/mxv*(h-pt-pb);const line=(k,col,dash)=>`<polyline fill="none" stroke="${col}" stroke-width="1.5" ${dash?'stroke-dasharray="3 2"':''} points="${H.map(p=>X(p.t)+','+Y(p[k])).join(' ')}"/>`;
+ let g=[0,.5,1].map(f=>`<line x1="${pl}" y1="${Y(mxv*f)}" x2="${w-4}" y2="${Y(mxv*f)}" stroke="#24323c"/><text x="${pl-3}" y="${Y(mxv*f)+3}" font-size="8" fill="#8da0ac" text-anchor="end">${fmt(mxv*f)}</text>`).join('');
+ g+=line('vf','#ffd24a')+line('vfront','#ff8c28',true)+line('vr','#8fe9ff');if(cursor!=null)g+=`<line x1="${X(cursor)}" y1="${pt}" x2="${X(cursor)}" y2="${h-pb}" stroke="#fff" stroke-dasharray="2 2"/>`;
+ g+=`<text x="${pl}" y="${h-2}" font-size="8" fill="#8da0ac">speed in m/s over ${fmt(T)} s: <tspan fill="#ffd24a">fastest flow</tspan> · <tspan fill="#ff8c28">flow front</tspan> · <tspan fill="#8fe9ff">fastest block</tspan></text>`;
+ el('hchart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Speed history">${g}</svg>`}
+function recordStep(R){if(R.nextRec===undefined){R.nextRec=0;R.hist=[];R.frames=[]}
+ while(R.tsim>=R.nextRec){const F=R.fl,n=R.n;let front=0;for(let c=0;c<F.H.length;c++)if(F.H[c]>.3){const d=Math.hypot((c%n-R.cx)*R.DXW,((c/n)|0)-R.cy)*1;const dd=Math.hypot((c%n-R.cx)*R.DXW,(((c/n)|0)-R.cy)*R.DXW);if(dd>front)front=dd}
+  let vr=0;R.rocks.forEach(b=>{if(!b.stopped&&R.tsim>=b.delay){const sp=Math.hypot(b.vx,b.vy,b.vz);if(sp>vr)vr=sp}});
+  const prev=R.hist[R.hist.length-1],vfront=prev?Math.max(0,(front-prev.front)/Math.max(1,R.nextRec-prev.t)):0;R.hist.push({t:R.nextRec,vf:R.vmaxFlow,vr,front,vfront:Math.min(40,vfront)});
+  if(R.frames.length<400){const N=F.H.length,h8=new Uint8Array(N),v8=new Uint8Array(N);for(let c=0;c<N;c++){h8[c]=Math.min(255,Math.round(F.H[c]*4));v8[c]=Math.min(255,Math.round(F.V[c]*8))}R.frames.push({t:R.nextRec,h8,v8,rk:R.rocks.map(b=>[b.x,b.y,b.stopped?1:0,Math.hypot(b.vx,b.vy,b.vz)])})}
+  R.nextRec+=1}}
+function paintFrame(R,fr){const n=R.n,ctx=flowCv.getContext('2d'),im=ctx.createImageData(n,n),d=im.data;
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const k=j*n+i,o=((n-1-j)*n+i)*4,h=fr.h8[k]/4;if(h>.06){const sp=Math.min(1,fr.v8[k]/8/18);d[o]=Math.round(90+165*sp);d[o+1]=Math.round(55+120*sp);d[o+2]=Math.round(30+25*sp);d[o+3]=Math.round(Math.min(1,.4+h*.5)*235)}else if(R.H0[k]>0){d[o]=170;d[o+1]=50;d[o+2]=40;d[o+3]=110}}
+ ctx.putImageData(im,0,0);const pts=fr.rk.map(r=>({type:'Feature',geometry:{type:'Point',coordinates:R2LL(R,r[0],r[1])},properties:{s:r[2],v:r[3]}}));
+ const s1=map.getSource('rocks'),s2=map.getSource('trails');if(s1)s1.setData(RPS.rocks={type:'FeatureCollection',features:pts});if(s2)s2.setData(RPS.trails=emptyFC)}
+
+// ---------- reconstruction of a reported landslide
+function buildEventWindow(ev,opts){opts=opts||{};const R=buildWindow(ev.u,ev.v,{noRelease:true,zsoil:opts.zsoil});const n=R.n,DX=R.DXW,Z=R.Z,sl=R.sl;
+ const E=X0+ev.u*WID,Nn=Y1-ev.v*HGT,i0=Math.max(1,Math.min(n-2,Math.round((E-(R.E0-R.HALF))/DX))),j0=Math.max(1,Math.min(n-2,Math.round((Nn-(R.N0-R.HALF))/DX)));
+ R.ev=ev;R.pi=i0;R.pj=j0;R.evmode=TYPE_MODE[ev.cat]||'slide';
+ const V=(SIZE_V[ev.size]||3e4)*(opts.vscale||1),depth=V<1e4?1.5:V<1e5?3:V<1e6?5:8,N=Math.max(3,Math.min(500,Math.round(V/depth/(DX*DX))));
+ let i=i0,j=j0;const path=[[i,j]];
+ for(let st=0;st<150;st++){let bi=i,bj=j,bz=Z[j*n+i];for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=n||jj>=n)continue;if(Z[jj*n+ii]>bz+1e-3){bz=Z[jj*n+ii];bi=ii;bj=jj}}if(bi===i&&bj===j)break;i=bi;j=bj;path.push([i,j])}
+ let seed=path.find(([a,b])=>Math.hypot((a-i0)*DX,(b-j0)*DX)>=150&&sl[b*n+a]>=27);if(!seed)seed=path.reduce((a,p)=>sl[p[1]*n+p[0]]>sl[a[1]*n+a[0]]?p:a,path[0]);
+ const cand=[];for(let b=0;b<n;b++)for(let a=0;a<n;a++){const sv=sl[b*n+a];if(sv<22||sv>52)continue;const d=Math.hypot((a-seed[0])*DX,(b-seed[1])*DX);if(d>1200)continue;cand.push([d,a,b])}
+ cand.sort((p,q)=>p[0]-q[0]);const pick=cand.slice(0,N),dep=Math.min(12,V/(Math.max(1,pick.length)*DX*DX));let rx=0,ry=0,gE=0,gN=0;   // depth set so the release holds the size-class volume
+ 
+ pick.forEach(([d,a,b])=>{R.H0[b*n+a]=dep;rx+=a;ry+=b;const ia=Math.max(0,a-1),ib=Math.min(n-1,a+1),ja=Math.max(0,b-1),jb=Math.min(n-1,b+1);gE+=(Z[b*n+ib]-Z[b*n+ia])/((ib-ia)*DX);gN+=(Z[jb*n+a]-Z[ja*n+a])/((jb-ja)*DX)});
+ R.nrel=pick.length;R.zsoil=dep;R.cx=pick.length?rx/pick.length:seed[0];R.cy=pick.length?ry/pick.length:seed[1];R.bearing=pick.length?((Math.atan2(-gE,-gN)*180/Math.PI)+360)%360:0;R.targetV=V;
+ const zp=Z[j0*n+i0],rc=[];for(let b=2;b<n-2;b++)for(let a=2;a<n-2;a++){if(sl[b*n+a]>=45&&Z[b*n+a]>=zp+10&&Math.hypot((a-i0)*DX,(b-j0)*DX)<=1400)rc.push([a,b])}
+ if(rc.length<5){for(let b=2;b<n-2;b++)for(let a=2;a<n-2;a++)if(sl[b*n+a]>=35&&Z[b*n+a]>=zp&&Math.hypot((a-i0)*DX,(b-j0)*DX)<=1400)rc.push([a,b])}
+ R.rockCells=rc;const sr=SIZE_ROCK[ev.size]||SIZE_ROCK.unknown;R.rockN=Math.max(6,Math.round(sr[0]*(R.evmode==='both'?.6:1)));R.rockDia=sr[1];R.mu=TYPE_MU[ev.cat]||.22;R.xi=({debris_flow:150,mudslide:120,landslide:250,complex:250,rock_fall:250})[ev.cat]||250;   // Voellmy turbulence coefficient by type (assumed)
+ const rain=chirpsWindow(ev.iso,8);R.rain=rain;let lam=.2;if(rain){const s7=rain.slice(1).reduce((a,b)=>a+b,0);lam=Math.max(.15,Math.min(1,s7/60))}R.lambda=lam;
+ const isq=/earthquake/.test((ev.trig||'').toLowerCase()),si=isq?shakeFor(ev.iso):-1;R.quake=null;
+ if(si>=0){const Ec=R.E0-R.HALF+R.cx*DX,Nc=R.N0-R.HALF+R.cy*DX,cxi=Math.max(0,Math.min(D.w-1,Math.floor((Ec-X0)/WID*D.w))),cyi=Math.max(0,Math.min(D.h-1,Math.floor((Y1-Nc)/HGT*D.h))),ci=cyi*D.w+cxi;
+  R.quake={si,ci,pga:(SHK[si][ci]===255?0:SHK[si][ci]/10)/100*ampAt(ci),M:D.shake[si].mag,T:Math.min(40,Math.max(6,5*(D.shake[si].mag-3)))}}
+ return R}
+function eventCheck(R){const n=R.n,F=R.fl,DX=R.DXW,ev=R.ev;let dpath=1e9,ddep=1e9;for(let j=0;j<n;j++)for(let i=0;i<n;i++){const k=j*n+i,d=Math.hypot((i-R.pi)*DX,(j-R.pj)*DX);if(F.Hmax[k]>.3&&d<dpath)dpath=d;if(F.H[k]>.3&&d<ddep)ddep=d}
+ let drock=1e9;R.rocks.forEach(b=>{const d=Math.hypot(b.x-(-R.HALF+R.pi*DX),b.y-(-R.HALF+R.pj*DX));if(d<drock)drock=d});const acc=ACC_M[ev.acc]||5000,tol=Math.min(acc,R.HALF*.9),m=R.evmode;
+ const dmin=Math.min(m!=='rock'?dpath:1e9,m!=='slide'?drock:1e9);return {dpath,ddep,drock,tol,acc,dmin,reach:dmin<=tol}}
+function eventInfoHTML(R){const ev=R.ev;return [`<b>${ev.title&&ev.title!=='None'?ev.title:ev.cat.replace('_',' ')}</b>`,`${ev.iso} · ${ev.cat.replace('_',' ')} · trigger ${ev.trig} · size ${ev.size.replace('_',' ')}`,ev.loc&&ev.loc!=='None'?`Reported near ${ev.loc} (position ${ev.acc})`:`Position ${ev.acc}`,
+ `<span style="color:var(--muted)">Reconstruction: release zone, volume (${fmt(R.targetV)} m³ from the size class) and friction are assumed. Only date, type, trigger and an approximate position are reported.</span>`].join('<br>')}
+function eventTriggerRows(R){const rows=[];const T=RP.trigger;
+ if((T==='quake'||T==='both')&&R.newmark){const q=R.quake,nm=R.newmark;rows.push(`Earthquake M${q.M}: shaking at the slope <b>${(q.pga*100).toFixed(1)} %g</b>${RP.ev?' (ShakeMap × crest and soft-ground factors)':' (chosen source × crest and soft-ground factors)'}`,`Static safety factor <b>${nm.FS.toFixed(2)}</b>, yield acceleration <b>${(nm.ay/9.81*100).toFixed(1)} %g</b> on a ${nm.beta.toFixed(0)}° slope`,
+  `Newmark sliding <b>${(nm.D*100).toFixed(1)} cm</b>${nm.D>=.05?', above the 5 cm failure guide':RP.ev?', below the 5 cm guide, so shaking alone would not fail it here and the release is taken from the report':', below the 5 cm guide: this shaking alone would not fail the slope'}`,nm.t0>=0?`Sliding starts <b>${nm.t0.toFixed(1)} s</b> into the shaking`:'The shaking never exceeds the yield acceleration')}
+ if((T==='rain'||T==='both')&&R.rain){const r=R.rain,d1=r[r.length-1],d3=r.slice(-3).reduce((a,b)=>a+b,0),d7=r.slice(-7).reduce((a,b)=>a+b,0);rows.push(`CHIRPS area-mean rain: <b>${d1.toFixed(1)} mm</b> that day, <b>${d3.toFixed(1)} mm</b> in 3 days, <b>${d7.toFixed(1)} mm</b> in 7`,(D.rthr?`Fitted event threshold at 1 day <b>${thrAt(1).toFixed(1)} mm/day</b>: ${d1>=thrAt(1)?'exceeded':'not exceeded'}`:'No fitted rainfall threshold for this area'),`Pore-pressure ratio used to lower the friction (fluidization) <b>${R.lambda.toFixed(2)}</b>`)}
+ else if((T==='rain'||T==='both')&&!RP.ev){const I=val('s-int'),Dh=val('s-dur');rows.push(`Rain <b>${I} mm/h</b> for ${Dh} h = <b>${fmt(I*Dh)} mm</b>${D.rthr?'; fitted event threshold at that duration '+thrAt(Math.max(.04,Dh/24)).toFixed(1)+' mm/day':''}`)}
+ else if(T==='none')rows.push(R.ev&&/earthquake/.test((R.ev.trig||'').toLowerCase())?'Reported as earthquake-triggered, but no ShakeMap for this date is in the downloaded set, so there is no shaking record. The replay starts from the assumed release.':'No rain record for this date: the replay starts from the assumed release.');
+ rows.push(`Release <b>${fmt(R.nrel*R.DXW*R.DXW/1e6,3)} km²</b> × ${R.zsoil.toFixed(1)} m ≈ <b>${fmt(R.nrel*R.DXW*R.DXW*R.zsoil)} m³</b>`);return rows}
+function setMode(m){V3.mode=m;document.querySelectorAll('#v3mode button').forEach(o=>o.setAttribute('aria-pressed',o.dataset.m===m))}
+async function startEvent(idx){const ev=EVENTS.find(e=>e.idx===idx);if(RP.busy||!ev||!mapReady)return;RP.busy=true;stopPlay();clearReplay();
+ try{await loadHeightfield();const R=buildEventWindow(ev);setMode(R.evmode);const c=utm2ll(R.E0-R.HALF+R.cx*R.DXW,R.N0-R.HALF+R.cy*R.DXW);
+  await new Promise(ok=>{map.once('moveend',ok);{const cam=camFor(R);map.flyTo({center:cam.center,zoom:13,pitch:60,bearing:cam.bearing,duration:2600,essential:true})}});
+  RP.busy=false;RP.make=o=>buildEventWindow(ev,o);startReplay(R,-1,ev)}catch(e){RP.busy=false;el('readout').innerHTML+=`<br><span style="color:var(--warn)">${e.message}</span>`}}
+
+
+// ---------- trigger choice: rain, earthquake, or both, each with its own parameters
+function trigState(){const b=document.querySelector('#trig [aria-pressed="true"]');return b?b.dataset.t:'rain'}
+function trigRain(){return trigState()!=='quake'}
+function trigQuake(){return trigState()!=='rain'}
+function quakeIdx(){if(!trigQuake())return -1;const v=parseInt(el('s-eq').value);return isNaN(v)?-1:v}
+function syncCust(){el('custBox').hidden=!(trigQuake()&&parseInt(el('s-eq').value)===-2)}
+function setTrigger(t){document.querySelectorAll('#trig button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));el('rainBox').hidden=(t==='quake');el('quakeBox').hidden=(t==='rain');syncCust();sim=null;frame=null;stopPlay();clearOverlay();if(typeof drawThr==='function')drawThr()}
+document.querySelectorAll('#trig button').forEach(b=>b.addEventListener('click',()=>setTrigger(b.dataset.t)));
+el('s-eq').addEventListener('change',syncCust);
+function quakeLine(sm){if(sm.evi>=0)return `Earthquake <b>M${D.shake[sm.evi].mag} ${D.shake[sm.evi].date}</b> · PGA up to ${D.shake[sm.evi].pga_max} %g`;if(sm.evi===-2)return `Custom shaking <b>${val('s-pga')} %g</b>, magnitude ${val('s-mag')}`;return 'No earthquake in the trigger'}
+function quakeForSite(R){const idx=quakeIdx();if(idx===-1)return null;const DX=R.DXW,Ec=R.E0-R.HALF+R.cx*DX,Nc=R.N0-R.HALF+R.cy*DX,cxi=Math.max(0,Math.min(D.w-1,Math.floor((Ec-X0)/WID*D.w))),cyi=Math.max(0,Math.min(D.h-1,Math.floor((Y1-Nc)/HGT*D.h))),ci=cyi*D.w+cxi;
+ let pga,M;if(idx>=0){pga=(SHK[idx][ci]===255?0:SHK[idx][ci]/10)/100*ampAt(ci);M=D.shake[idx].mag}else{pga=val('s-pga')/100*ampAt(ci);M=val('s-mag')}
+ return {si:idx,ci,pga,M,T:Math.min(40,Math.max(6,5*(M-3)))}}
+
+// ---------- uncertainty bands: an ensemble of replays with perturbed friction, soil depth, bounce and roughness
+const pctl=(a,p)=>{const b=[...a].sort((x,y)=>x-y);return b.length?b[Math.min(b.length-1,Math.max(0,Math.round(p*(b.length-1))))]:NaN};
+function flowMetrics(R){const n=R.n,F=R.fl;let vol=0,area=0,hmax=0,far=0,zlow=1e9,lm=0;
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const c=j*n+i,h=F.H[c];vol+=h;lm+=h*Math.hypot((i-R.cx)*R.DXW,(j-R.cy)*R.DXW);if(h>.3){area++;if(h>hmax)hmax=h}if(F.Hmax[c]>.3){const d=Math.hypot((i-R.cx)*R.DXW,(j-R.cy)*R.DXW);if(d>far)far=d;if(R.Z[c]<zlow)zlow=R.Z[c]}}
+ return {Lm:vol>0?lm/vol:0,L:far,vol:vol*R.DXW*R.DXW,area:area*R.DXW*R.DXW/1e6,hmax,drop:zlow<1e8?Math.max(0,R.Z[Math.round(R.cy)*n+Math.round(R.cx)]-zlow):0,rockMax:R.rocks.length?Math.max(...R.rocks.map(b=>b.trav)):0}}
+function runMember(R,lim){let steps=0;while(R.tsim<lim){stepSim(R,.5);steps++;if(R.tsim>15&&R.vmaxFlow<.4&&R.moving===0)break}return flowMetrics(R)}
+function paintProb(R,P){const n=R.n,ctx=flowCv.getContext('2d'),im=ctx.createImageData(n,n),d=im.data;
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const p=P[j*n+i],o=((n-1-j)*n+i)*4;if(p<.05)continue;const t=Math.min(1,p);d[o]=Math.round(90+150*t);d[o+1]=Math.round(170-110*t);d[o+2]=Math.round(255-120*t);d[o+3]=Math.round(80+160*t)}
+ ctx.putImageData(im,0,0)}
+async function runEnsemble(N){const R0=RP.R;if(!R0||RP.phase!=='after'||!RP.make)return;N=N||12;const rn=rng(2024),lim=val('v3tl');
+ el('hens').disabled=true;const acc=new Float32Array(R0.n*R0.n);const M={L:[],Lm:[],vol:[],area:[],hmax:[],drop:[],rockMax:[]};
+ for(let m=0;m<N;m++){el('hread').innerHTML=`Ensemble run <b>${m+1}</b> of ${N} …`;el('hbar').style.width=(m/N*100)+'%';await new Promise(r=>setTimeout(r,0));
+  const R=RP.make({zsoil:val('s-z')*(.75+.5*rn()),vscale:.6+.8*rn()});R.mu=(R.mu!=null?R.mu:val('v3mu'))*(.6+.8*rn());R.e=val('v3e')*(.8+.4*rn());R.rough=Math.min(1,val('v3rough')*(.6+.8*rn())+.05);R.seed=11+m*17;initPhysics(R);
+  const r=runMember(R,lim);for(const k of Object.keys(M))M[k].push(r[k]);const F=R.fl;for(let c=0;c<acc.length;c++)if(F.Hmax[c]>.3)acc[c]+=1}
+ for(let c=0;c<acc.length;c++)acc[c]/=N;RP.ens={P:acc,M,N};RP.showProb=true;paintProb(R0,acc);el('hprob').hidden=false;el('hprob').textContent='Show single run';el('hens').disabled=false;
+ const row=(name,a,u,dec)=>`${name} <b>${fmt(pctl(a,.5),dec||0)}</b> ${u} <span style="color:var(--muted)">(P10–P90 ${fmt(pctl(a,.1),dec||0)}–${fmt(pctl(a,.9),dec||0)})</span>`;
+ const rows=[`<b>${N}-run ensemble</b> (friction ×0.6–1.4, soil depth ±25 %, bounce ±20 %, roughness varied)`,row('Mean distance of the deposit',M.Lm,'m'),row('Farthest reach (clipped by the window)',M.L,'m'),row('Deposit area',M.area,'km²',2),row('Deposit volume',M.vol,'m³'),row('Deepest deposit',M.hmax,'m',1),row('Vertical drop',M.drop,'m')];
+ if(V3.mode!=='slide'&&R0.rocks.length)rows.push(row('Farthest block',M.rockMax,'m'));
+ const pc=[...acc].filter(p=>p>=.5).length*R0.DXW*R0.DXW/1e6;rows.push(`Area reached in at least half the runs <b>${fmt(pc,2)} km²</b>`);
+ el('hread').innerHTML=rows.join('<br>');el('hbar').style.width='100%';
+ el('hleg').innerHTML='<span><i style="background:#b8aaff"></i>Reached in few runs</span><span><i style="background:#f06a8c"></i>Reached in most runs</span>'}
+el('hens').addEventListener('click',()=>runEnsemble(12));
+el('hprob').addEventListener('click',()=>{const R=RP.R;if(!R||!RP.ens)return;RP.showProb=!RP.showProb;if(RP.showProb){paintProb(R,RP.ens.P);el('hprob').textContent='Show single run'}else{paintFlow(R,'after');el('hprob').textContent='Show probability map'}});
+el('hreplay').addEventListener('click',()=>{if(!RP.make||!RP.R)return;const ev=RP.ev,k=RP.k;const R=RP.make();startReplay(R,k,ev)});
+document.querySelectorAll('#v3mode button').forEach(b=>b.addEventListener('click',()=>{V3.mode=b.dataset.m;document.querySelectorAll('#v3mode button').forEach(o=>o.setAttribute('aria-pressed',o===b))}));
+[['v3rough','v3roughv',v=>(+v).toFixed(2)],['v3tl','v3tlv',v=>v+' s'],['v3mu','v3muv',v=>(+v).toFixed(2)],['v3n','v3nv',v=>v],['v3dia','v3dv',v=>(+v).toFixed(1)+' m'],['v3e','v3ev',v=>(+v).toFixed(2)],['v3sp','v3spv',v=>v+'×']].forEach(([i,o,f])=>el(i).addEventListener('input',()=>el(o).textContent=f(el(i).value)));
+// ---------- area of interest: draw, fetch from the server, open saved areas
+const PK_B=[[60.8,23.6],[77.9,37.1]];
+const AD={mode:null,pts:[],cur:null,ready:false,api:false,busy:false,geom:null};
+const AOI_META=D.aoi||{id:'gilgit',name:'Gilgit (sample area)'};
+const emptyAD={type:'FeatureCollection',features:[]};
+const geoAll={type:'FeatureCollection',features:(D.allpts||[]).map((p,i)=>({type:'Feature',geometry:{type:'Point',coordinates:[p.lon,p.lat]},properties:{k:/earthquake/.test((p.trig||'').toLowerCase())?'q':/rain|downpour|monsoon|flood/.test((p.trig||'').toLowerCase())?'r':'o',lon:p.lon,lat:p.lat,t:`<b>${p.cat.replace('_',' ')}</b> · ${isoOf(p.date)}<br>trigger: ${p.trig} · size ${p.size.replace('_',' ')}<br>${p.title&&p.title!=='None'?p.title+'<br>':''}<span style="color:#e6b84a">Outside the current area: click to fetch an area around it</span>`}}))};
+function ringArea(ring){const pr=ring.map(([lo,la])=>ll2utm(lo,la));let a=0;for(let i=0;i<pr.length-1;i++)a+=pr[i][0]*pr[i+1][1]-pr[i+1][0]*pr[i][1];return Math.abs(a)/2e6}
+function ringExtent(ring){const pr=ring.map(([lo,la])=>ll2utm(lo,la)),xs=pr.map(p=>p[0]),ys=pr.map(p=>p[1]);return[(Math.max(...xs)-Math.min(...xs))/1000,(Math.max(...ys)-Math.min(...ys))/1000]}
+function adSetGeom(ring){AD.geom=ring?{type:'Polygon',coordinates:[ring]}:null;
+ const st=el('a-status'),btn=el('a-fetch');
+ if(!ring){btn.disabled=true;st.textContent='';st.hidden=true;return}
+ const ar=ringArea(ring),[w,h]=ringExtent(ring);let msg=`Drawn area ${fmt(ar,ar<10?2:0)} km² (${fmt(w,0)} × ${fmt(h,0)} km).`,ok=true;
+ if(Math.max(w,h)>500){msg+=' Too large: the limit is 500 km across.';ok=false}
+ else if(Math.max(w,h)<10)msg+=' Smaller than 10 km: it will be widened to 10 km around its centre.';
+ else if(Math.max(w,h)>110)msg+=` The terrain will be held at ${fmt(30*Math.ceil(Math.max(w,h)*1000/30/3600),0)} m cells.`;
+ st.hidden=false;st.textContent=msg;btn.disabled=!(ok&&AD.api&&!AD.busy)}
+function adRefresh(){if(!mapReady)return;const f=[];let ring=null;
+ if(AD.mode==='rect'&&AD.pts.length===1&&AD.cur){const a=AD.pts[0],b=AD.cur;ring=[[a[0],a[1]],[b[0],a[1]],[b[0],b[1]],[a[0],b[1]],[a[0],a[1]]]}
+ else if(AD.mode==='poly'&&AD.pts.length){const c=AD.cur?[...AD.pts,AD.cur]:AD.pts;ring=[...c,c[0]]}
+ else if(AD.geom)ring=AD.geom.coordinates[0];
+ if(ring&&ring.length>=2){f.push({type:'Feature',geometry:{type:ring.length>=4?'Polygon':'LineString',coordinates:ring.length>=4?[ring]:ring},properties:{}})}
+ AD.pts.forEach(p=>f.push({type:'Feature',geometry:{type:'Point',coordinates:p},properties:{}}));
+ const s=map.getSource('aoidraw');if(s)s.setData({type:'FeatureCollection',features:f})}
+function adStart(mode){AD.mode=mode;AD.pts=[];AD.cur=null;AD.geom=null;adSetGeom(null);if(map)map.getCanvas().style.cursor='crosshair';
+ el('a-rect').setAttribute('aria-pressed',mode==='rect');el('a-poly').setAttribute('aria-pressed',mode==='poly');
+ const st=el('a-status');st.hidden=false;st.textContent=mode==='rect'?'Click two opposite corners.':'Click the corners of the area; double-click or click the first point to finish.';adRefresh()}
+function adFinish(ring){AD.mode=null;AD.pts=[];AD.cur=null;if(map)map.getCanvas().style.cursor='';el('a-rect').setAttribute('aria-pressed',false);el('a-poly').setAttribute('aria-pressed',false);adSetGeom(ring);adRefresh()}
+function adClear(){AD.mode=null;AD.pts=[];AD.cur=null;AD.geom=null;if(map)map.getCanvas().style.cursor='';el('a-rect').setAttribute('aria-pressed',false);el('a-poly').setAttribute('aria-pressed',false);adSetGeom(null);adRefresh()}
+function aoiLayers(){
+ map.addSource('allinv',{type:'geojson',data:geoAll});
+ map.addLayer({id:'allinv',type:'circle',source:'allinv',layout:{visibility:visOn('l-all')?'visible':'none'},paint:{'circle-radius':['interpolate',['linear'],['zoom'],4,2.5,10,5],'circle-color':['match',['get','k'],'q','#8b7cf6','r','#2fd0d6','#c0ccd4'],'circle-opacity':.75,'circle-stroke-color':'#04141a','circle-stroke-width':1}},map.getLayer('inv')?'inv':undefined);
+ map.addSource('aoicur',{type:'geojson',data:{type:'Feature',geometry:AOI_META.polygon||null,properties:{}}});
+ map.addLayer({id:'aoicur',type:'line',source:'aoicur',paint:{'line-color':'#e6b84a','line-width':2.2,'line-dasharray':[2,2]}});
+ map.addSource('aoidraw',{type:'geojson',data:emptyAD});
+ map.addLayer({id:'aoidraw-fill',type:'fill',source:'aoidraw',filter:['==',['geometry-type'],'Polygon'],paint:{'fill-color':'#2fd0d6','fill-opacity':.16}});
+ map.addLayer({id:'aoidraw-line',type:'line',source:'aoidraw',paint:{'line-color':'#2fd0d6','line-width':2.4}});
+ map.addLayer({id:'aoidraw-pt',type:'circle',source:'aoidraw',filter:['==',['geometry-type'],'Point'],paint:{'circle-radius':5,'circle-color':'#fff','circle-stroke-color':'#2fd0d6','circle-stroke-width':2}});
+ adRefresh()}
+function aoiHandlers(){
+ map.on('click',e=>{if(!AD.mode)return;const p=[+e.lngLat.lng.toFixed(5),+e.lngLat.lat.toFixed(5)];
+  if(AD.mode==='rect'){if(AD.pts.length===0){AD.pts=[p];AD.cur=p;adRefresh()}else{const a=AD.pts[0];if(a[0]===p[0]||a[1]===p[1])return;adFinish([[a[0],a[1]],[p[0],a[1]],[p[0],p[1]],[a[0],p[1]],[a[0],a[1]]])}}
+  else{if(AD.pts.length>=3){const f=map.project(AD.pts[0]),c=e.point;if(Math.hypot(f.x-c.x,f.y-c.y)<10){adFinish([...AD.pts,AD.pts[0]]);return}}AD.pts.push(p);adRefresh()}});
+ map.on('mousemove',e=>{if(!AD.mode||!AD.pts.length)return;AD.cur=[e.lngLat.lng,e.lngLat.lat];adRefresh()});
+ map.on('dblclick',e=>{if(AD.mode==='poly'){e.preventDefault();if(AD.pts.length>=3)adFinish([...AD.pts,AD.pts[0]])}});
+ map.on('mouseenter','allinv',()=>{if(!AD.mode)map.getCanvas().style.cursor='pointer'});
+ map.on('mouseleave','allinv',()=>{if(!AD.mode)map.getCanvas().style.cursor='';popup.remove()});
+ map.on('mousemove','allinv',e=>{if(AD.mode)return;popup.setLngLat(e.lngLat).setHTML(e.features[0].properties.t).addTo(map)});
+ map.on('click','allinv',e=>{if(AD.mode)return;const q=e.features[0].properties;popup.remove();aoiAround(q.lon,q.lat)})}
+function aoiAround(lon,lat,km){km=km||25;const[E,N]=ll2utm(lon,lat),h=km*500,ring=[utm2ll(E-h,N-h),utm2ll(E+h,N-h),utm2ll(E+h,N+h),utm2ll(E-h,N+h),utm2ll(E-h,N-h)].map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)]);
+ adFinish(ring);el('a-name').value=el('a-name').value||`Area around ${lat.toFixed(2)}N ${lon.toFixed(2)}E`;
+ el('t-terrain').click();const b=ring.map(p=>p),xs=b.map(p=>p[0]),ys=b.map(p=>p[1]);map.fitBounds([[Math.min(...xs),Math.min(...ys)],[Math.max(...xs),Math.max(...ys)]],{padding:80,duration:1200,pitch:0,bearing:0})}
+async function aoiFetch(){if(!AD.geom||AD.busy)return;AD.busy=true;const st=el('a-status'),btn=el('a-fetch');btn.disabled=true;
+ const body={geometry:AD.geom,name:(el('a-name').value||'').trim()||'My area',deep:el('a-deep').checked};
+ try{const r=await fetch('/api/aoi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  if(j.state==='done'){location.href='/a/'+j.id+'/';return}
+  st.hidden=false;st.textContent='Started …';
+  const poll=async()=>{try{const q=await(await fetch('/api/job/'+j.job)).json();st.textContent=(q.messages||[]).slice(-1)[0]||'Working …';st.textContent+=`  (${q.elapsed||0} s)`;
+    if(q.state==='done'){location.href='/a/'+q.id+'/';return}
+    if(q.state==='failed'){st.textContent='Failed: '+q.error;AD.busy=false;adSetGeom(AD.geom?AD.geom.coordinates[0]:null);return}
+    setTimeout(poll,2000)}catch(e){st.textContent='Lost contact with the server: '+e.message;AD.busy=false}};
+  poll()}catch(e){st.hidden=false;st.textContent='Could not start: '+e.message;AD.busy=false;adSetGeom(AD.geom.coordinates[0])}}
+async function aoiList(){try{const j=await(await fetch('/api/aois')).json();
+ el('a-list').innerHTML=`<div class="evrow"><div><b>Gilgit (sample area)</b><br><small style="color:var(--muted)">built-in, with the full validation record</small></div><a class="chip" href="/" style="text-decoration:none">Open</a></div>`+
+  j.aois.map(a=>`<div class="evrow"><div><b>${a.name.replace(/</g,'&lt;')}</b>${a.id===AOI_META.id?' <small style="color:var(--cyan)">current</small>':''}<br><small style="color:var(--muted)">${fmt(a.area_km2,0)} km² · ${a.events} reports · ${a.deep?'with satellite layers':'basic'} · ${a.built}</small></div><a class="chip" href="/a/${a.id}/" style="text-decoration:none">Open</a></div>`).join('')}catch(e){}}
+async function aoiInit(){
+ const kv=[['Current area',AOI_META.name],['Valid area',fmt(S.area_km2)+' km²'],['Cell size',fmt(S.res,0)+' m terrain, '+fmt(D.cell_m,0)+' m web grid'],['Reports inside',EVENTS.length+' of '+(D.allpts?D.allpts.length:D.pts.length)]];
+ if(AOI_META.built)kv.push(['Built',AOI_META.built+(AOI_META.seconds?' ('+AOI_META.seconds+' s)':'')]);
+ el('aoiKV').innerHTML=kv.map(([k,v])=>`<span>${k}</span><b>${String(v).replace(/</g,'&lt;')}</b>`).join('');
+ el('aoiName').textContent=AOI_META.name;
+ try{const r=await fetch('/api/health',{cache:'no-store'});AD.api=r.ok}catch(e){AD.api=false}
+ el('a-note').textContent=AD.api?'Draw a rectangle or polygon anywhere in Pakistan, or click a grey report point on the map, then fetch the details for that area. Cells outside your polygon are left out. Areas up to 500 km across are accepted; fetching takes one to several minutes.':'Drawing works, but fetching details needs the Python server: run serve_dashboard.bat on the computer that holds the data, then open the page from it.';
+ if(AD.api)aoiList()}
+el('a-rect').addEventListener('click',()=>adStart(AD.mode==='rect'?null:'rect'));
+el('a-poly').addEventListener('click',()=>adStart(AD.mode==='poly'?null:'poly'));
+el('a-clear').addEventListener('click',adClear);
+el('a-fetch').addEventListener('click',aoiFetch);
+el('a-view').addEventListener('click',()=>{if(!map)return;const b=map.getBounds(),w=b.getWest(),e_=b.getEast(),s_=b.getSouth(),n=b.getNorth();const ring=[[w,s_],[e_,s_],[e_,n],[w,n],[w,s_]].map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)]);adFinish(ring)});
+el('z-pk').addEventListener('click',()=>{if(map)map.fitBounds(PK_B,{padding:20,pitch:0,bearing:0,duration:1400,essential:true})});
+
+// ---------- impact assessment of a replay: what the flow (and later the blocks) would damage
+// Every fragility threshold, damage ratio and unit cost below is an ASSUMPTION (see the Technical Reference, Part XII). None is calibrated to
+// observed damage in Pakistan. Costs are in Pakistani rupees (PKR) and are order-of-magnitude figures for comparing scenarios.
+const IMP={rho:1800,floors:1,costM2:35000,dr:[0,.05,.2,.55,1],med:[5,15,40,100],beta:.6,minDepth:.3,dispFrac:[0,0,.5,1,1],hh:6.4,
+ roadBlock:.5,roadCost:[6e6,4e6,2e6,.6e6],bridgeCost:4e5,bridgeMed:40,cropHa:2.5e5,
+ rockRho:2700,rockMed:[10,40,150,600],rockBeta:.7};   // rock fragility in kJ
+const DSNAME=['DS0 none','DS1 slight','DS2 moderate','DS3 extensive','DS4 complete'],DSCOL=['#6e7880','#ffd24a','#ff9a3a','#e04848','#8a1c1c'];
+const ROADN=['Highway or primary','Secondary or tertiary','Local road','Track'];
+const INFRA=D.infra||{roads:[],pois:[],places:[]};
+const BP=D.bpts?(()=>{const a=dec(D.bpts.xy),b=dec(D.bpts.area);return{n:D.bpts.n,xy:new Float32Array(a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength)),ar:new Uint16Array(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength))}})():null;
+const BCELL=(()=>{const c=new Int32Array(NC);if(BP)for(let b=0;b<BP.n;b++){const col=Math.min(D.w-1,Math.max(0,Math.floor(BP.xy[2*b]/D.cell_m))),row=Math.min(D.h-1,Math.max(0,Math.floor(BP.xy[2*b+1]/D.cell_m)));c[row*D.w+col]++}return c})();
+function normCdf(z){const t=1/(1+.2316419*Math.abs(z)),d=.3989423*Math.exp(-z*z/2),p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p}
+// probabilities of damage states DS0..DS4 from an intensity (lognormal fragility, medians in `med` for DS1..DS4)
+function dsProbs(im,med,beta){const c=med.map(m=>im<=0?0:normCdf(Math.log(im/m)/beta));return[1-c[0],c[0]-c[1],c[1]-c[2],c[2]-c[3],c[3]]}
+const dsModal=pm=>{let k=0;let acc=0;for(let s=4;s>=1;s--){acc+=pm[s];if(acc>=.5){k=s;break}}return k};   // highest state reached with probability at least one half
+const flowIM=(h,v)=>IMP.rho*(v*v+.5*9.81*h)/1000;                 // kPa: dynamic pressure plus half the hydrostatic pressure of the depth
+const IMF={flow:{im:flowIM,med:IMP.med,beta:IMP.beta,unit:'kPa'},flood:{im:(h,v)=>h+v*v/19.62,med:[.5,1.5,3,5],beta:.5,unit:'m'}};   // hazard model in use: debris flow (pressure) or breach flood (depth plus velocity head)
+let HZ=IMF.flow;
+const expDR=pm=>pm.reduce((a,p,k)=>a+p*IMP.dr[k],0);
+// window cell index for a point given in metres from the page extent corner (x east, y down), or -1 outside the window
+function winCell(R,wx,wy){const fi=(X0+wx-(R.E0-R.HALF))/R.DXW,fj=(Y1-wy-(R.N0-R.HALF))/R.DXW;if(fi<0||fj<0||fi>=R.n||fj>=R.n)return -1;return(fj|0)*R.n+(fi|0)}
+function coarseCell(wx,wy){const col=Math.min(D.w-1,Math.max(0,Math.floor(wx/D.cell_m))),row=Math.min(D.h-1,Math.max(0,Math.floor(wy/D.cell_m)));return row*D.w+col}
+
+function impactFootprint(R){const n=R.n,F=R.fl,dx2=R.DXW*R.DXW;const h=[],v=[];let cells=0,pc=[0,0,0],hm=0,vm=0,pm=0;
+ for(let k=0;k<n*n;k++){if(F.Hmax[k]>=IMP.minDepth){cells++;h.push(F.Hmax[k]);v.push(F.Vmax[k]);if(F.Hmax[k]>hm)hm=F.Hmax[k];if(F.Vmax[k]>vm)vm=F.Vmax[k];const p=HZ.im(F.Hmax[k],F.Vmax[k]);if(p>pm)pm=p;pc[p<5?0:p<30?1:2]++}}
+ const q=(a,f)=>{if(!a.length)return 0;const b=[...a].sort((x,y)=>x-y);return b[Math.min(b.length-1,Math.floor(f*(b.length-1)))]};
+ return{areaKm2:cells*dx2/1e6,hmax:hm,vmax:vm,pmax:pm,hMed:q(h,.5),hP90:q(h,.9),vMed:q(v,.5),vP90:q(v,.9),pressureKm2:pc.map(c=>c*dx2/1e6)}}
+
+function impactBuildings(R){if(!BP)return null;const n=R.n,F=R.fl,o={dr:new Float32Array(BP.n),costDS:[0,0,0,0,0],inWindow:0,affected:0,ds:[0,0,0,0,0],dsExp:[0,0,0,0,0],cost:0,floorM2:0,people:0,peopleExposed:0,displaced:0,atRisk:0,pts:[]};
+ for(let b=0;b<BP.n;b++){const wx=BP.xy[2*b],wy=BP.xy[2*b+1],k=winCell(R,wx,wy);if(k<0)continue;o.inWindow++;const h=F.Hmax[k];
+  if(h<IMP.minDepth){o.ds[0]++;o.dsExp[0]++;continue}
+  const v=F.Vmax[k],p=HZ.im(h,v),pm=dsProbs(p,HZ.med,HZ.beta),ds=dsModal(pm),cc=coarseCell(wx,wy),ppl=(POP[cc]/POPD)/Math.max(1,BCELL[cc]),area=BP.ar[b]*IMP.floors;
+  o.affected++;o.ds[ds]++;pm.forEach((q,s)=>o.dsExp[s]+=q);const dr_=expDR(pm);o.dr[b]=dr_;o.cost+=area*IMP.costM2*dr_;pm.forEach((q,s)=>o.costDS[s]+=area*IMP.costM2*q*IMP.dr[s]);o.floorM2+=area;o.people+=ppl;
+  o.displaced+=ppl*pm.reduce((a,q,s)=>a+q*IMP.dispFrac[s],0);if(ds>=3)o.peopleExposed+=ppl;o.atRisk+=ppl*pm[4];
+  o.pts.push([wx,wy,ds,p])}
+ return o}
+
+function pointsAlong(xy,step){const pts=[];for(let i=0;i+3<xy.length;i+=2){const x1=xy[i],y1=xy[i+1],x2=xy[i+2],y2=xy[i+3],L=Math.hypot(x2-x1,y2-y1),m=Math.max(1,Math.ceil(L/step));for(let s=0;s<m;s++)pts.push([x1+(x2-x1)*s/m,y1+(y2-y1)*s/m,i/2,step*0+L/m])}
+ const l=xy.length;pts.push([xy[l-2],xy[l-1],l/2-2,0]);return pts}
+function impactRoads(R){const F=R.fl,o={lenKm:[0,0,0,0],blockedKm:[0,0,0,0],cost:0,segs:[],bridges:[],roadsHit:0,blockedEdges:new Set()};
+ INFRA.roads.forEach((r,ri)=>{let hit=false,bl=0;const sm=pointsAlong(r.xy,10);let pk=0,hh=0;const inW=[];
+  sm.forEach((q,si)=>{const k=winCell(R,q[0],q[1]);if(k<0)return;o.lenKm[r.c]+=q[3]/1000;const h=F.Hmax[k];if(h>=IMP.roadBlock){bl+=q[3];hit=true;inW.push(si);o.blockedEdges.add(ri+':'+q[2])}if(h>=IMP.minDepth){const p=HZ.im(h,F.Vmax[k]);if(p>pk)pk=p;if(h>hh)hh=h}});
+  if(hit){o.roadsHit++;o.blockedKm[r.c]+=bl/1000}
+  if(r.b&&(hh>=IMP.minDepth)){const len=sm.reduce((a,q)=>a+q[3],0),pr=normCdf(Math.log(Math.max(pk,.01)/(HZ===IMF.flow?IMP.bridgeMed:HZ.med[2]))/HZ.beta);o.bridges.push({ri,name:r.n||'Unnamed bridge',len,p:pk,prob:pr,h:hh,cost:len*IMP.bridgeCost*pr})}
+  if(inW.length){const segs=[];let cur=null;inW.forEach(si=>{if(cur&&si===cur[1]+1)cur[1]=si;else{cur=[si,si];segs.push(cur)}});segs.forEach(([a,b])=>{const line=[];for(let s=a;s<=b+1&&s<sm.length;s++)line.push([sm[s][0],sm[s][1]]);if(line.length>1)o.segs.push(line)})}});
+ o.cost=o.blockedKm.reduce((a,k,c)=>a+k*IMP.roadCost[c],0)+o.bridges.reduce((a,b)=>a+b.cost,0);return o}
+
+function impactFacilities(R){const F=R.fl,out=[];INFRA.pois.forEach(p=>{const k=winCell(R,p.x,p.y);if(k<0)return;const h=F.Hmax[k];const pr=h>=IMP.minDepth?HZ.im(h,F.Vmax[k]):0,pm=dsProbs(pr,HZ.med,HZ.beta);out.push({kind:p.k,name:p.n,x:p.x,y:p.y,h,p:pr,ds:h>=IMP.minDepth?dsModal(pm):0,pm})});return out}
+
+function impactLand(R){const F=R.fl,n=R.n,dx2=R.DXW*R.DXW,cls={};let crop=0;
+ for(let j=0;j<n;j++)for(let i=0;i<n;i++){const k=j*n+i;if(F.Hmax[k]<IMP.minDepth)continue;const E=R.E0-R.HALF+(i+.5)*R.DXW,N=R.N0-R.HALF+(j+.5)*R.DXW,wx=E-X0,wy=Y1-N,cc=coarseCell(wx,wy),lc=LC[cc];cls[lc]=(cls[lc]||0)+dx2/1e6}
+ const ha=(cls[4]||0)*100;return{cls,cropHa:ha,cropCost:ha*IMP.cropHa}}
+
+function computeImpact(R){const I={fp:impactFootprint(R),b:impactBuildings(R),r:impactRoads(R),f:impactFacilities(R),land:impactLand(R)};R.impact=I;I.rock=(V3.mode!=='slide'&&R.rocks&&R.rocks.length)?impactRock(R):null;
+ I.cost={buildings:I.b?I.b.cost:0,roads:I.r.cost,agri:I.land.cropCost,rock:I.rock?I.rock.costExtra:0};I.cost.total=I.cost.buildings+I.cost.roads+I.cost.agri+I.cost.rock;
+ I.people=I.b?{affected:I.b.people,displaced:I.b.displaced,households:I.b.people/IMP.hh,displacedHh:I.b.displaced/IMP.hh,atRisk:I.b.atRisk}:null;return I}
+
+// the same assessment for the breach flood of a landslide dam, using the flood's depth and speed fields and a depth-based fragility
+function computeFloodImpact(R){const prev=HZ;HZ=IMF.flood;try{const I={fp:impactFootprint(R),b:impactBuildings(R),r:impactRoads(R),f:impactFacilities(R),land:impactLand(R)};
+ I.cost={buildings:I.b?I.b.cost:0,roads:I.r.cost,agri:I.land.cropCost};I.cost.total=I.cost.buildings+I.cost.roads+I.cost.agri;
+ I.people=I.b?{affected:I.b.people,displaced:I.b.displaced,households:I.b.people/IMP.hh,displacedHh:I.b.displaced/IMP.hh,atRisk:I.b.atRisk}:null;return I}finally{HZ=prev}}
+
+// ---------- rockfall impact: block mass and energy, collisions with buildings, roads, bridges and facilities, damage, fragmentation, barriers
+const rockMass=r=>IMP.rockRho*4/3*Math.PI*r*r*r;                    // kg, sphere of density rockRho
+const rockKE=(r,v)=>.5*rockMass(r)*v*v/1000;                       // kJ, translational energy only (rotation is neglected)
+// intersection of segment p1-p2 with segment p3-p4: [x, y, t along p1-p2] or null
+function segHit(x1,y1,x2,y2,x3,y3,x4,y4){const den=(x2-x1)*(y4-y3)-(y2-y1)*(x4-x3);if(Math.abs(den)<1e-12)return null;const t=((x3-x1)*(y4-y3)-(y3-y1)*(x4-x3))/den,u=((x3-x1)*(y2-y1)-(y3-y1)*(x2-x1))/den;return(t>=0&&t<=1&&u>=0&&u<=1)?[x1+t*(x2-x1),y1+t*(y2-y1),t]:null}
+// barrier: R.barrier={x1,y1,x2,y2,cap (kJ),h (m)} in window coordinates; called by stepRocks after each move of a block from (ox, oy)
+function barrierCheck(R,b,ox,oy){const B=R.barrier;if(!B||b.stopped)return;const h=segHit(ox,oy,b.x,b.y,B.x1,B.y1,B.x2,B.y2);if(!h)return;
+ const gz=sampleZ(R,h[0],h[1]);if((b.z-b.r)-gz>=B.h){B.over=(B.over||0)+1;return}                    // the block's lower edge is above the top of the barrier
+ const sp=Math.hypot(b.vx,b.vy,b.vz),ke=rockKE(b.r,sp);
+ if(ke<=B.cap){b.stopped=true;b.vx=b.vy=b.vz=0;b.x=h[0];b.y=h[1];b.barrier='stopped';B.stopped=(B.stopped||0)+1;B.absorbed=(B.absorbed||0)+ke}
+ else{const f=Math.sqrt((ke-B.cap)/ke);b.vx*=f;b.vy*=f;b.vz*=f;b.barrier='passed';B.passed=(B.passed||0)+1;B.absorbed=(B.absorbed||0)+B.cap}}
+
+// spatial hash of everything a block can hit, in window coordinates (metres from the window centre)
+function rockIndex(R){const cs=20,H=new Map(),add=(k,i,x,y,rad)=>{if(Math.abs(x)>R.HALF+30||Math.abs(y)>R.HALF+30)return;const key=Math.floor((x+R.HALF)/cs)+','+Math.floor((y+R.HALF)/cs);let l=H.get(key);if(!l){l=[];H.set(key,l)}l.push([k,i,x,y,rad])};
+ if(BP)for(let b=0;b<BP.n;b++){const x=X0+BP.xy[2*b]-R.E0,y=Y1-BP.xy[2*b+1]-R.N0;if(Math.abs(x)<=R.HALF&&Math.abs(y)<=R.HALF)add('b',b,x,y,Math.max(4,Math.sqrt(BP.ar[b]/Math.PI)))}
+ INFRA.pois.forEach((p,i)=>add('f',i,X0+p.x-R.E0,Y1-p.y-R.N0,8));
+ INFRA.roads.forEach((r,ri)=>{pointsAlong(r.xy,5).forEach(q=>add(r.b?'g':'r',ri,X0+q[0]-R.E0,Y1-q[1]-R.N0,3))});
+ return{H,cs}}
+function rockQuery(ix,R,x,y,r,fn){const cx=Math.floor((x+R.HALF)/ix.cs),cy=Math.floor((y+R.HALF)/ix.cs);for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const l=ix.H.get((cx+a)+','+(cy+b));if(!l)continue;for(const e of l){if(Math.hypot(x-e[2],y-e[3])<=e[4]+r)fn(e)}}}
+// damage state probabilities of a target from the energies of several separate impacts: exceedances combine as 1 - product of (1 - exceedance)
+function dsFromHits(kes){const ex=[0,0,0,0];for(let k=0;k<4;k++){let non=1;kes.forEach(e=>{const pm=dsProbs(e,IMP.rockMed,IMP.rockBeta);non*=1-pm.slice(k+1).reduce((a,b)=>a+b,0)});ex[k]=1-non}return[1-ex[0],ex[0]-ex[1],ex[1]-ex[2],ex[2]-ex[3],ex[3]]}
+
+function impactRock(R,ixIn){const rocks=R.rocks;if(!rocks||!rocks.length)return null;const ix=ixIn||rockIndex(R);
+ const o={n:rocks.length,breaks:R.nfrag||0,massT:0,massMaxKg:0,keMax:0,keMaxBlock:-1,stopped:rocks.filter(b=>b.stopped).length,travMax:0,hits:{b:new Map(),f:new Map(),r:new Map(),g:new Map()},roadStops:new Map(),barrier:R.barrier||null};
+ rocks.forEach((b,bi)=>{const m=rockMass(b.r);o.massT+=m/1000;if(m>o.massMaxKg)o.massMaxKg=m;if(b.trav>o.travMax)o.travMax=b.trav;
+  const T=b.trail,TV=b.tv||[],TR=b.tr||[],cur=new Map();
+  for(let t=0;t<T.length;t++){const x=T[t][0],y=T[t][1],v=TV[t]!==undefined?TV[t]:0,r=TR[t]!==undefined?TR[t]:b.r,ke=rockKE(r,v);if(ke>o.keMax){o.keMax=ke;o.keMaxBlock=bi}
+   const pts=[[x,y]];if(t+1<T.length){const dx=T[t+1][0]-x,dy=T[t+1][1]-y,L=Math.hypot(dx,dy),m2=Math.floor(L/2);for(let s=1;s<=m2;s++)pts.push([x+dx*s/(m2+1),y+dy*s/(m2+1)])}
+   pts.forEach(([px,py])=>rockQuery(ix,R,px,py,r,e=>{const key=e[0]+':'+e[1],c=cur.get(key);if(!c||ke>c[2])cur.set(key,[e[0],e[1],ke])}))}
+  cur.forEach(([kind,idx,ke])=>{const mp=o.hits[kind];let h=mp.get(idx);if(!h){h={kes:[],maxKE:0};mp.set(idx,h)}h.kes.push(ke);if(ke>h.maxKE)h.maxKE=ke});
+  if(b.r*2>=.8)rockQuery(ix,R,b.x,b.y,b.r,e=>{if(e[0]==='r'||e[0]==='g')o.roadStops.set(e[0]+e[1]+':'+bi,e[1])})});
+ const flowDR=R.impact&&R.impact.b?R.impact.b.dr:null;
+ const B={hit:o.hits.b.size,modal:[0,0,0,0,0],exp:[0,0,0,0,0],cost:0,extra:0,people:0,pts:[]};
+ o.hits.b.forEach((h,bi)=>{const pm=dsFromHits(h.kes),dr=expDR(pm),ds=dsModal(pm),area=BP.ar[bi]*IMP.floors,fd=flowDR?flowDR[bi]:0,cc=coarseCell(BP.xy[2*bi],BP.xy[2*bi+1]);
+  B.modal[ds]++;pm.forEach((q,s)=>B.exp[s]+=q);B.cost+=area*IMP.costM2*dr;B.extra+=area*IMP.costM2*((1-(1-dr)*(1-fd))-fd);B.people+=(POP[cc]/POPD)/Math.max(1,BCELL[cc]);B.pts.push([BP.xy[2*bi],BP.xy[2*bi+1],ds,h.maxKE])});
+ o.bldg=B;
+ o.bridges=[];o.hits.g.forEach((h,ri)=>{const r=INFRA.roads[ri],len=pointsAlong(r.xy,10).reduce((a,q)=>a+q[3],0),pm=dsFromHits(h.kes),prob=pm[3]+pm[4];o.bridges.push({name:r.n||'Unnamed bridge',len,ke:h.maxKE,prob,cost:len*IMP.bridgeCost*prob,ri})});
+ const rs=new Set();o.roadStops.forEach(v=>rs.add(v));o.roadsBlocked=rs.size;o.roadClearCost=o.roadStops.size*150000;
+ o.roadHits=o.hits.r.size;o.fac=[];o.hits.f.forEach((h,i)=>{const p=INFRA.pois[i],pm=dsFromHits(h.kes);o.fac.push({name:p.n,kind:p.k,ke:h.maxKE,ds:dsModal(pm),n:h.kes.length})});
+ o.costExtra=B.extra+o.bridges.reduce((a,b)=>a+b.cost,0)+o.roadClearCost;return o}
+
+// ---------- re-runs of the rock-only replay: without fragmentation, or with a barrier
+function rerunRocks(R,mod){if(!RP.make)return null;const R2=RP.make({}),mode=V3.mode;V3.mode='rock';R2.frag=mod.frag!=null?mod.frag:R.frag;if(mod.barrier)R2.barrier=Object.assign({stopped:0,passed:0,over:0,absorbed:0},mod.barrier);
+ R2.seed=R.seed;initPhysics(R2);const lim=val('v3tl');let g=0;while(R2.tsim<lim&&g++<400){stepSim(R2,.5);if(R2.tsim>15&&R2.moving===0)break}V3.mode=mode;R2.rockImpact=impactRock(R2);return R2}
+const IMPB={mode:false,pts:[],cap:500,h:3,cmp:null,frag:null};
+
+// ---------- road network: settlements and their access to hospitals, before and after the blockages
+let NET=null;
+function netBuild(){const nodes=new Map(),X=[],Y=[],adj=[],SP=[50,40,30,15].map(v=>v/3.6);                  // assumed free speeds by road class, m/s
+ const nid=(x,y)=>{const k=Math.round(x/6)+','+Math.round(y/6);let id=nodes.get(k);if(id===undefined){id=X.length;nodes.set(k,id);X.push(x);Y.push(y);adj.push([])}return id};
+ INFRA.roads.forEach((r,ri)=>{for(let i=0;i+3<r.xy.length;i+=2){const a=nid(r.xy[i],r.xy[i+1]),b=nid(r.xy[i+2],r.xy[i+3]);if(a===b)continue;const L=Math.hypot(r.xy[i+2]-r.xy[i],r.xy[i+3]-r.xy[i+1]),t=L/SP[r.c],seg=i/2;adj[a].push([b,L,t,ri,seg]);adj[b].push([a,L,t,ri,seg])}});
+ const g=new Map();X.forEach((x,i)=>{const k=Math.floor(x/200)+','+Math.floor(Y[i]/200);let l=g.get(k);if(!l){l=[];g.set(k,l)}l.push(i)});
+ const snap=(x,y,maxd)=>{let best=-1,bd=maxd;const cx=Math.floor(x/200),cy=Math.floor(y/200),rr=Math.ceil(maxd/200);for(let a=-rr;a<=rr;a++)for(let b=-rr;b<=rr;b++){const l=g.get((cx+a)+','+(cy+b));if(!l)continue;for(const i of l){const d=Math.hypot(X[i]-x,Y[i]-y);if(d<bd){bd=d;best=i}}}return best};
+ const hosp=INFRA.pois.filter(p=>p.k==='hospital'),dest=hosp.length?hosp:INFRA.pois.filter(p=>p.k==='clinic');
+ const dn=dest.map(p=>snap(p.x,p.y,500)).filter(i=>i>=0);
+ const popAround=(x,y)=>{const cc=coarseCell(x,y),col=cc%D.w,row=(cc/D.w)|0;let s=0;for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const c2=col+a,r2=row+b;if(c2>=0&&r2>=0&&c2<D.w&&r2<D.h&&SL[r2*D.w+c2]!==255)s+=POP[r2*D.w+c2]/POPD}return s};
+ const sets=INFRA.places.map(p=>({name:p.n,cls:p.c,node:snap(p.x,p.y,500),pop:popAround(p.x,p.y)}));
+ return{X,Y,adj,dn,sets,nDest:dest.length,destKind:hosp.length?'hospital':'clinic'}}
+function netRun(N,blocked){const n=N.X.length,dist=new Float64Array(n).fill(Infinity),len=new Float64Array(n),heap=[];
+ const push=(d,i)=>{heap.push([d,i]);let k=heap.length-1;while(k>0){const p=(k-1)>>1;if(heap[p][0]<=heap[k][0])break;[heap[p],heap[k]]=[heap[k],heap[p]];k=p}};
+ const pop=()=>{const top=heap[0],last=heap.pop();if(heap.length){heap[0]=last;let k=0;for(;;){const l=2*k+1,r=l+1;let m=k;if(l<heap.length&&heap[l][0]<heap[m][0])m=l;if(r<heap.length&&heap[r][0]<heap[m][0])m=r;if(m===k)break;[heap[m],heap[k]]=[heap[k],heap[m]];k=m}}return top};
+ N.dn.forEach(i=>{dist[i]=0;push(0,i)});
+ while(heap.length){const[d,u]=pop();if(d>dist[u])continue;for(const e of N.adj[u]){if(blocked&&blocked.has(e[3]+':'+e[4]))continue;const nd=d+e[2];if(nd<dist[e[0]]){dist[e[0]]=nd;len[e[0]]=len[u]+e[1];push(nd,e[0])}}}
+ return{dist,len}}
+// bridges that are probably destroyed close every segment of their road
+function bridgeBlocks(bridges,set){bridges.forEach(b=>{if(b.prob>=.5){const r=INFRA.roads[b.ri];for(let s=0;s<r.xy.length/2-1;s++)set.add(b.ri+':'+s)}})}
+function netAnalysis(sets){if(!NET)NET=netBuild();const N=NET;if(!N.dn.length||!N.sets.length||!N.X.length)return null;if(!N.base)N.base=netRun(N,null);
+ const blocked=new Set();sets.forEach(s=>s.forEach(k=>blocked.add(k)));const af=netRun(N,blocked);
+ const rows=[];let pb=0,pa=0,popIso=0,popDel=0,n0=0;
+ N.sets.forEach(s=>{if(s.node<0)return;const tb=N.base.dist[s.node];if(!isFinite(tb))return;n0++;const ta=af.dist[s.node];if(tb<=1800)pb+=s.pop;if(ta<=1800)pa+=s.pop;
+  if(!isFinite(ta)){popIso+=s.pop;rows.push({name:s.name,cls:s.cls,pop:s.pop,tb,ta:Infinity,km:0,status:'isolated'})}
+  else if(ta-tb>=120){popDel+=s.pop;rows.push({name:s.name,cls:s.cls,pop:s.pop,tb,ta,km:(af.len[s.node]-N.base.len[s.node])/1000,status:'delayed'})}});
+ rows.sort((a,b)=>(a.status==='isolated'?0:1)-(b.status==='isolated'?0:1)||b.pop-a.pop);
+ return{rows,nSet:n0,nDest:N.nDest,destKind:N.destKind,isolated:rows.filter(r=>r.status==='isolated').length,delayed:rows.filter(r=>r.status==='delayed').length,popIso,popDel,access30:[pb,pa],blocked:blocked.size}}
+
+// ---------- impact tab and map layers
+const IMPSEC=[];                                           // section renderers: R => html (flow sections here; rockfall, network, economic and historical sections register later)
+const pkr=v=>{const a=Math.abs(v);return'PKR '+(a>=1e9?fmt(v/1e9,2)+' billion':a>=1e6?fmt(v/1e6,1)+' million':a>=1e3?fmt(v/1e3,0)+' thousand':fmt(v,0))};
+const tbl=(head,rows)=>`<div class="scroll glass"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+const kvs=rows=>`<div class="kv">${rows.map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('')}</div>`;
+const sec=(t,body)=>`<h2>${t}</h2>${body}`;
+const wll=(wx,wy)=>utm2ll(X0+wx,Y1-wy);
+function impactMapUpdate(R){if(!mapReady)return;const I=R&&R.impact;
+ const pts=[],lines=[],fac=[];
+ if(I){if(I.b)I.b.pts.forEach(([x,y,ds,p])=>pts.push({type:'Feature',geometry:{type:'Point',coordinates:wll(x,y)},properties:{ds,p}}));
+  if(I.r)I.r.segs.forEach(l=>lines.push({type:'Feature',geometry:{type:'LineString',coordinates:l.map(q=>wll(q[0],q[1]))},properties:{}}));
+  (I.f||[]).forEach(f=>{if(f.h>=IMP.minDepth)fac.push({type:'Feature',geometry:{type:'Point',coordinates:wll(f.x,f.y)},properties:{ds:f.ds,t:`<b>${f.name||f.kind}</b> (${f.kind})<br>${DSNAME[f.ds]} · ${fmt(f.p,0)} kPa`}})})}
+ const set=(id,f)=>{const s=map.getSource(id);if(s)s.setData({type:'FeatureCollection',features:f})};set('impb',pts);set('impr',lines);set('impf',fac)}
+function impactLayers(){
+ map.addSource('impr',{type:'geojson',data:emptyFC});map.addLayer({id:'impr',type:'line',source:'impr',layout:{'line-cap':'round'},paint:{'line-color':'#ff3b3b','line-width':['interpolate',['linear'],['zoom'],11,2.5,15,6],'line-opacity':.95}});
+ map.addSource('impb',{type:'geojson',data:emptyFC});map.addLayer({id:'impb',type:'circle',source:'impb',paint:{'circle-radius':['interpolate',['linear'],['zoom'],11,1.8,15,5],'circle-color':['match',['get','ds'],1,DSCOL[1],2,DSCOL[2],3,DSCOL[3],4,DSCOL[4],DSCOL[0]],'circle-stroke-color':'#000','circle-stroke-width':.6}});
+ map.addSource('impf',{type:'geojson',data:emptyFC});map.addLayer({id:'impf',type:'circle',source:'impf',paint:{'circle-radius':['interpolate',['linear'],['zoom'],11,4,15,9],'circle-color':'rgba(0,0,0,0)','circle-stroke-color':'#58a6ff','circle-stroke-width':2.4}});
+ ['impb','impf'].forEach(id=>{map.on('mouseenter',id,()=>{if(!AD.mode)map.getCanvas().style.cursor='pointer'});map.on('mouseleave',id,()=>{map.getCanvas().style.cursor='';popup.remove()});
+  map.on('mousemove',id,e=>{if(AD.mode)return;const pr=e.features[0].properties;popup.setLngLat(e.lngLat).setHTML(pr.t||`Building: <b>${DSNAME[pr.ds]}</b> · ${fmt(pr.p,0)} kPa`).addTo(map)})});
+ if(RP&&RP.R&&RP.R.impact)impactMapUpdate(RP.R)}
+function impactClear(){if(mapReady)impactMapUpdate(null);el('impBody').innerHTML='<p class="note">Run the scenario simulation and open a failure site, or replay a historical landslide. When the failure ends the impact on buildings, roads, bridges, facilities, people and land is assessed here.</p>'}
+
+IMPSEC.push(R=>{const I=R.impact,fp=I.fp,out=[];
+ out.push(sec('Impact footprint, depth, speed and pressure',kvs([['Footprint (flow deeper than 0.3 m)',fmt(fp.areaKm2,2)+' km²'],['Deepest flow',fmt(fp.hmax,1)+' m (median '+fmt(fp.hMed,1)+', 90th percentile '+fmt(fp.hP90,1)+')'],['Fastest flow',fmt(fp.vmax,1)+' m/s (median '+fmt(fp.vMed,1)+', 90th percentile '+fmt(fp.vP90,1)+')'],['Highest impact pressure',fmt(fp.pmax,0)+' kPa'],['Area under 5 kPa',fmt(fp.pressureKm2[0],2)+' km²'],['Area 5 to 30 kPa',fmt(fp.pressureKm2[1],2)+' km²'],['Area over 30 kPa',fmt(fp.pressureKm2[2],2)+' km²']])+'<p class="note">Pressure = ρ (v² + ½ g h) with ρ = '+IMP.rho+' kg/m³: the dynamic pressure plus half the hydrostatic pressure of the depth. Use the Deposit, Peak speed, Peak depth and Impact buttons on the map panel to see where.</p>'));
+ if(I.b){const b=I.b;out.push(sec('Buildings',kvs([['Building footprints in the replay window',fmt(b.inWindow)],['Reached by the flow',fmt(b.affected)],['Floor area reached',fmt(b.floorM2)+' m²']])+tbl(['Damage state','Most likely state (count)','Expected number'],b.ds.map((c,k)=>[`<i class="sw" style="display:inline-block;width:10px;height:10px;background:${DSCOL[k]};margin-right:6px"></i>${DSNAME[k]}`,fmt(c),fmt(b.dsExp[k],1)]))+'<p class="note">Damage states follow the five-level scale DS0 (none) to DS4 (complete). Each building gets a probability for every state from a lognormal fragility on the impact pressure (medians '+IMP.med.join(', ')+' kPa for DS1 to DS4, dispersion '+IMP.beta+'): assumed values, not calibrated. A building is in a state when that state or a worse one has probability of at least one half. Buildings are Google Open Buildings footprints (confidence 0.7 or more).</p>'))}
+ else out.push(sec('Buildings','<p class="note">Building footprints are not held for this area (areas over 6,000 km² keep only counts), so building damage is not assessed.</p>'));
+ const r=I.r;out.push(sec('Roads and bridges',tbl(['Road class','In the window (km)','Blocked (km)'],r.lenKm.map((l,c)=>[ROADN[c],fmt(l,1),fmt(r.blockedKm[c],2)]))+(r.bridges.length?tbl(['Bridge','Length (m)','Peak pressure (kPa)','Damage probability'],r.bridges.map(b=>[b.name,fmt(b.len,0),fmt(b.p,0),fmt(b.prob*100,0)+' %'])):'<p class="note">No mapped bridge is reached by the flow.</p>')+'<p class="note">A road is blocked where the deposit is at least '+IMP.roadBlock+' m deep (shown red on the map). A bridge is damaged with the probability given by a lognormal fragility (median '+IMP.bridgeMed+' kPa). Roads and bridges are from OpenStreetMap.</p>'));
+ const fh=I.f.filter(f=>f.h>=IMP.minDepth);out.push(sec('Critical facilities',fh.length?tbl(['Facility','Type','Depth (m)','Pressure (kPa)','Damage state'],fh.map(f=>[f.name||'unnamed',f.kind,fmt(f.h,1),fmt(f.p,0),DSNAME[f.ds]])):`<p class="note">No mapped hospital, clinic, school, police, fire or water facility is reached (${I.f.length} are in the window).</p>`));
+ if(I.people)out.push(sec('People and households',kvs([['People living in buildings reached',fmt(I.people.affected)],['Households reached (at '+IMP.hh+' people)',fmt(I.people.households)],['People displaced (DS3 and DS4, half of DS2)',fmt(I.people.displaced)],['Households displaced',fmt(I.people.displacedHh)],['People in buildings expected to be destroyed',fmt(I.people.atRisk,1)]])+'<p class="note">People per building are the WorldPop 2020 count of the 160 m cell shared equally among its building footprints. WorldPop is smoothed, so this is rough. "Expected to be destroyed" is a count of exposure, not a casualty estimate: no validated casualty model is used.</p>'));
+ const L=I.land,lc=L.cls,names={1:'Tree cover',2:'Shrubland',3:'Grassland',4:'Cropland',5:'Built-up',6:'Bare or sparse vegetation',7:'Snow and ice',8:'Open water',9:'Wetland',10:'Moss and lichen'};
+ out.push(sec('Agricultural land and vegetation',tbl(['Land cover under the deposit','Area (ha)'],Object.keys(lc).map(k=>[names[k]||('class '+k),fmt(lc[k]*100,1)]))+kvs([['Cropland buried',fmt(L.cropHa,1)+' ha'],['Value at '+pkr(IMP.cropHa)+' per ha (assumed)',pkr(L.cropCost)]])+'<p class="note">Land cover is ESA WorldCover 2021 at 10 m (mode within each 160 m cell). Vegetation lost is the tree, shrub and grass area under the deposit.</p>'));
+ out.push(sec('Direct loss, this scenario',kvs([['Buildings (repair and replacement)',pkr(I.cost.buildings)],['Roads and bridges (clearance and repair)',pkr(I.cost.roads)],['Cropland',pkr(I.cost.agri)],['Total',pkr(I.cost.total)]])+'<p class="note">Unit costs are assumptions (below). The figure compares scenarios; it is not an estimate of an actual loss.</p>'));
+ return out.join('')});
+function impactSummary(I){return`<b>Impact</b> (assumed damage functions): footprint <b>${fmt(I.fp.areaKm2,2)} km²</b>${I.b?` · buildings reached <b>${fmt(I.b.affected)}</b>, expected destroyed <b>${fmt(I.b.dsExp[4],1)}</b>`:''} · road blocked <b>${fmt(I.r.blockedKm.reduce((a,b)=>a+b,0),2)} km</b> · direct loss <b>${pkr(I.cost.total)}</b>`}
+function renderImpact(R){const I=R&&R.impact;if(!I){impactClear();return}
+ const head=`<p class="note"><b>${RP.ev?'Event '+RP.ev.iso:'Site '+(RP.k+1)}</b> · ${R.ended||''} · mode ${V3.mode}. These are model estimates from assumed damage functions and unit costs, not measured losses.</p>`;
+ el('impBody').innerHTML=head+IMPSEC.map(f=>{try{return f(R)}catch(e){return`<p class="note">Section failed: ${e.message}</p>`}}).join('');impactMapUpdate(R)}
+// ---------- editable assumptions
+[['i-cost','costM2',1],['i-floors','floors',1],['i-hh','hh',1],['i-rho','rho',1],['i-crop','cropHa',1],['i-bridge','bridgeCost',1]].forEach(([id,key])=>{const e=el(id);if(!e)return;e.value=IMP[key];e.addEventListener('change',()=>{const v=parseFloat(e.value);if(!isFinite(v)||v<=0){e.value=IMP[key];return}IMP[key]=v;if(RP.R&&RP.phase==='after'){RP.R.impact=computeImpact(RP.R);renderImpact(RP.R)}})});
+const i0=el('i-road0');if(i0){i0.value=IMP.roadCost[0]/1e6;i0.addEventListener('change',()=>{const v=parseFloat(i0.value);if(!isFinite(v)||v<=0){i0.value=IMP.roadCost[0]/1e6;return}const k=v*1e6/IMP.roadCost[0];IMP.roadCost=IMP.roadCost.map(c=>c*k);if(RP.R&&RP.phase==='after'){RP.R.impact=computeImpact(RP.R);renderImpact(RP.R)}})}
+el('himp').addEventListener('click',()=>el('t-imp').click());
+impactClear();
+
+// ---------- rockfall sections of the impact tab, fragmentation comparison and barrier assessment
+function barrierMap(R){if(!mapReady)return;const s=map.getSource('barrier');if(!s)return;const R0=R||RP.R;const f=[];if(R0&&IMPB.pts.length===2){f.push({type:'Feature',geometry:{type:'LineString',coordinates:IMPB.pts.map(p=>utm2ll(R0.E0+p[0],R0.N0+p[1]))},properties:{}})}s.setData({type:'FeatureCollection',features:f})}
+function rockCompare(a,b,label){const g=(o,f)=>o?f(o):'n/a';return tbl(['',label[0],label[1]],[['Blocks that reached buildings, roads or bridges',g(a,o=>fmt(o.hits.b.size+o.roadHits+o.hits.g.size)),g(b,o=>fmt(o.hits.b.size+o.roadHits+o.hits.g.size))],['Buildings hit',g(a,o=>fmt(o.bldg.hit)),g(b,o=>fmt(o.bldg.hit))],['Buildings expected at DS2 or worse',g(a,o=>fmt(o.bldg.exp[2]+o.bldg.exp[3]+o.bldg.exp[4],1)),g(b,o=>fmt(o.bldg.exp[2]+o.bldg.exp[3]+o.bldg.exp[4],1))],['Highest impact energy',g(a,o=>fmt(o.keMax,0)+' kJ'),g(b,o=>fmt(o.keMax,0)+' kJ')],['Blocks at rest',g(a,o=>o.stopped+' of '+o.n),g(b,o=>o.stopped+' of '+o.n)],['Added direct loss',g(a,o=>pkr(o.costExtra)),g(b,o=>pkr(o.costExtra))]])}
+const NI='width:110px;background:var(--bg2);color:var(--fg);border:1px solid var(--line);padding:4px 6px;font:400 .8rem var(--mono)';
+IMPSEC.push(R=>{const K=R.impact.rock;if(!K)return'';const out=[];
+ out.push(sec('Rockfall: blocks, mass and energy',kvs([['Blocks (including fragments)',fmt(K.n)],['Breaks into two (fragmentation)',fmt(K.breaks)],['Total rock mass',fmt(K.massT,0)+' t'],['Largest block',fmt(K.massMaxKg,0)+' kg'],['Highest kinetic energy',fmt(K.keMax,0)+' kJ'+(K.keMaxBlock>=0?' (block '+(K.keMaxBlock+1)+')':'')],['Blocks at rest',K.stopped+' of '+K.n],['Longest travel',fmt(K.travMax)+' m']])+'<p class="note">Mass = '+IMP.rockRho+' kg/m³ × the volume of a sphere (assumed density). Energy = ½ m v² of the block at each trail point (translation only; rotation adds roughly a tenth). Impact locations are the resting blocks and the yellow trails on the map.</p>'));
+ const b=K.bldg;
+ out.push(sec('Rockfall collisions and damage',kvs([['Buildings hit by blocks',fmt(b.hit)],['Road segments hit',fmt(K.roadHits)],['Bridges hit',fmt(K.bridges.length)],['Facilities hit',fmt(K.fac.length)],['Blocks stopped on a road',fmt(K.roadStops.size)+' on '+fmt(K.roadsBlocked)+' roads']])+(b.hit?tbl(['Damage state','Most likely (count)','Expected'],b.modal.map((c,k)=>[DSNAME[k],fmt(c),fmt(b.exp[k],1)])):'')+(K.bridges.length?tbl(['Bridge','Length (m)','Highest energy (kJ)','Damage probability (DS3 or worse)'],K.bridges.map(x=>[x.name,fmt(x.len,0),fmt(x.ke,0),fmt(x.prob*100,0)+' %'])):'')+(K.fac.length?tbl(['Facility','Type','Highest energy (kJ)','Damage state'],K.fac.map(f=>[f.name||'unnamed',f.kind,fmt(f.ke,0),DSNAME[f.ds]])):'')+kvs([['Added direct loss from rockfall',pkr(K.costExtra)],['People living in buildings hit',fmt(b.people)]])+'<p class="note">A block collides with a target when its path comes within the target radius (a building: the radius of a disc of its footprint area, at least 4 m; a road: 3 m; a facility: 8 m). Damage uses a lognormal fragility on the highest impact energy (medians '+IMP.rockMed.join(', ')+' kJ for DS1 to DS4, dispersion '+IMP.rockBeta+'); several blocks combine as 1 minus the product of (1 minus exceedance). The fragilities are assumed, not calibrated. Added loss counts only what comes on top of flow damage to the same building; each block stopping on a road is costed at PKR 150,000 for removal (assumed).</p>'));
+ const fr=IMPB.frag;
+ out.push(sec('Fragmentation: does breaking change the impact?','<div class="btnrow"><button class="chip" data-act="frag">Compare with a run '+(R.frag?'without':'with')+' fragmentation</button></div>'+(fr?rockCompare(K,fr,['This run '+(R.frag?'(with fragmentation)':'(without)'),R.frag?'Without fragmentation':'With fragmentation']):'<p class="note">Re-runs the same release with the opposite setting and compares the outcome.</p>')));
+ const B=IMPB.cmp;
+ out.push(sec('Protection barrier','<p class="note">Click "Place barrier", then two points on the map to draw a rockfall fence across the slope. A block that meets the fence below its top with less energy than the capacity is stopped; with more, it passes with the capacity subtracted; a block above the top flies over.</p>'+
+ `<div class="btnrow"><button class="chip" data-act="barplace" aria-pressed="${IMPB.mode}">Place barrier</button><button class="chip" data-act="barclear">Remove</button></div>
+ <div class="kv" style="align-items:center"><label for="i-bcap">Energy capacity, kJ</label><input id="i-bcap" type="number" min="1" step="50" value="${IMPB.cap}" style="${NI}"><label for="i-bh">Height, m</label><input id="i-bh" type="number" min="0.5" step="0.5" value="${IMPB.h}" style="${NI}"></div>
+ <div class="btnrow"><button class="run" data-act="barrun" ${IMPB.pts.length===2?'':'disabled'}>Assess the barrier</button></div><p class="note">${IMPB.pts.length===2?'Barrier placed.':IMPB.mode?'Click two points on the map.':'No barrier placed.'}</p>`+(B&&B.rockImpact?rockCompare(K,B.rockImpact,['Without barrier','With barrier'])+kvs([['Blocks stopped by the barrier',fmt(B.barrier.stopped||0)],['Blocks that passed it with less energy',fmt(B.barrier.passed||0)],['Crossings above the top',fmt(B.barrier.over||0)],['Energy absorbed',fmt(B.barrier.absorbed||0,0)+' kJ']]):'')));
+ return out.join('')});
+// buttons inside the impact tab
+el('impBody').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||!RP.R||RP.phase!=='after')return;const R=RP.R,act=b.dataset.act;
+ if(act==='frag'){b.disabled=true;b.textContent='Running …';setTimeout(()=>{IMPB.frag=rerunRocks(R,{frag:R.frag?0:1}).rockImpact;renderImpact(R)},30)}
+ else if(act==='barplace'){IMPB.mode=!IMPB.mode;IMPB.pts=[];IMPB.cmp=null;barrierMap(R);if(map)map.getCanvas().style.cursor=IMPB.mode?'crosshair':'';renderImpact(R)}
+ else if(act==='barclear'){IMPB.mode=false;IMPB.pts=[];IMPB.cmp=null;barrierMap(R);if(map)map.getCanvas().style.cursor='';renderImpact(R)}
+ else if(act==='barrun'){IMPB.cap=parseFloat(el('i-bcap').value)||500;IMPB.h=parseFloat(el('i-bh').value)||3;b.disabled=true;b.textContent='Running …';setTimeout(()=>{const p=IMPB.pts;IMPB.cmp=rerunRocks(R,{barrier:{x1:p[0][0],y1:p[0][1],x2:p[1][0],y2:p[1][1],cap:IMPB.cap,h:IMPB.h}});renderImpact(R)},30)}});
+function barrierLayers(){map.addSource('barrier',{type:'geojson',data:emptyFC});map.addLayer({id:'barrier',type:'line',source:'barrier',paint:{'line-color':'#58a6ff','line-width':4,'line-dasharray':[1.5,1]}});
+ if(!map._barH){map._barH=true;map.on('click',e=>{if(!IMPB.mode||!RP.R)return;const p=ll2utm(e.lngLat.lng,e.lngLat.lat);IMPB.pts.push([p[0]-RP.R.E0,p[1]-RP.R.N0]);if(IMPB.pts.length===2){IMPB.mode=false;map.getCanvas().style.cursor='';renderImpact(RP.R)}barrierMap(RP.R)})}}
+
+// ---------- cascading effects, network access, utilities, sediment and the economic and social summary
+Object.assign(IMP,{income:1000,clearKmDay:.3,dispDays:180});
+function sedimentDelivery(R){const rc=riverCells(R),F=R.fl,dx=R.DXW;let vol=0,cells=0;for(let c=0;c<R.n*R.n;c++)if(rc.mask[c]&&F.H[c]>=.5){vol+=F.H[c]*dx*dx;cells++}
+ let tot=0;for(let c=0;c<R.n*R.n;c++)tot+=F.H[c];return{vol,lenM:cells*dx,share:tot>0?vol/(tot*dx*dx):0,tot:tot*dx*dx}}
+function networkFor(R){const I=R.impact,sets=[I.r.blockedEdges],bs=new Set();bridgeBlocks(I.r.bridges,bs);sets.push(bs);
+ if(I.rock){const rs=new Set();I.rock.roadStops.forEach((ri)=>{const r=INFRA.roads[ri];for(let s=0;s<r.xy.length/2-1;s++)rs.add(ri+':'+s)});sets.push(rs);const gb=new Set();bridgeBlocks(I.rock.bridges,gb);sets.push(gb)}
+ const out={debris:netAnalysis(sets)};if(R.floodImpact){const fs=sets.slice(),fb=new Set();bridgeBlocks(R.floodImpact.r.bridges,fb);fs.push(R.floodImpact.r.blockedEdges,fb);out.both=netAnalysis(fs)}return out}
+function econ(R){const I=R.impact,Fl=R.floodImpact,e={};const bd=I.b?I.b.costDS:[0,0,0,0,0],fd=Fl&&Fl.b?Fl.b.costDS:[0,0,0,0,0];
+ e.rebuild=bd[4]+fd[4];e.repair=bd[1]+bd[2]+bd[3]+fd[1]+fd[2]+fd[3];e.rockB=I.rock?I.rock.bldg.extra:0;e.buildings=e.rebuild+e.repair+e.rockB;
+ e.roads=I.r.cost+(Fl?Fl.r.cost:0)+(I.rock?I.rock.bridges.reduce((a,b)=>a+b.cost,0)+I.rock.roadClearCost:0);e.agri=I.land.cropCost+(Fl?Fl.land.cropCost:0);
+ e.direct=e.buildings+e.roads+e.agri;
+ const nets=R.net||(R.net=networkFor(R)),net=nets.both||nets.debris;const blockedKm=I.r.blockedKm.reduce((a,b)=>a+b,0)+(Fl?Fl.r.blockedKm.reduce((a,b)=>a+b,0):0);
+ e.closureDays=Math.max(3,Math.ceil(blockedKm/IMP.clearKmDay));e.isolated=net?net.popIso:0;
+ const disp=(I.people?I.people.displaced:0)+(Fl&&Fl.people?Fl.people.displaced:0);e.displaced=disp;
+ e.indirect=e.isolated*e.closureDays*IMP.income*.5+disp*IMP.dispDays*IMP.income*.3;e.total=e.direct+e.indirect;
+ e.households=((I.people?I.people.affected:0)+(Fl&&Fl.people?Fl.people.affected:0))/IMP.hh;e.displacedHh=disp/IMP.hh;
+ e.rebuildN=(I.b?I.b.dsExp[4]:0)+(Fl&&Fl.b?Fl.b.dsExp[4]:0);e.majorN=(I.b?I.b.dsExp[3]:0)+(Fl&&Fl.b?Fl.b.dsExp[3]:0);e.minorN=(I.b?I.b.dsExp[1]+I.b.dsExp[2]:0)+(Fl&&Fl.b?Fl.b.dsExp[1]+Fl.b.dsExp[2]:0);
+ e.blockedKm=blockedKm;e.bridgesN=I.r.bridges.filter(b=>b.prob>=.5).length+(Fl?Fl.r.bridges.filter(b=>b.prob>=.5).length:0);e.cropHa=I.land.cropHa+(Fl?Fl.land.cropHa:0);return e}
+const netTable=a=>a?kvs([['Settlements with a road route to a '+a.destKind+' before',fmt(a.nSet)],['Cut off (no route)',fmt(a.isolated)+' ('+fmt(a.popIso)+' people)'],['Delayed by 2 minutes or more',fmt(a.delayed)+' ('+fmt(a.popDel)+' people)'],['People within 30 minutes of a '+a.destKind,fmt(a.access30[0])+' before, '+fmt(a.access30[1])+' after']])+(a.rows.length?tbl(['Settlement','Status','People nearby','Time before (min)','Time after (min)','Extra distance (km)'],a.rows.slice(0,12).map(r=>[r.name,r.status,fmt(r.pop),fmt(r.tb/60,0),isFinite(r.ta)?fmt(r.ta/60,0):'no route',isFinite(r.ta)?fmt(r.km,1):'—'])):'<p class="note">No settlement loses access or is delayed.</p>'):'<p class="note">The road network analysis needs mapped roads, settlements and at least one hospital or clinic in the area; one of them is missing here.</p>';
+IMPSEC.push(R=>{const I=R.impact,out=[];
+ const d=R.dam;
+ out.push(sec('River blockage and landslide dam',d?kvs([['Blocked river cells',fmt(d.bc.length)],['Dam height',fmt(d.Hd,1)+' m'],['Dam volume',fmt(d.Vd)+' m³'],['Lake behind the dam (in this window)',fmt(d.lake.vol)+' m³, '+fmt(d.lake.area/1e4)+' ha'],['River inflow',fmt(d.qin,1)+' m³/s, so the lake fills in about '+(d.fillDays<1?fmt(d.fillDays*24,1)+' h':fmt(d.fillDays,1)+' days')],['Dam stability index (Ermini and Casagli 2003)',d.dbi.toFixed(2)+' ('+d.cls+')'],['Peak breach outflow (Froehlich 1995)',fmt(d.Qp)+' m³/s over about '+fmt(d.Tb/60)+' min']])+'<p class="note">Computed as described for the landslide-dam analysis (Chapter 27).</p>':'<p class="note">The deposit does not block a mapped river reach, so no landslide dam forms.</p>'));
+ if(d){const F=R.floodImpact;out.push(sec('Breach flood and downstream exposure',F?(kvs([['Flooded area (depth over 0.3 m)',fmt(F.fp.areaKm2,2)+' km²'],['Deepest flood',fmt(F.fp.hmax,1)+' m'],['Fastest flood',fmt(F.fp.vmax,1)+' m/s'],['Buildings reached',F.b?fmt(F.b.affected):'n/a'],['Buildings expected at DS3 or DS4',F.b?fmt(F.b.dsExp[3]+F.b.dsExp[4],1):'n/a'],['Road blocked',fmt(F.r.blockedKm.reduce((a,b)=>a+b,0),2)+' km'],['People living in buildings reached',F.people?fmt(F.people.affected):'n/a'],['People displaced',F.people?fmt(F.people.displaced):'n/a'],['Direct loss from the flood',pkr(F.cost.total)]])+(F.f.filter(f=>f.h>=IMP.minDepth).length?tbl(['Facility reached','Type','Depth (m)','Damage state'],F.f.filter(f=>f.h>=IMP.minDepth).map(f=>[f.name||'unnamed',f.kind,fmt(f.h,1),DSNAME[f.ds]])):'')+'<p class="note">Flood damage uses a depth-based fragility on depth plus velocity head, h + v²/2g, with medians '+IMF.flood.med.join(', ')+' m for DS1 to DS4 (assumed). The flood is routed only inside this window; exposure further downstream is not assessed.</p>'):'<p class="note">Press "Breach flood" on the map panel to route the breach flood and assess the downstream buildings, roads and facilities.</p>'))}
+ let nets=null;try{nets=R.net||(R.net=networkFor(R))}catch(e){out.push(`<p class="note">Network analysis failed: ${e.message}</p>`)}
+ if(nets){out.push(sec('Road-network disruption, alternative routes and emergency access',netTable(nets.debris)+(nets.both?'<h2>After the landslide and the breach flood</h2>'+netTable(nets.both):'')+'<p class="note">Travel time is along mapped OpenStreetMap roads at assumed speeds (50, 40, 30 and 15 km/h by class) from each settlement to the nearest mapped hospital (clinics if none). Blocked road samples, roads under blocks that stopped on them, and bridges expected to fail (probability of one half or more) are removed from the network. Settlements and the network are as complete as OpenStreetMap is. People nearby are WorldPop within one 160 m cell around the place.</p>'))}
+ const wf=I.f.filter(f=>f.kind==='water'&&f.h>=IMP.minDepth),wr=(R.floodImpact?R.floodImpact.f.filter(f=>f.kind==='water'&&f.h>=IMP.minDepth):[]);
+ out.push(sec('Water supply and utilities',(wf.length+wr.length?tbl(['Water facility reached','Hazard','Damage state'],[...wf.map(f=>[f.name||'unnamed '+f.kind,'debris flow',DSNAME[f.ds]]),...wr.map(f=>[f.name||'unnamed '+f.kind,'breach flood',DSNAME[f.ds]])]):'<p class="note">No mapped water tower, well or water works is reached.</p>')+'<p class="note">Only mapped water facilities can be checked. The OpenStreetMap extract has no power lines, pipelines or water networks, so disruption of supply and utilities cannot be assessed beyond this list.</p>'));
+ try{const sd=sedimentDelivery(R);out.push(sec('Sediment delivered to the river',kvs([['Deposit on mapped river cells',fmt(sd.vol)+' m³ ('+fmt(sd.share*100,1)+' % of the deposit)'],['River length covered by 0.5 m or more of debris',fmt(sd.lenM)+' m']])+'<p class="note">This is the sediment volume put into the channel in this window. How the river reworks it over the following years (aggradation, avulsion, downstream transport) is not modelled: that needs discharge, bed grain size and surveyed cross sections that are not available.</p>'))}catch(e){}
+ return out.join('')});
+IMPSEC.push(R=>{let e;try{e=R.econ=econ(R)}catch(err){return`<p class="note">Economic summary failed: ${err.message}</p>`}
+ return sec('Economic and social impact',tbl(['Direct loss (PKR)','Amount'],[['Buildings: rebuild the destroyed (DS4 share)',pkr(e.rebuild)],['Buildings: repair (DS1 to DS3 shares)',pkr(e.repair)],['Buildings: added by rockfall',pkr(e.rockB)],['Roads, bridges and road clearing',pkr(e.roads)],['Agricultural land',pkr(e.agri)],['<b>Total direct loss</b>','<b>'+pkr(e.direct)+'</b>']])+
+  tbl(['Indirect loss (PKR)','Amount'],[[`Business interruption: ${fmt(e.isolated)} people cut off for about ${e.closureDays} days, ${fmt(e.displaced)} displaced for ${IMP.dispDays} days`,pkr(e.indirect)],['<b>Direct plus indirect</b>','<b>'+pkr(e.total)+'</b>']])+
+  kvs([['Households affected',fmt(e.households)],['Households displaced',fmt(e.displacedHh)],['People displaced',fmt(e.displaced)]])+
+  sec('Recovery and reconstruction requirements',tbl(['Requirement','Quantity'],[['Dwellings and other buildings to rebuild (expected DS4)',fmt(e.rebuildN,1)],['Buildings needing major repair (expected DS3)',fmt(e.majorN,1)],['Buildings needing minor repair (expected DS1 and DS2)',fmt(e.minorN,1)],['Road to clear and repair',fmt(e.blockedKm,2)+' km (about '+e.closureDays+' days at '+IMP.clearKmDay+' km a day)'],['Bridges to replace (probability of one half or more)',fmt(e.bridgesN)],['Cropland to restore',fmt(e.cropHa,1)+' ha'],['Reconstruction budget, direct',pkr(e.direct)]])+'<p class="note">Indirect loss is a deliberately simple proxy: people cut off lose half a day\'s income of '+pkr(IMP.income)+' for each closure day, and displaced people lose 30 % of it for the displacement period. Closure time is the blocked road length divided by an assumed clearing rate. Treat these figures as scenario comparisons, not forecasts. The flood and the flow can overlap, and buildings reached by both are counted in each.</p>'))});
+[['i-inc','income'],['i-clr','clearKmDay'],['i-dis','dispDays']].forEach(([id,key])=>{const e=el(id);if(!e)return;e.value=IMP[key];e.addEventListener('change',()=>{const v=parseFloat(e.value);if(!isFinite(v)||v<=0){e.value=IMP[key];return}IMP[key]=v;if(RP.R&&RP.phase==='after'){RP.R.net=null;RP.R.impact=null;RP.R.impact=computeImpact(RP.R);renderImpact(RP.R)}})});
+
+// ---------- historical landslides: records, before-and-after imagery and change mapping, modelled impact against what was recorded
+const HIST={res:null,busy:false,key:null};
+function histLayers(){const blank='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+ map.addSource('histscar',{type:'image',url:blank,coordinates:AOI_C});map.addLayer({id:'histscar',type:'raster',source:'histscar',layout:{visibility:'none'},paint:{'raster-opacity':.9,'raster-resampling':'nearest','raster-fade-duration':0}});
+ if(HIST.res&&HIST.res.overlay){try{map.getSource('histscar').updateImage({url:'data:image/png;base64,'+HIST.res.overlay,coordinates:HIST.res.bounds})}catch(e){}}}
+function histOverlayShow(on){if(mapReady&&map.getLayer('histscar'))map.setLayoutProperty('histscar','visibility',on?'visible':'none')}
+async function histFetch(ev){if(HIST.busy)return;HIST.busy=true;HIST.key=ev.iso+ev.idx;renderImpact(RP.R);
+ try{const r=await fetch(`/api/hist?lon=${ev.lon}&lat=${ev.lat}&date=${ev.iso}`),j=await r.json();if(!r.ok)throw new Error(j.error||('HTTP '+r.status));HIST.res=j;HIST.err=null;
+  if(mapReady&&map.getSource('histscar')){map.getSource('histscar').updateImage({url:'data:image/png;base64,'+j.overlay,coordinates:j.bounds});histOverlayShow(true)}}
+ catch(e){HIST.res=null;HIST.err=e.message}HIST.busy=false;if(RP.R)renderImpact(RP.R)}
+IMPSEC.push(R=>{const ev=RP.ev;if(!ev)return'';const out=[],I=R.impact;
+ const fat=ev.fat,inj=ev.inj;
+ out.push(sec('Historical record (NASA COOLR)',kvs([['Date',ev.iso],['Type, trigger, size class',ev.cat.replace('_',' ')+', '+ev.trig+', '+ev.size.replace('_',' ')],['Reported deaths',fat==null?'not recorded':fmt(fat)],['Reported injuries',inj==null?'not recorded':fmt(inj)],['Position accuracy',ev.acc],['Location',ev.loc&&ev.loc!=='None'?ev.loc:'—']])+(ev.desc&&ev.desc!=='None'?`<p class="note">${ev.desc.replace(/</g,'&lt;')}</p>`:'')+`<p class="note">${ev.src&&ev.src!=='None'?`Source: <a href="${ev.src.replace(/"/g,'')}" target="_blank" rel="noopener" style="color:var(--cyan)">${ev.src.replace(/</g,'&lt;').slice(0,70)}</a>. `:''}${ev.photo?`Photo: <a href="${ev.photo.replace(/"/g,'')}" target="_blank" rel="noopener" style="color:var(--cyan)">link</a>. `:''}The catalogue records deaths and injuries only when a news report or agency gave them; it has no building, road, displacement or loss figures, so damage to property is not documented for these events.</p>`));
+ const H=HIST.res&&HIST.key===ev.iso+ev.idx?HIST.res:null;
+ out.push(sec('Before and after satellite imagery, vegetation loss and scar detection',
+  `<div class="btnrow"><button class="chip" data-act="hist" ${AD.api?'':'disabled'}>${HIST.busy?'Fetching …':'Fetch imagery and change for this event'}</button>${H?`<button class="chip" data-act="histov" aria-pressed="true">Show on the map</button>`:''}</div>`+
+  (AD.api?'':'<p class="note">Imagery and change mapping need the Python server (Earth Engine). Open the page from serve_dashboard.bat.</p>')+(HIST.err?`<p class="note" style="color:var(--warn)">${HIST.err}</p>`:'')+
+  (H?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><div><small style="color:var(--muted)">Before (${H.stats.windows.before[0]} to ${H.stats.windows.before[1]}, ${H.stats.scenes_before} scenes)</small><img src="${H.before}" alt="before" style="width:100%"></div><div><small style="color:var(--muted)">After (${H.stats.windows.after[0]} to ${H.stats.windows.after[1]}, ${H.stats.scenes_after} scenes)</small><img src="${H.after}" alt="after" style="width:100%"></div></div>`+
+   kvs([['Sensor',H.stats.sensor+', '+H.stats.scale_m+' m'],['Vegetated ground before (NDVI of 0.3 or more)',fmt(H.stats.vegetated_km2,2)+' km² of '+fmt(H.stats.window_km2,0)],['Vegetation loss (NDVI fall of 0.15 or more)',fmt(H.stats.veg_loss_km2,2)+' km²'],['Candidate scar or disturbed ground (also bare-soil gain)',fmt(H.stats.candidate_km2,2)+' km²'],['Of which on slopes of 25° or more (source area)',fmt(H.stats.source_km2,3)+' km²'],['Of which on gentler ground (probable deposit and disturbance)',fmt(H.stats.disturbed_km2,3)+' km²']])+
+   '<p class="note">Red = candidate source area on steep ground, orange = candidate deposit or disturbance on gentler ground, yellow = other vegetation loss, over a 6 km square centred on the reported point. The "before" and "after" composites are medians of 120-day windows either side of the date and can differ in snow cover and season, so seasonal change shows as vegetation loss. Deposits cannot be mapped separately from optical change: the orange class is only the gentle-slope part of the disturbance. This is evidence to look at, not a mapped deposit, and it cannot confirm the reconstruction.</p>':'<p class="note">Fetches Sentinel-2 (from 2016), Landsat 8 (2013 to 2015) or Landsat 5 and 7 (1999 to 2012) composites before and after the report date, and maps vegetation loss and candidate scar and deposit ground.</p>')));
+ const bl=I.r.blockedKm.reduce((a,b)=>a+b,0);
+ out.push(sec('Modelled impact against the record',tbl(['','Recorded','Modelled (this reconstruction)'],[['Deaths',fat==null?'not recorded':fmt(fat),I.people?fmt(I.people.atRisk,1)+' people in buildings expected destroyed (exposure, not a casualty estimate)':'n/a'],['Injuries',inj==null?'not recorded':fmt(inj),'not modelled'],['Buildings damaged','not recorded',I.b?fmt(I.b.affected)+' reached, '+fmt(I.b.dsExp[3]+I.b.dsExp[4],1)+' expected at DS3 or DS4':'n/a'],['People displaced','not recorded',I.people?fmt(I.people.displaced):'n/a'],['Road blocked','not recorded',fmt(bl,2)+' km'],['Direct loss','not recorded',pkr(I.cost.total)]])+'<p class="note">The model damage is for a reconstruction whose release zone, volume and friction are assumed (Chapter 33), so it shows what such an event could do at this place, not what this event did. The catalogue holds deaths and injuries for only a minority of reports, and none of the property damage, so the modelled damage cannot be validated against it. The Validation tab compares all reconstructions in the sample area with their records.</p>'));
+ out.push(sec('Not assessed','<ul class="note" style="padding-left:1.2rem;display:grid;gap:4px"><li>Terrain elevation change: there is only one DEM epoch, and the difference between the available global surface models (about 2000 against about 2012) is mostly noise and canopy or building bias, so it cannot show the change of a single landslide.</li><li>Observed building, road and bridge damage, displacement and economic loss: no record holds them for these events.</li></ul>'));
+ return out.join('')});
+el('impBody').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||!RP.ev)return;if(b.dataset.act==='hist')histFetch(RP.ev);else if(b.dataset.act==='histov'){const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);histOverlayShow(on)}});
+
+if((AOI_META.id||'gilgit')!=='gilgit')document.body.classList.add('nongil');
+aoiInit();
+window.addEventListener('resize',()=>{if(map)map.resize()});
+drawThr();
+initMap();
+</script>

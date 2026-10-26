@@ -1,0 +1,8 @@
+.env
+runs/*
+!runs/.gitkeep
+datasets/
+__pycache__/
+*.pyc
+*.egg-info/
+node_modules/
