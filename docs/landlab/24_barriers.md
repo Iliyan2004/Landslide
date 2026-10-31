@@ -16,4 +16,16 @@ The optimiser searches the position along the main flow corridor, the height (2 
 - **There is no surrogate model:** every candidate is a full simulation (about 24 s on the GPU for the reference area), so 30 simulations take about 12 minutes. The result is a good option under the budget, not a proven optimum.
 - The objective is direct loss plus a blocked-road penalty plus a wall cost; **the wall cost is a user input because no cost data exist here.** With a zero cost the optimiser will pick the largest walls, and the page says so.
 
-Tested on a synthetic valley with a toy objective: the corridor follows the downhill path, the budget is respected, and the optimiser lowers the objective. **Not yet run on a real area.**
+Tested on a synthetic valley with a toy objective: the corridor follows the downhill path, the budget is respected, and the optimiser lowers the objective.
+
+## First run on a real area
+
+The same 57 km2 Gilgit area, 60 mm/h triangular storm for 12 h, 2 barriers, a budget of 16 simulations (`area_demo.json`, 37 minutes). The first attempt returned barriers of zero length: cells outside the area had been filled with a high elevation, so the pit-filling step flooded the whole area flat and no flow path existed. That bug is fixed (`flow_corridor` now leaves outside cells empty so they act as outlets; the corridor is 7 cells, 210 m). The result:
+
+| | Baseline | With the best 2 barriers |
+|---|---|---|
+| Direct loss (PKR M) | {{area_demo.json:optimise_barriers.result.baseline.loss_pkr|0}} | {{area_demo.json:optimise_barriers.result.optimised.loss_pkr|0}} |
+| Buildings with damage state 3 or worse | {{area_demo.json:optimise_barriers.result.baseline.buildings_ds3|0}} | {{area_demo.json:optimise_barriers.result.optimised.buildings_ds3|0}} |
+| Impacted area (km2) | {{area_demo.json:optimise_barriers.result.baseline.impacted_km2|1}} | {{area_demo.json:optimise_barriers.result.optimised.impacted_km2|1}} |
+
+Two barriers (one 11 m high and about 400 m long, one 3 m high) cut the loss by about 2.7%. That is small because the slide here is 8.6 km2 of failing hillside sending 21 million m3 across a 26 km2 area: the failure is spread over thousands of release cells, so a barrier on one flow path intercepts only a share of it. The optimiser works as a tool, but this storm scenario is too large for barriers to matter; it is meant for one gully-sized failure, and the scenario is useful mainly as a limit on what barriers can do. With a 16 simulation budget the result is "a better option", not an optimum.

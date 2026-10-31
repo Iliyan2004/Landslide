@@ -19,7 +19,7 @@ class BudgetExceeded(Exception):
 
 def flow_corridor(dem, hmax, failing_rc, dx, max_steps=2000):
     """Steepest-descent path (list of (row, col)) from the failing-cell centroid, following cells the baseline flow reached."""
-    z = np.where(np.isfinite(dem), dem, np.nanmax(dem))
+    z = np.asarray(dem, float)     # NaN cells (outside the area) stay NaN so they act as outlets; filling them with a HIGH value made the priority-flood fill the whole area flat (no flow path)
     d8 = terrain.d8_flow(terrain.fill_pits(z), dx, dx)["downstream"]
     ny, nx = z.shape
     r0, c0 = int(round(np.mean([a for a, _ in failing_rc]))), int(round(np.mean([b for _, b in failing_rc])))

@@ -1,0 +1,677 @@
+{
+ "area": {
+  "type": "Polygon",
+  "coordinates": [
+   [
+    [
+     74.26,
+     35.88
+    ],
+    [
+     74.34,
+     35.88
+    ],
+    [
+     74.34,
+     35.95
+    ],
+    [
+     74.26,
+     35.95
+    ],
+    [
+     74.26,
+     35.88
+    ]
+   ]
+  ]
+ },
+ "storm": "design triangular 60 mm/h, 12 h",
+ "strength": "calibrated_reports, quantile 0.5",
+ "climate_ssp585_T50": {
+  "state": "done",
+  "elapsed_s": 1161,
+  "result": {
+   "T": 50,
+   "factor": 1.015618305334988,
+   "method": "delta change on Gumbel (L-moment) T-year daily rainfall, ensemble median of the ratio",
+   "models": [
+    {
+     "model": "ACCESS-CM2",
+     "ratio": 0.899930542131172
+    },
+    {
+     "model": "ACCESS-ESM1-5",
+     "ratio": 1.3180503238963932
+    },
+    {
+     "model": "BCC-CSM2-MR",
+     "ratio": 0.9221273143345498
+    },
+    {
+     "model": "CESM2",
+     "ratio": 1.1226671818881928
+    },
+    {
+     "model": "CESM2-WACCM",
+     "ratio": 0.9287829947783697
+    },
+    {
+     "model": "CMCC-CM2-SR5",
+     "ratio": 1.1578796213091385
+    },
+    {
+     "model": "CMCC-ESM2",
+     "ratio": 1.0195988867761923
+    },
+    {
+     "model": "CNRM-CM6-1",
+     "ratio": 1.011637723893784
+    }
+   ],
+   "n_models": 8,
+   "period": [
+    2036,
+    2065
+   ],
+   "range": [
+    0.899930542131172,
+    1.3180503238963932
+   ],
+   "scenario": "ssp585"
+  },
+  "error": null
+ },
+ "aal_current": {
+  "state": "done",
+  "elapsed_s": 265,
+  "result": {
+   "assumption": "loss frequency equals rainfall frequency; frequent-tail linear to zero at p=1; rare tail held flat",
+   "climate_factor": 1.0,
+   "curve": [
+    {
+     "T": 2.0,
+     "loss": 159638653.29064727,
+     "p": 0.5
+    },
+    {
+     "T": 5.0,
+     "loss": 559363368.0437893,
+     "p": 0.2
+    },
+    {
+     "T": 10.0,
+     "loss": 836157082.3847101,
+     "p": 0.1
+    },
+    {
+     "T": 25.0,
+     "loss": 1141714082.3220894,
+     "p": 0.04
+    },
+    {
+     "T": 50.0,
+     "loss": 1398567298.1913345,
+     "p": 0.02
+    },
+    {
+     "T": 100.0,
+     "loss": 1713236687.1051702,
+     "p": 0.01
+    }
+   ],
+   "duration_h": 6.0,
+   "eal_pkr": 334966324.58812475,
+   "idf_cell": {
+    "lat": 35.90000000000108,
+    "lon": 74.30000000000007
+   },
+   "parts": {
+    "between_scenarios": 277924294.3944112,
+    "frequent_tail": 39909663.32266182,
+    "rare_tail": 17132366.871051703
+   },
+   "scenarios": [
+    {
+     "T": 2,
+     "buildings_ds3": 30,
+     "depth_mm": 14.560000001543912,
+     "failing_km2": 0.0936,
+     "impacted_km2": 0.7092,
+     "loss_pkr": 159638653.29064727,
+     "outcome": "failure_and_runout",
+     "released_m3": 237744.0029296875,
+     "road_blocked_km": 1.3434226035216572,
+     "run_id": "10a0ea97cd3cd26cc6b7"
+    },
+    {
+     "T": 5,
+     "buildings_ds3": 150,
+     "depth_mm": 18.17000000196661,
+     "failing_km2": 0.1359,
+     "impacted_km2": 1.0791,
+     "loss_pkr": 559363368.0437893,
+     "outcome": "failure_and_runout",
+     "released_m3": 345186.01171875,
+     "road_blocked_km": 3.7164965032566477,
+     "run_id": "e2be33ad41f52a46f8b2"
+    },
+    {
+     "T": 10,
+     "buildings_ds3": 241,
+     "depth_mm": 20.560000002245367,
+     "failing_km2": 0.1728,
+     "impacted_km2": 1.3014,
+     "loss_pkr": 836157082.3847101,
+     "outcome": "failure_and_runout",
+     "released_m3": 438912.0087890625,
+     "road_blocked_km": 4.501884407049137,
+     "run_id": "789c1e6efff7f1364dd1"
+    },
+    {
+     "T": 25,
+     "buildings_ds3": 339,
+     "depth_mm": 23.57000000259991,
+     "failing_km2": 0.2196,
+     "impacted_km2": 1.7001,
+     "loss_pkr": 1141714082.3220894,
+     "outcome": "failure_and_runout",
+     "released_m3": 557784.0307617188,
+     "road_blocked_km": 5.689517257250805,
+     "run_id": "7666b9870ddb07dcad4a"
+    },
+    {
+     "T": 50,
+     "buildings_ds3": 401,
+     "depth_mm": 25.810000002861585,
+     "failing_km2": 0.2736,
+     "impacted_km2": 2.0889,
+     "loss_pkr": 1398567298.1913345,
+     "outcome": "failure_and_runout",
+     "released_m3": 694944.0390625,
+     "road_blocked_km": 6.815294335996783,
+     "run_id": "4c908fcf7d987d7229fa"
+    },
+    {
+     "T": 100,
+     "buildings_ds3": 483,
+     "depth_mm": 28.030000003121277,
+     "failing_km2": 0.3294,
+     "impacted_km2": 2.6226,
+     "loss_pkr": 1713236687.1051702,
+     "outcome": "failure_and_runout",
+     "released_m3": 836676.0712890625,
+     "road_blocked_km": 8.339970805862727,
+     "run_id": "7daa2f5b83d4dd795e1f"
+    }
+   ]
+  },
+  "error": null
+ },
+ "aal_ssp585": {
+  "state": "done",
+  "elapsed_s": 491,
+  "result": {
+   "assumption": "loss frequency equals rainfall frequency; frequent-tail linear to zero at p=1; rare tail held flat",
+   "climate_factor": 1.015618305334988,
+   "curve": [
+    {
+     "T": 2.0,
+     "loss": 296399476.839839,
+     "p": 0.5
+    },
+    {
+     "T": 5.0,
+     "loss": 674844870.2376102,
+     "p": 0.2
+    },
+    {
+     "T": 10.0,
+     "loss": 860459685.844109,
+     "p": 0.1
+    },
+    {
+     "T": 25.0,
+     "loss": 1194431620.7879963,
+     "p": 0.04
+    },
+    {
+     "T": 50.0,
+     "loss": 1406075595.9791243,
+     "p": 0.02
+    },
+    {
+     "T": 100.0,
+     "loss": 1754092426.0783265,
+     "p": 0.01
+    }
+   ],
+   "duration_h": 6.0,
+   "eal_pkr": 417545324.81336796,
+   "idf_cell": {
+    "lat": 35.90000000000108,
+    "lon": 74.30000000000007
+   },
+   "parts": {
+    "between_scenarios": 325904531.34262496,
+    "frequent_tail": 74099869.20995975,
+    "rare_tail": 17540924.260783266
+   },
+   "scenarios": [
+    {
+     "T": 2,
+     "buildings_ds3": 77,
+     "depth_mm": 14.787402527245455,
+     "failing_km2": 0.0999,
+     "impacted_km2": 0.7398,
+     "loss_pkr": 296399476.839839,
+     "outcome": "failure_and_runout",
+     "released_m3": 253746.00390625,
+     "road_blocked_km": 1.3664664889069744,
+     "run_id": "29e82f7c2b1cd4316bcd"
+    },
+    {
+     "T": 5,
+     "buildings_ds3": 186,
+     "depth_mm": 18.453784609934058,
+     "failing_km2": 0.1467,
+     "impacted_km2": 1.125,
+     "loss_pkr": 674844870.2376102,
+     "outcome": "failure_and_runout",
+     "released_m3": 372618.0087890625,
+     "road_blocked_km": 3.9268030640721334,
+     "run_id": "017a5103882d30cde288"
+    },
+    {
+     "T": 10,
+     "buildings_ds3": 257,
+     "depth_mm": 20.88111235996779,
+     "failing_km2": 0.18,
+     "impacted_km2": 1.4067,
+     "loss_pkr": 860459685.844109,
+     "outcome": "failure_and_runout",
+     "released_m3": 457200.01220703125,
+     "road_blocked_km": 4.573263268328897,
+     "run_id": "a4f544ca35cf4ab6e31e"
+    },
+    {
+     "T": 25,
+     "buildings_ds3": 352,
+     "depth_mm": 23.938123459386187,
+     "failing_km2": 0.225,
+     "impacted_km2": 1.773,
+     "loss_pkr": 1194431620.7879963,
+     "outcome": "failure_and_runout",
+     "released_m3": 571500.015625,
+     "road_blocked_km": 5.7649173755465855,
+     "run_id": "5ccd558541b610931554"
+    },
+    {
+     "T": 50,
+     "buildings_ds3": 401,
+     "depth_mm": 26.21310846360232,
+     "failing_km2": 0.279,
+     "impacted_km2": 2.1339,
+     "loss_pkr": 1406075595.9791243,
+     "outcome": "failure_and_runout",
+     "released_m3": 708660.0390625,
+     "road_blocked_km": 7.152511376934586,
+     "run_id": "97657ebe0695c1f2f792"
+    },
+    {
+     "T": 100,
+     "buildings_ds3": 483,
+     "depth_mm": 28.467781101709743,
+     "failing_km2": 0.3393,
+     "impacted_km2": 2.691,
+     "loss_pkr": 1754092426.0783265,
+     "outcome": "failure_and_runout",
+     "released_m3": 861822.060546875,
+     "road_blocked_km": 8.271702943918177,
+     "run_id": "58454c996b17dd7c24e7"
+    }
+   ]
+  },
+  "error": null
+ },
+ "nbs_rank": {
+  "state": "done",
+  "elapsed_s": 5,
+  "result": {
+   "baseline": {
+    "failing_cells": 9506,
+    "failing_km2": 8.5554,
+    "mobilisable_cells": 37429
+   },
+   "note": "stability-only ranking with user-set effect sizes; runout benefit needs a full run",
+   "ranked": [
+    {
+     "failing_cells": 0,
+     "failing_km2": 0.0,
+     "levers": [
+      "planting",
+      "regrading"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": 1.0,
+     "reduction_km2": 8.5554
+    },
+    {
+     "failing_cells": 0,
+     "failing_km2": 0.0,
+     "levers": [
+      "planting",
+      "regrading",
+      "drainage"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": 1.0,
+     "reduction_km2": 8.5554
+    },
+    {
+     "failing_cells": 5518,
+     "failing_km2": 4.9662,
+     "levers": [
+      "drainage"
+     ],
+     "mobilisable_cells": 37429,
+     "reduction_frac": 0.419524510835262,
+     "reduction_km2": 3.589200000000001
+    },
+    {
+     "failing_cells": 6076,
+     "failing_km2": 5.4684,
+     "levers": [
+      "planting",
+      "drainage"
+     ],
+     "mobilisable_cells": 49021,
+     "reduction_frac": 0.3608247422680413,
+     "reduction_km2": 3.0870000000000006
+    },
+    {
+     "failing_cells": 11725,
+     "failing_km2": 10.5525,
+     "levers": [
+      "planting"
+     ],
+     "mobilisable_cells": 49021,
+     "reduction_frac": -0.23343151693667152,
+     "reduction_km2": -1.9970999999999997
+    },
+    {
+     "failing_cells": 20700,
+     "failing_km2": 18.63,
+     "levers": [
+      "regrading",
+      "drainage"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": -1.1775720597517354,
+     "reduction_km2": -10.074599999999998
+    },
+    {
+     "failing_cells": 24431,
+     "failing_km2": 21.9879,
+     "levers": [
+      "regrading"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": -1.57006101409636,
+     "reduction_km2": -13.4325
+    }
+   ]
+  },
+  "error": null
+ },
+ "optimise_barriers_buggy_first_attempt": {
+  "state": "done",
+  "elapsed_s": 2496,
+  "result": {
+   "barriers": [
+    {
+     "coords": [
+      [
+       74.29536314752693,
+       35.91603591271356
+      ],
+      [
+       74.29536314752693,
+       35.91603591271356
+      ]
+     ],
+     "height_m": 11.786471333354712,
+     "width_m": 30.0
+    },
+    {
+     "coords": [
+      [
+       74.29536314752693,
+       35.91603591271356
+      ],
+      [
+       74.29536314752693,
+       35.91603591271356
+      ]
+     ],
+     "height_m": 2.198471685871482,
+     "width_m": 30.0
+    }
+   ],
+   "baseline": {
+    "buildings_ds3": 6155,
+    "failing_km2": 8.5554,
+    "impacted_km2": 25.803,
+    "loss_pkr": 21537329605.235344,
+    "outcome": "failure_and_runout",
+    "released_m3": 21730717.7578125,
+    "road_blocked_km": 48.39189672826794,
+    "run_id": "4eade5cd047f967457eb"
+   },
+   "evaluations": 16,
+   "history": [
+    {
+     "loss_pkr": 21537363410.569748,
+     "objective": 21537363410.569748
+    },
+    {
+     "loss_pkr": 21537461408.423267,
+     "objective": 21537461408.423267
+    },
+    {
+     "loss_pkr": 21537388073.186813,
+     "objective": 21537388073.186813
+    },
+    {
+     "loss_pkr": 21537455445.432632,
+     "objective": 21537455445.432632
+    },
+    {
+     "loss_pkr": 21537395265.635292,
+     "objective": 21537395265.635292
+    },
+    {
+     "loss_pkr": 21537528889.651382,
+     "objective": 21537528889.651382
+    },
+    {
+     "loss_pkr": 21537433984.347767,
+     "objective": 21537433984.347767
+    },
+    {
+     "loss_pkr": 21537405293.53045,
+     "objective": 21537405293.53045
+    },
+    {
+     "loss_pkr": 21537361532.254887,
+     "objective": 21537361532.254887
+    },
+    {
+     "loss_pkr": 21537374361.626507,
+     "objective": 21537374361.626507
+    },
+    {
+     "loss_pkr": 21537450604.425903,
+     "objective": 21537450604.425903
+    },
+    {
+     "loss_pkr": 21537460427.294273,
+     "objective": 21537460427.294273
+    },
+    {
+     "loss_pkr": 21537427939.337475,
+     "objective": 21537427939.337475
+    },
+    {
+     "loss_pkr": 21537429215.709145,
+     "objective": 21537429215.709145
+    },
+    {
+     "loss_pkr": 21537413064.345245,
+     "objective": 21537413064.345245
+    },
+    {
+     "loss_pkr": 21537547699.892704,
+     "objective": 21537547699.892704
+    }
+   ],
+   "note": "no surrogate: every point is a full simulation; with the evaluation budget small the result is a good option, not a proven optimum",
+   "optimised": {
+    "buildings_ds3": 6155,
+    "failing_km2": 8.5554,
+    "impacted_km2": 25.803,
+    "loss_pkr": 21537361532.254887,
+    "outcome": "failure_and_runout",
+    "released_m3": 21730717.7578125,
+    "road_blocked_km": 48.39189672826794,
+    "run_id": "62e4ec2c1e8c4f63e5f7"
+   }
+  },
+  "error": null
+ },
+ "optimise_barriers": {
+  "state": "done",
+  "elapsed_s": 2248,
+  "result": {
+   "barriers": [
+    {
+     "coords": [
+      [
+       74.29453066093215,
+       35.91698353043706
+      ],
+      [
+       74.29484649052431,
+       35.91724417845734
+      ]
+     ],
+     "height_m": 2.9570110496133566,
+     "width_m": 30.0
+    },
+    {
+     "coords": [
+      [
+       74.2925034190851,
+       35.91737147380387
+      ],
+      [
+       74.29686893100721,
+       35.917397118640935
+      ]
+     ],
+     "height_m": 11.243018263950944,
+     "width_m": 30.0
+    }
+   ],
+   "baseline": {
+    "buildings_ds3": 6155,
+    "failing_km2": 8.5554,
+    "impacted_km2": 25.803,
+    "loss_pkr": 21537329605.235344,
+    "outcome": "failure_and_runout",
+    "released_m3": 21730717.7578125,
+    "road_blocked_km": 48.39189672826794,
+    "run_id": "4eade5cd047f967457eb"
+   },
+   "evaluations": 16,
+   "history": [
+    {
+     "loss_pkr": 21534445703.002575,
+     "objective": 21534445703.002575
+    },
+    {
+     "loss_pkr": 21131517948.291187,
+     "objective": 21131517948.291187
+    },
+    {
+     "loss_pkr": 21524256354.272976,
+     "objective": 21524256354.272976
+    },
+    {
+     "loss_pkr": 21534460631.41437,
+     "objective": 21534460631.41437
+    },
+    {
+     "loss_pkr": 21524256354.272976,
+     "objective": 21524256354.272976
+    },
+    {
+     "loss_pkr": 21549838400.085297,
+     "objective": 21549838400.085297
+    },
+    {
+     "loss_pkr": 21131517571.052006,
+     "objective": 21131517571.052006
+    },
+    {
+     "loss_pkr": 21534445703.002575,
+     "objective": 21534445703.002575
+    },
+    {
+     "loss_pkr": 21078394649.498528,
+     "objective": 21078394649.498528
+    },
+    {
+     "loss_pkr": 20964246479.19138,
+     "objective": 20964246479.19138
+    },
+    {
+     "loss_pkr": 21129030945.12905,
+     "objective": 21129030945.12905
+    },
+    {
+     "loss_pkr": 21527855744.53133,
+     "objective": 21527855744.53133
+    },
+    {
+     "loss_pkr": 21118321830.76798,
+     "objective": 21118321830.76798
+    },
+    {
+     "loss_pkr": 21081989067.817932,
+     "objective": 21081989067.817932
+    },
+    {
+     "loss_pkr": 21116491576.925724,
+     "objective": 21116491576.925724
+    },
+    {
+     "loss_pkr": 21551551240.40657,
+     "objective": 21551551240.40657
+    }
+   ],
+   "note": "no surrogate: every point is a full simulation; with the evaluation budget small the result is a good option, not a proven optimum",
+   "optimised": {
+    "buildings_ds3": 5965,
+    "failing_km2": 8.5554,
+    "impacted_km2": 25.74,
+    "loss_pkr": 20964246479.19138,
+    "outcome": "failure_and_runout",
+    "released_m3": 21730717.7578125,
+    "road_blocked_km": 47.276495372423,
+    "run_id": "bf7dffc815d2d2155652"
+   }
+  },
+  "error": null
+ }
+}

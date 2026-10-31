@@ -23,13 +23,13 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 | Live monitoring with webhook, compare runs, PDF report, MP4 export | Implemented |
 | Rainfall-threshold validation against the inventory | **Done** (Ch. 26) |
 | Spatial validation, physics and ground calibration, runout check, ShakeMap comparison, quake-landslide check | **Run** (Ch. 27 to 30, 6.2, 32) |
-| Design storms from observed IDF, climate multiplier (code), average annual loss | Implemented; the climate multiplier and AAL have **not yet been run on real data** (compute heavy) |
-| Nature-based levers, barriers, ranking, automatic barrier placement | Implemented and unit tested; **not yet run on real areas** (placement is expensive) |
+| Design storms from observed IDF, climate multiplier, average annual loss | Implemented and **run once on a 57 km2 Gilgit area** (Ch. 21); the climate signal is within model spread, and the loss is an order of magnitude |
+| Nature-based levers, barriers, ranking, automatic barrier placement | Implemented and **run once on the same area** (Ch. 23, 24); this exposed a counting artefact for planting and a placement bug (fixed) |
 | Landslide-dam screening, rainfall hotspots, scoring against an observed extent | Implemented (dam screening and hotspots run on real data; observed scoring needs a supplied extent) |
-| Rockfall simulation (GPU Monte Carlo, barriers, impacts) | Implemented and run on a Hunza area; **uncalibrated** (Ch. 14) |
+| Rockfall simulation (GPU Monte Carlo, barriers, impacts) | Implemented and run on a Hunza area; friction set against published shadow angles, **not calibrated to Pakistani deposits** (none exist on the server; Ch. 14) |
 | Debris, earthquake and rockfall visualisation | Rebuilt and checked by rendering (Ch. 33) |
 | Spatially varying ground, access and isolation impacts, GIS export, token and rate limit, run clean-up, IMERG rainfall | Implemented |
-| Physics, runout and PGA calibration scripts | **Written and unit tested on synthetic data; not run** (compute heavy, on request) |
+| Physics, ground, runout and PGA calibration and validation | **Run** on the real inventory, ShakeMaps and synthetic slopes; results and their weak points in Ch. 27 to 32 |
 
 
 > **Honest summary of accuracy today.** Every strength, friction, fragility and cost value is a scenario value. The only validation completed is the temporal one: ERA5 rainfall separates reported rain-triggered landslide days from same-place, same-season controls with an AUC of 0.73 (95% interval 0.71 to 0.76). That is real but modest skill. Nothing in this system is validated against mapped deposits, because none exist on the server.
@@ -626,7 +626,29 @@ A test checks the trapezoid against an analytic integral, and that zero loss giv
 
 > **The assumption that carries the number:** a T-year storm gives the T-year loss. That ignores antecedent wetness, the spatial pattern of rain, and the fact that most storms of a given depth cause no landslide at all; it also depends on the strength scenario, which is uncalibrated (Ch. 28). Treat AAL as an order of magnitude for comparing places or options, not as an insurance figure. It also inherits every assumption in the damage and cost model.
 
-Each return period is an expensive simulation, so the page asks for confirmation. **Not yet run on real data.**
+Each return period is an expensive simulation, so the page asks for confirmation.
+
+## First run on a real area
+
+Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports", six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
+
+| Return period (y) | Storm depth (mm) | Failing area (km2) | Direct loss today (PKR M) | Direct loss, SSP5-8.5 (PKR M) |
+|---|---|---|---|---|
+| 2 | 15 | 0.09 | 160 | 296 |
+| 5 | 18 | 0.14 | 559 | 675 |
+| 10 | 21 | 0.17 | 836 | 861 |
+| 25 | 24 | 0.22 | 1,142 | 1,194 |
+| 50 | 26 | 0.27 | 1,399 | 1,406 |
+| 100 | 28 | 0.33 | 1,713 | 1,754 |
+| **Average annual loss** | | | **334,966,325 PKR** | **417,545,325 PKR** |
+
+The climate factor for the 50 year, 24 hour rainfall under SSP5-8.5, 2036 to 2065, is 1.016 (ensemble median over 8 CMIP6 models whose individual ratios range from 0.90 to 1.32). A factor that close to 1 with that spread is **no detectable change**, not a prediction of none.
+
+Cautions that apply to these numbers:
+
+- The loss rises faster than the failing area (the 2 year loss is 160 M for 0.09 km2, the 5 year 559 M for 0.14 km2): the loss depends on which buildings the flow happens to reach, so it moves in steps. The SSP5-8.5 column is higher mainly at the frequent end (296 against 160 M at 2 years) because a 1.6% deeper storm tips a few more buildings into damage; that is a threshold effect of the building layer, not a doubling of hazard.
+- The AAL adds a frequent tail (storms more frequent than the 2 year, linear to zero at p = 1) that contributes 39,909,663 PKR of the total; the result is therefore sensitive to the 2 year loss.
+- Every caveat above in this chapter applies: loss frequency is taken equal to rainfall frequency, with no antecedent wetness. Read the figure as an order of magnitude for this area, not a budget.
 
 
 # 22. Landslide-Dam Screening
@@ -666,6 +688,20 @@ The page can rank all seven non-empty combinations of the three levers by the fa
 
 Tests: each lever never increases failure; a 25 degree cap on a 33 degree slope removes failure; the ranking returns seven options ordered by reduction.
 
+## First run on a real area, and a counting artefact
+
+On the same 57 km2 Gilgit area (60 mm/h triangular, 12 h; baseline failing area 8.56 km2) the ranking gave:
+
+| Levers | Failing area (km2) | Change |
+|---|---|---|
+| planting + regrading | 0 | -100% |
+| planting + regrading + drainage | 0 | -100% |
+| drainage | 4.97 | 42% less |
+| planting + drainage | 5.47 | 36% less |
+| planting alone | 10.55 | **more failure than the baseline** |
+
+Planting alone *increasing* the failing area is not a physical result. The model counts only slopes that were **stable before the storm** (Ch. 4.5), because a slope that is already unstable would have failed earlier. Extra root cohesion makes slopes stable before the storm that were unstable without it (the count of cells that can fail rises from 37,429 to 49,021), and some of those then fail in the storm, so they are counted as new failures even though without planting they would have been counted as already failed. The unit test passes because the synthetic slope has no such cells. The honest reading is: the ranking is reliable for the *order* of the options that include regrading or drainage, and it must not be used to conclude that planting is harmful or useless. The fix (counting pre-existing instabilities in the baseline so that every lever is compared on the same cells) is a design decision left open.
+
 
 # 24. Barriers and Automatic Placement
 
@@ -685,7 +721,19 @@ The optimiser searches the position along the main flow corridor, the height (2 
 - **There is no surrogate model:** every candidate is a full simulation (about 24 s on the GPU for the reference area), so 30 simulations take about 12 minutes. The result is a good option under the budget, not a proven optimum.
 - The objective is direct loss plus a blocked-road penalty plus a wall cost; **the wall cost is a user input because no cost data exist here.** With a zero cost the optimiser will pick the largest walls, and the page says so.
 
-Tested on a synthetic valley with a toy objective: the corridor follows the downhill path, the budget is respected, and the optimiser lowers the objective. **Not yet run on a real area.**
+Tested on a synthetic valley with a toy objective: the corridor follows the downhill path, the budget is respected, and the optimiser lowers the objective.
+
+## First run on a real area
+
+The same 57 km2 Gilgit area, 60 mm/h triangular storm for 12 h, 2 barriers, a budget of 16 simulations (`area_demo.json`, 37 minutes). The first attempt returned barriers of zero length: cells outside the area had been filled with a high elevation, so the pit-filling step flooded the whole area flat and no flow path existed. That bug is fixed (`flow_corridor` now leaves outside cells empty so they act as outlets; the corridor is 7 cells, 210 m). The result:
+
+| | Baseline | With the best 2 barriers |
+|---|---|---|
+| Direct loss (PKR M) | 21,537,329,605 | 20,964,246,479 |
+| Buildings with damage state 3 or worse | 6,155 | 5,965 |
+| Impacted area (km2) | 25.8 | 25.7 |
+
+Two barriers (one 11 m high and about 400 m long, one 3 m high) cut the loss by about 2.7%. That is small because the slide here is 8.6 km2 of failing hillside sending 21 million m3 across a 26 km2 area: the failure is spread over thousands of release cells, so a barrier on one flow path intercepts only a share of it. The optimiser works as a tool, but this storm scenario is too large for barriers to matter; it is meant for one gully-sized failure, and the scenario is useful mainly as a limit on what barriers can do. With a 16 simulation budget the result is "a better option", not an optimum.
 
 
 # 25. Calibration and Validation Protocol
@@ -936,7 +984,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 | Published Guzzetti threshold is usable as a watch | TSS 0.32 on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics 0.56, with soil texture 0.65; mean slope 0.59 | **Weak** |
 | Calibrated parameters are better than the defaults | Held-out AUC 0.59 to 0.68 (144 events) | **Improved, wide interval** |
-| Runout lengths are realistic | Corominas relations | Not yet run |
+| Runout lengths are realistic | Corominas relations on synthetic slopes (Ch. 30) | **Right order of magnitude, within a factor of about 2** |
 | Earthquake PGA is realistic | 398 ShakeMaps: scatter 0.40 ln units (Ch. 6.2) | **Agrees with ShakeMap, which is itself a model** |
 | Shaking locates earthquake-triggered landslide reports | 31 reports, 7 earthquakes: PGA AUC 0.61, Newmark 0.57, slope 0.63 | **Not shown (n too small, reports cluster at roads)** |
 | Observed design storms are right | Gumbel fits recover known parameters; hyetograph depth equals the IDF depth; ERA5-Land smooths bursts | **Verified arithmetic; depths are lower bounds** |

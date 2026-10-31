@@ -7,7 +7,7 @@
 | Published Guzzetti threshold is usable as a watch | TSS {{rain_threshold.json:global_thresholds.guzzetti_2008.tss|2}} on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics {{ground_calibration.json:variants.base.auc_heldout|2}}, with soil texture {{ground_calibration.json:variants.+texture.auc_heldout|2}}; mean slope {{ground_calibration.json:slope_mean_auc_no_fit.auc|2}} | **Weak** |
 | Calibrated parameters are better than the defaults | Held-out AUC {{physics_calibration.json:default.auc|2}} to {{physics_calibration.json:calibrated.auc|2}} (144 events) | **Improved, wide interval** |
-| Runout lengths are realistic | Corominas relations | Not yet run |
+| Runout lengths are realistic | Corominas relations on synthetic slopes (Ch. {{ch:runout_calibration}}) | **Right order of magnitude, within a factor of about 2** |
 | Earthquake PGA is realistic | {{pga_validation.json:events|0}} ShakeMaps: scatter {{pga_validation.json:pooled.auto.all.sd_ln|2}} ln units (Ch. {{ch:earthquake_failure}}.2) | **Agrees with ShakeMap, which is itself a model** |
 | Shaking locates earthquake-triggered landslide reports | {{quake_landslides.json:n_events|0}} reports, {{quake_landslides.json:earthquakes|0}} earthquakes: PGA AUC {{quake_landslides.json:auc.pga_mean.auc|2}}, Newmark {{quake_landslides.json:auc.newmark_bssa_p90.auc|2}}, slope {{quake_landslides.json:auc.slope_p90.auc|2}} | **Not shown (n too small, reports cluster at roads)** |
 | Observed design storms are right | Gumbel fits recover known parameters; hyetograph depth equals the IDF depth; ERA5-Land smooths bursts | **Verified arithmetic; depths are lower bounds** |
