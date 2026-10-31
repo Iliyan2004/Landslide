@@ -16,41 +16,43 @@ from scipy.optimize import differential_evolution                               
 
 K, DAYS, N_CTL = 256, 34, 10          # 31 days before the storm window + the 3-day storm window (PC.STORM_H)
 # DEFAULT = the scenario values the platform shipped with, with NO antecedent effect (api_wet = 1e9 switches it off).
-DEFAULT = {"c": 3000.0, "phi": 30.0, "cr": 1000.0, "z": 1.5, "wt": 4.0, "ks": 3.7e-6, "api_wet": 1e9, "k": 0.90, "s_dry": 0.25, "s_wet": 0.90, "f_wt": 0.5}
+DEFAULT = {"c": 3000.0, "phi": 30.0, "cr": 1000.0, "z": 1.5, "wt": 4.0, "ks": 3.7e-6, "api_wet": 1e9, "k": 0.90, "s_dry": 0.25, "s_wet": 0.90, "f_wt": 0.5, "beta": 0.0, "suc": 0.0}
 # Fitted. The antecedent constants (k, api_wet, s_dry, s_wet, f_wt) are the new physics (engine/antecedent.py); the rest are the strength/hydraulic scenario values.
 BOUNDS = {"c": (500.0, 15000.0), "phi": (18.0, 42.0), "cr": (0.0, 8000.0), "z": (0.5, 4.0), "wt": (1.0, 10.0), "ks": (1e-7, 1e-4),
-          "api_wet": (30.0, 400.0), "k": (0.80, 0.97), "s_dry": (0.10, 0.60), "s_wet": (0.60, 1.00), "f_wt": (0.0, 0.8)}
+          "api_wet": (30.0, 400.0), "k": (0.80, 0.97), "s_dry": (0.10, 0.60), "s_wet": (0.60, 1.00), "f_wt": (0.0, 0.8),
+          "beta": (0.0, 2.0), "suc": (0.0, 10000.0)}      # beta: topographic water table (engine/wetness.py); suc: matric-suction cohesion at saturation 0 (Pa)
 ANTE = ("api_wet", "k", "s_dry", "s_wet", "f_wt")
 ANTE_DEFAULT_ON = {"api_wet": 120.0, "k": 0.90, "s_dry": 0.25, "s_wet": 0.90, "f_wt": 0.5}
 
 
 def build_samples():
     df = D.load(); ev = df[(df.trigger == "rain") & df.date.notna() & (df.radius_km <= 10) & (df.date >= "1981-01-01") & (df.date <= "2026-04-30")].reset_index(drop=True)
-    st = SP.Stack(layers=["slope"], with_ml=False)
+    st = SP.Stack(layers=["slope", "twi"], with_ml=False)
     ctl = RFt.controls(ev, n_per=N_CTL, seed=11)
     rows = [{"kind": 1, "lon": r.lon, "lat": r.lat, "date": r.date, "rad": r.radius_km, "grp": i} for i, r in ev.iterrows()] + \
            [{"kind": 0, "lon": r.lon, "lat": r.lat, "date": r.date, "rad": r.radius_km, "grp": int(r.event_idx)} for _, r in ctl.iterrows()]
     S = pd.DataFrame(rows)
-    rng = np.random.default_rng(5); slopes = np.full((len(S), K), np.nan, "float32"); rain = np.zeros((len(S), DAYS * 24), "float32")
+    rng = np.random.default_rng(5); slopes = np.full((len(S), K), np.nan, "float32"); twi = np.full((len(S), K), np.nan, "float32"); rain = np.zeros((len(S), DAYS * 24), "float32")
     for i, r in S.iterrows():
-        lo, la = SP.disc_points(r.lon, r.lat, r.rad, K, rng); sm = st.sample(lo, la, ["slope"])
+        lo, la = SP.disc_points(r.lon, r.lat, r.rad, K, rng); sm = st.sample(lo, la, ["slope", "twi"]); twi[i] = sm["twi"]
         slopes[i] = np.where(sm["_inside"], sm.get("slope30", sm["slope"]), np.nan)
         _, v = RFt.series(r.lat, r.lon, r.date, back_days=DAYS - 1); rain[i, -len(v):] = v[-DAYS * 24:]
         if len(v) < DAYS * 24 - 24:
             rain[i] = np.nan                                          # incomplete history: drop this sample (never zero-fill rainfall)
     S["block"] = SP.blocks(S.lon.values, S.lat.values, 1.0)
-    return S, slopes, rain
+    return S, slopes, rain, twi
 
 
 def main():
     t0 = time.time(); dev = PC.device(); print("device", dev, flush=True)
-    S, slopes, rain = build_samples(); print("samples", len(S), "events", int(S.kind.sum()), round(time.time() - t0), "s", flush=True)
+    S, slopes, rain, twi = build_samples(); print("samples", len(S), "events", int(S.kind.sum()), round(time.time() - t0), "s", flush=True)
     sl = torch.as_tensor(np.nan_to_num(slopes, nan=0.0), device=dev); rn = torch.as_tensor(rain, device=dev)
+    tz = np.nan_to_num((twi - np.nanmean(twi)) / max(float(np.nanstd(twi)), 1e-6), nan=0.0); tz_t = torch.as_tensor(tz, device=dev, dtype=torch.float64)       # standardised over all samples
     tex = P.SOIL.GA_PRIORS["sandy loam"]; ks0, psi, por = tex; dth = por - 0.25
     y = S.kind.values
     good = np.isfinite(rain).all(1) & (np.isfinite(slopes).sum(1) > 20); rn = torch.nan_to_num(rn)
     def scores(theta):
-        s = PC.score_params({**DEFAULT, **theta}, rn, sl, (ks0, psi, dth), None).cpu().numpy(); return np.where(good, s, np.nan)
+        s = PC.score_params({**DEFAULT, **theta}, rn, sl, (ks0, psi, dth), None, twi_z=tz_t).cpu().numpy(); return np.where(good, s, np.nan)
     blocks = S.block.values; ub = np.unique(blocks); rng = np.random.default_rng(1); perm = rng.permutation(len(ub)); fold = {g: i % 5 for g, i in zip(ub[perm], range(len(ub)))}; f = S.block.map(fold).values
     names = list(BOUNDS); b = [BOUNDS[k] for k in names]
     res = {"n_samples": int(len(S)), "n_events": int(y.sum()), "folds": []}

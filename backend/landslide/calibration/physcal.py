@@ -28,16 +28,17 @@ def ga_front(rain_mm_h, Ks, psi, dth, substeps=4):
     return F
 
 
-def min_fs_p10(slope_deg, F, params, soil_depth, dth, wt, max_soil_slope=45.0):
+def min_fs_p10(slope_deg, F, params, soil_depth, dth, wt, max_soil_slope=45.0, twi_z=None, beta=0.0, suc=0.0):
     """slope_deg (S,K) -> score per sample: p10 of FS over mobilisable cells (stable when dry, soil-bearing); NaN->+inf if none.
     params: dict of (S,) tensors c (Pa), phi (deg), cr (Pa), gamma (N/m3)."""
     b = torch.deg2rad(slope_deg.double()); cb, sb = torch.cos(b), torch.sin(b)
     z = soil_depth[:, None]; c = params["c"][:, None]; cr = params["cr"][:, None]; g = params["gamma"][:, None]; tphi = torch.tan(torch.deg2rad(params["phi"]))[:, None]
-    m0 = torch.clamp((z - wt[:, None]) / z, 0, 1)
+    wtc = wt[:, None] if twi_z is None or beta == 0.0 else torch.clamp(wt[:, None] * torch.exp(-beta * twi_z), 0.3, 25.0)     # topographic water table (engine/wetness.py)
+    m0 = torch.clamp((z - wtc) / z, 0, 1)
     m = torch.maximum(m0, torch.clamp(F[:, None] / (dth[:, None] * z), 0, 1))
     def fs(mm):
         u = mm * GAMMA_W * z * cb ** 2
-        return (c + cr + torch.clamp(g * z * cb ** 2 - u, min=0) * tphi) / (g * z * sb * cb).clamp(min=1e-9)
+        return (c + cr + suc * (1.0 - torch.clamp(mm, 0, 1)) + torch.clamp(g * z * cb ** 2 - u, min=0) * tphi) / (g * z * sb * cb).clamp(min=1e-9)
     ok = (fs(m0) >= 1.0) & (slope_deg <= max_soil_slope) & (slope_deg >= 5.0)
     f = torch.where(ok, fs(m), torch.full_like(m, float("inf")))
     q = torch.sort(f, dim=1).values
@@ -58,7 +59,7 @@ def antecedent_wetness(rain_pre, k, api_wet):
     return torch.clamp((daily * wgt).sum(1) / float(api_wet), 0, 1)
 
 
-def score_params(theta, rain, slopes, texture_ks_psi_dth, bounds_names=None, ground=None):
+def score_params(theta, rain, slopes, texture_ks_psi_dth, bounds_names=None, ground=None, twi_z=None):
     """theta: dict name->float. rain (S,T) hourly mm; the last STORM_H hours drive the wetting front, the earlier hours set the antecedent state (theta keys
     k, api_wet, s_dry, s_wet, f_wt; absent or api_wet >= 1e6 means no antecedent effect). Returns instability score per sample (higher = more unstable).
     ground: optional dict of (S,K) tensors multipliers {'c': ..., 'phi': ...} for spatially varying strength."""
@@ -76,5 +77,6 @@ def score_params(theta, rain, slopes, texture_ks_psi_dth, bounds_names=None, gro
     P = {k_: torch.full((S,), float(theta[k_]), device=dev, dtype=torch.float64) for k_ in ("c", "phi", "cr")}
     P["gamma"] = torch.full((S,), 18000.0, device=dev, dtype=torch.float64)
     z = torch.full((S,), float(theta["z"]), device=dev, dtype=torch.float64)
-    f = min_fs_p10(slopes, F, P, z, dth if torch.is_tensor(dth) else torch.full((S,), float(dth), device=dev, dtype=torch.float64), wt)
+    f = min_fs_p10(slopes, F, P, z, dth if torch.is_tensor(dth) else torch.full((S,), float(dth), device=dev, dtype=torch.float64), wt,
+                   twi_z=twi_z, beta=float(theta.get("beta", 0.0)), suc=float(theta.get("suc", 0.0)))
     return -torch.where(torch.isinf(f), torch.full_like(f, 10.0), f.clamp(max=10.0))

@@ -204,6 +204,26 @@ class TestCalibrationMachinery(unittest.TestCase):
         self.assertLessEqual(u1, u0)          # like-for-like measure: stronger roots can only remove unstable cells
         self.assertGreater(u0, 0)
 
+    def test_wetness_suction_and_gridded_rain(self):
+        from landslide.engine import wetness as WET
+        spec, _ = P.build_spec({"strength_preset": "colluvium_shallow", "texture": "sandy loam"})
+        sp = TR.scenario_point(spec, 0.5); slope = np.full((6, 40), 30.0, "float32"); valid = np.ones_like(slope, bool)
+        z = TR.soil_depth_field(slope, sp, False); steps = np.full(24, 6.0)
+        # topographic water table: a convergent (high TWI) half is wetter than a divergent half
+        twi = np.where(np.arange(40)[None, :] < 20, 4.0, 10.0).astype("float32") * np.ones_like(slope)
+        sp_w, rep = WET.apply(sp, twi, valid, 1.0); wt = sp_w["water_table"]
+        self.assertLess(float(wt[0, 30]), float(wt[0, 5])); self.assertEqual(WET.apply(sp, twi, valid, 0.0)[0], sp)
+        # suction: more strength when dry, none when saturated, so it can only reduce failure
+        sp_s = dict(sp); sp_s["suction_pa"] = 8000.0
+        mob0, _ = TR.mobilisable_mask(slope, valid, z, sp, 45.0); mob1, _ = TR.mobilisable_mask(slope, valid, z, sp_s, 45.0)
+        self.assertGreaterEqual(int(mob1.sum()), int(mob0.sum()))
+        self.assertEqual(float(TR.suction_cohesion(sp_s, 1.0)), 0.0); self.assertEqual(float(TR.suction_cohesion(sp_s, 0.0)), 8000.0)
+        # gridded rain: cells that get twice the rain fail no later than cells that get half
+        sp_r = dict(sp); sp_r["rain_scale"] = np.where(np.arange(40)[None, :] < 20, 0.5, 2.0).astype("float32") * np.ones_like(slope)
+        tf, *_ = TR.rain_failure_times(slope, valid, steps * 3, 900, sp_r, z, 10.0)
+        a, b = np.isfinite(tf[:, :20]).sum(), np.isfinite(tf[:, 20:]).sum()
+        self.assertGreaterEqual(b, a)
+
     def test_antecedent_wetness_and_ensemble(self):
         from landslide.engine import antecedent as ANT, ensemble as ENS
         self.assertEqual(ANT.api([0, 0, 0]), 0.0); self.assertGreater(ANT.api([0, 0, 50]), ANT.api([50, 0, 0]))     # recent rain counts more

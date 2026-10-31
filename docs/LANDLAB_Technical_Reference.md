@@ -17,7 +17,7 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 
 | Feature | Status |
 |---|---|
-| Tiers 1 to 4, national product, districts, basins | Implemented and tested (121 unit tests) |
+| Tiers 1 to 4, national product, districts, basins | Implemented and tested (122 unit tests) |
 | Rainfall sources: design storm, forecast, recent, ERA5, CHIRPS, CSV | Implemented |
 | Impacts: buildings, roads, hospitals and schools, direct loss | Implemented (all thresholds assumed, Ch. 18) |
 | Live monitoring with webhook, compare runs, PDF report, MP4 export | Implemented |
@@ -204,9 +204,25 @@ The 30 days come from ERA5-Land (server zarr) for the same point, whichever sour
 
 The single scenario moves every parameter together to one end of its prior range (the strength quantile). Setting `ensemble: n` in a run additionally draws n members by Latin hypercube with EVERY prior varied independently (cohesion, friction, depth, conductivity, water table, root cohesion), applies the same spatial-ground and antecedent adjustments to each member, and evaluates failure with the exact end-of-storm shortcut of Ch. 5.4. The outputs are a failure-probability raster (share of members in which the cell is mobilisable and fails) and the 5th, 50th and 95th percentile of the failing area. The probability is conditional on the priors and on independence between them (cohesion and friction are in fact negatively correlated in real soils); it is not a frequency of landslides. It runs on the GPU first.
 
-## 5.7 Limits
+## 5.7 Optional physics added for the limits, and what the data says about it
 
-Uniform rain over the area; no lateral flow or perched water table; no unsaturated suction strength; one soil layer; depth of failure is the soil depth, not a mapped slip surface; no rock slopes (Ch. 40).
+Three additions address limits that earlier versions listed. All are **off by default** and are run parameters:
+
+| Limit | Addition | Parameter | What it does |
+|---|---|---|---|
+| Uniform rain over the area | Gridded rain | `rain_field: true` | Multiplies each cell's storm depth by the ERA5-Land storm total of the cell under it, divided by the total at the cell the series was read from (scaling limited to 0.3 to 3). The Green-Ampt front is not linear in rain, so it is run for five representative scale values and each cell takes the nearest. Only for ERA5, IMERG and CHIRPS series that carry a start time. |
+| No lateral flow or perched water | Topographic water table | `wetness_beta` | The depth to the starting water table varies with the topographic wetness index, `water_table x exp(-beta x (TWI - mean)/sd)` (`engine/wetness.py`): hollows and valley floors start wetter than spurs. Upslope area is counted only inside the analysis area. |
+| No unsaturated suction strength | Suction cohesion | `suction_kpa` | Adds `suction x (1 - m)` of apparent cohesion, lost as the layer saturates (`trigger.suction_cohesion`). |
+
+The depth limit is handled by the bedrock-depth cap (Ch. 29); the slip surface is still the soil depth, because a mapped slip surface needs boreholes or geophysics, and none exist for Pakistan in any source I could reach (public repositories hold none; the global soil-thickness map of Pelletier et al. needs an Earthdata login).
+
+**Test.** The temporal calibration (Ch. 28) was re-run with the wetness exponent (0 to 2) and the suction (0 to 10 kPa) as two more fitted parameters, the wetness index taken from the national 90 m layer sampled in each report's accuracy disc. Held-out AUC: 0.685 with them, against 0.683 without. That is no gain. The fitted values also differ wildly between folds (wetness exponent 0.2 to 1.7, suction 1.5 to 10 kPa), so the data cannot identify them. **They stay at zero by default.** They are available for sensitivity runs, not as calibrated physics.
+
+Rain is not scale-tested against the inventory: a report's accuracy disc and the 9 km ERA5 cell are the same scale, so the gridded rain cannot show a difference on this data. It matters only for areas several ERA5 cells wide.
+
+## 5.8 Limits
+
+Uniform rain over the area unless the gridded option is on; lateral flow only through the optional topographic water table; suction strength only as an uncalibrated option; one soil layer; depth of failure is the soil depth, not a mapped slip surface; no rock slopes (Ch. 40).
 
 
 # 6. Earthquake-Triggered Failure
@@ -895,8 +911,8 @@ The server holds lithology (GLiM), soil texture (SoilGrids), land cover and NDVI
 |---|---|
 | Held-out AUC, shipped defaults | 0.593 |
 | Held-out AUC, defaults plus antecedent wetness at its initial constants | 0.593 |
-| Held-out AUC, calibrated | 0.683 |
-| Calibrated values (median over folds) | c=916, phi=29.9, cr=444, z=2.54, wt=6.74, ks=7.3e-05, api_wet=54.9, k=0.955, s_dry=0.318, s_wet=0.955, f_wt=0.202 |
+| Held-out AUC, calibrated | 0.685 |
+| Calibrated values (median over folds) | c=1.05e+03, phi=18.6, cr=1.02e+03, z=2.4, wt=5.57, ks=5.03e-05, api_wet=70.6, k=0.965, s_dry=0.3, s_wet=0.935, f_wt=0.342, beta=1.41, suc=6.76e+03 |
 
 The calibrated set beat the defaults by more than the 0.02 adoption margin, so the antecedent constants are the platform's defaults now (`engine/antecedent.py`) and a strength preset "calibrated_reports" carries the fitted soil depth (2.5 m), cohesion (0.9 kPa) and friction (29.9 degrees).
 
@@ -905,6 +921,10 @@ Read this with care:
 - Most of the gain comes from the fitted strength being weak (cohesion near the bottom of its allowed range) and from the antecedent terms together; the antecedent wetness at its initial constants added nothing on its own. The fit says what makes the model rank *reported* landslide days above ordinary days, not what the true soil strength is. The fitted conductivity, water table and root cohesion sit at the edges of their ranges and are not carried into the presets: they are partly absorbing errors elsewhere (ERA5 smoothing the bursts, report bias).
 - Held-out folds differ a lot (0.58 to 0.72 for the first two folds) because there are only 144 events, so the 0.68 has a wide interval.
 - The skill is relative: it ranks days, it does not predict how many landslides occur.
+
+## 21.5 Second run, with topographic wetness and suction
+
+The same fit repeated with two more parameters (wetness exponent, suction; Ch. 5.7) gives held-out AUC 0.685 against 0.683 before: no improvement, and the added parameters are not identifiable between folds. The first fit (0.683, the antecedent constants and the "calibrated_reports" preset) is the one adopted in the code; the file `physics_calibration_v1_no_wetness_suction.json` keeps it.
 
 
 # 29. Calibration of the Spatial Ground
@@ -983,7 +1003,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 
 | Claim | Evidence | Status |
 |---|---|---|
-| The code solves its equations | 121 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
+| The code solves its equations | 122 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
 | Rainfall separates landslide days from ordinary days | AUC 0.73 (0.71 to 0.76) for 24 h intensity, leave-one-year-out | **Validated, modest** |
 | Published Guzzetti threshold is usable as a watch | TSS 0.32 on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics 0.56, with soil texture 0.65; mean slope 0.59 | **Weak** |
@@ -1131,12 +1151,12 @@ Each entry was found by checking a result against something known, not by inspec
 
 # 40. Known Limitations
 
-1. **Not calibrated, mostly not validated.** See Ch. 32 for exactly what has and has not been checked.
+1. **Calibrated and validated only as far as the inventory allows.** See Ch. 32 for exactly what has and has not been checked.
 2. **One soil layer, infinite slope.** No deep-seated slides, no rock-slope kinematics, no rockfall, no snow avalanche, no glacial-lake outbursts.
-3. **Rain is spatially uniform** over the area and comes from a point (ERA5, CHIRPS, forecast) or a design storm.
-4. **Pore pressure is a proxy** from a wetting front, not groundwater flow.
-5. **Failure depth equals soil depth**, thinned with slope by an assumption; real slip surfaces are not mapped.
-6. **Earthquake ground motion** has no site amplification, no directivity, a single empirical model valid for M 5.0 to 7.7.
+3. **Rain is spatially uniform** over the area by default and comes from a point (ERA5, CHIRPS, forecast) or a design storm; a gridded-rain option exists (Ch. 5.7) but cannot be tested on this inventory.
+4. **Pore pressure is a proxy** from a wetting front, not groundwater flow. A topographic water-table option and a suction option exist; neither improved held-out skill, so both are off.
+5. **Failure depth equals soil depth**, thinned with slope by an assumption and optionally capped by the bedrock-depth map; real slip surfaces are not mapped, and no borehole or geophysical data for Pakistan were found.
+6. **Earthquake ground motion** uses NGA-West2 with a Vs30 site term (and a regional intraslab model for deep events) with no directivity; it is within a factor of about 1.5 of ShakeMap, low by about a quarter for M 7 and above (Ch. 6.2).
 7. **Runout friction is a scenario value by flow type;** the single-phase depth-averaged model does not separate solid and fluid phases.
 8. **Impacts** use assumed fragility medians and a single unit cost; no indirect loss, no lives.
 9. **Building heights** are assumed 6 m (display only); footprints come from a satellite-derived dataset with its own errors.
@@ -1168,7 +1188,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 
 ## 30.2 Tests
 
-`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 121 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
+`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 122 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
 
 ## 30.3 Files
 

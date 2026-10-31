@@ -30,3 +30,7 @@ Read this with care:
 - Most of the gain comes from the fitted strength being weak (cohesion near the bottom of its allowed range) and from the antecedent terms together; the antecedent wetness at its initial constants added nothing on its own. The fit says what makes the model rank *reported* landslide days above ordinary days, not what the true soil strength is. The fitted conductivity, water table and root cohesion sit at the edges of their ranges and are not carried into the presets: they are partly absorbing errors elsewhere (ERA5 smoothing the bursts, report bias).
 - Held-out folds differ a lot (0.58 to 0.72 for the first two folds) because there are only 144 events, so the 0.68 has a wide interval.
 - The skill is relative: it ranks days, it does not predict how many landslides occur.
+
+## 21.5 Second run, with topographic wetness and suction
+
+The same fit repeated with two more parameters (wetness exponent, suction; Ch. {{ch:rain_triggered_failure}}.7) gives held-out AUC {{physics_calibration.json:calibrated.auc|3}} against 0.683 before: no improvement, and the added parameters are not identifiable between folds. The first fit (0.683, the antecedent constants and the "calibrated_reports" preset) is the one adopted in the code; the file `physics_calibration_v1_no_wetness_suction.json` keeps it.

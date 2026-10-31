@@ -12,7 +12,7 @@ from scipy import ndimage
 from ..app import paths, rasters, pipeline as P, rainfall as RF, layers as LY
 from ..data.preprocessing import aoi as AOI, terrain
 from ..errors import GateError, InsufficientData
-from . import flow as FL, trigger as TR, interventions as IV, ground as GR, access as AC, site as SITE, antecedent as ANT, ensemble as ENSM
+from . import flow as FL, trigger as TR, interventions as IV, ground as GR, access as AC, site as SITE, antecedent as ANT, ensemble as ENSM, wetness as WET
 from .thermal import Governor
 
 MAX_PHYS_CELLS = 700_000
@@ -83,7 +83,8 @@ def _execute(geom, params, run_dir, progress):
     mode = params.get("mode", "rain")
     spec, hp = P.build_spec(params)
     q = float(params.get("strength_quantile", 0.3))
-    sp, ground_rep, ante_rep = _scenario(spec, q, params, mode, grid, slope.shape)
+    extras, extras_rep = _extras(params, mode, grid, dem_f, valid, res)
+    sp, ground_rep, ante_rep = _scenario(spec, q, params, mode, grid, slope.shape, extras)
     z = TR.soil_depth_field(slope, sp, bool(params.get("depth_vs_slope", True)))
     min_slope = float(params.get("min_slope_deg", 12))
     iv = params.get("interventions") or {}
@@ -130,7 +131,7 @@ def _execute(geom, params, run_dir, progress):
     if fields is not None or barrier_info:
         summary["interventions"] = {"nbs": {k: v for k, v in (iv.get("nbs") or {}).items() if k != "zone"}, "nbs_zone_cells": (fields or {}).get("zone_cells"),
                                     "barriers": barrier_info, "note": "scenario effect sizes set by the user; benefit = change against the unmitigated run"}
-    summary["trigger"] = {"spatial_ground": ground_rep, "antecedent": ante_rep, "strength_quantile": q, "failing_cells": n_fail, "failing_area_km2": n_fail * dx * dx / 1e6,
+    summary["trigger"] = {"spatial_ground": ground_rep, "antecedent": ante_rep, "extras": extras_rep, "strength_quantile": q, "failing_cells": n_fail, "failing_area_km2": n_fail * dx * dx / 1e6,
                           "failing_frac_of_area": n_fail / max(1, int(valid.sum())), "soil_depth_mean_m": float(z[valid].mean()),
                           "params": {k: (round(v, 6) if isinstance(v, float) else (["per-cell", float(np.nanmean(v))] if isinstance(v, np.ndarray) else v)) for k, v in sp.items()},
                           "depth_vs_slope": bool(params.get("depth_vs_slope", True)), "mobilisable": mob_stats}
@@ -142,7 +143,7 @@ def _execute(geom, params, run_dir, progress):
     if n_ens > 0 and mode in ("rain", "both"):
         progress("ensemble", 0.17)
         ens = ENSM.pfail(slope, valid, steps, dt_s, spec, n_ens, int(params.get("seed", 0)), min_slope, float(params.get("max_soil_slope_deg", 45)),
-                         bool(params.get("depth_vs_slope", True)), _post(params, mode, grid, slope.shape), fields)
+                         bool(params.get("depth_vs_slope", True)), _post(params, mode, grid, slope.shape, extras), fields)
         ar = np.array(ens["cells_members"]) * dx * dx / 1e6; p_fail_arr = ens["p_fail"]
         summary["ensemble"] = {"members": n_ens, "device": ens["device"], "failing_area_km2": {"p05": float(np.percentile(ar, 5)), "p50": float(np.percentile(ar, 50)),
                                "p95": float(np.percentile(ar, 95)), "mean": float(ar.mean())}, "cells_p_fail_ge_0.5": int(np.nansum(p_fail_arr >= 0.5)),
@@ -282,7 +283,7 @@ def _lambda_for(rain_fs, sp, z):
     return None if rain_fs is None else 0.6
 
 
-def _post(params, mode, grid, shape):
+def _post(params, mode, grid, shape, extras=None):
     """sp -> sp2 hook applying the optional spatial ground and antecedent wetness (used by the ensemble members)."""
     cache = {}
     def post(sp):
@@ -291,11 +292,36 @@ def _post(params, mode, grid, shape):
         _ant = (params.get("rain") or {}).get("antecedent_daily_mm") if mode in ("rain", "both") else None
         if _ant and params.get("antecedent", True):
             sp, _ = ANT.apply(sp, ANT.api(_ant))
-        return sp
+        return extras(sp) if extras else sp
     return post
 
 
-def _scenario(spec, q, params, mode, grid, shape):
+def _extras(params, mode, grid, dem_f, valid, res):
+    """Optional physics that needs the terrain or the gridded rain: topographic water table (wetness_beta), suction cohesion (suction_kpa), per-cell rain
+    (rain_field). Returns a function sp -> sp2 plus a report. All off by default."""
+    rep = {}; beta = float(params.get("wetness_beta", WET.PARAMS["beta"])); twi = WET.twi_field(dem_f, valid, res) if beta != 0.0 else None
+    scale = None
+    if params.get("rain_field") and mode in ("rain", "both"):
+        ser = params.get("rain") or {}
+        try:
+            from pyproj import Transformer
+            lon0, lat0 = Transformer.from_crs(grid["crs"], 4326, always_xy=True).transform(*(grid["affine"] * (grid["width"] / 2, grid["height"] / 2)))
+            scale = RF.era5_scale_field(grid, ser, ser.get("grid_lat", lat0), ser.get("grid_lon", lon0))
+            rep["rain_field"] = None if scale is None else {"min": float(np.nanmin(scale)), "max": float(np.nanmax(scale)), "mean": float(np.nanmean(scale))}
+        except Exception as e:
+            rep["rain_field"] = f"unavailable: {str(e)[:80]}"
+    suc = float(params.get("suction_kpa", 0.0)) * 1000.0
+    def post(sp):
+        sp, r = WET.apply(sp, twi, valid, beta); rep["wetness"] = r
+        if scale is not None:
+            sp = dict(sp); sp["rain_scale"] = scale
+        if suc:
+            sp = dict(sp); sp["suction_pa"] = suc; rep["suction_kpa"] = suc / 1000.0
+        return sp
+    return post, rep
+
+
+def _scenario(spec, q, params, mode, grid, shape, extras=None):
     """The ONE place the scenario parameter set is built (main run and the paired mitigation evaluation must agree):
     prior-range point -> optional spatially varying ground -> optional antecedent wetness from the storm's 30 prior days."""
     sp = TR.scenario_point(spec, q); ground_rep = ante_rep = None
@@ -304,6 +330,8 @@ def _scenario(spec, q, params, mode, grid, shape):
     _ant = (params.get("rain") or {}).get("antecedent_daily_mm") if mode in ("rain", "both") else None
     if _ant and params.get("antecedent", True):
         sp, ante_rep = ANT.apply(sp, ANT.api(_ant))
+    if extras:
+        sp = extras(sp)
     return sp, ground_rep, ante_rep
 
 
@@ -425,9 +453,11 @@ def stability_context(geom, params):
     if dem is None:
         raise InsufficientData(["DEM coverage for this AOI"], "terrain")
     valid = rasters.polygon_mask(geom, grid) & np.isfinite(dem)
-    slope = terrain.slope_aspect(np.where(np.isfinite(dem), dem, np.nanmedian(dem)), res, res)["slope_deg"].astype("float32")
+    dem_f = np.where(np.isfinite(dem), dem, np.nanmedian(dem))
+    slope = terrain.slope_aspect(dem_f, res, res)["slope_deg"].astype("float32")
     spec, _ = P.build_spec(params)
-    sp, _, _ = _scenario(spec, float(params.get("strength_quantile", 0.3)), params, "rain", grid, slope.shape)
+    extras, _ = _extras(params, "rain", grid, dem_f, valid, res)
+    sp, _, _ = _scenario(spec, float(params.get("strength_quantile", 0.3)), params, "rain", grid, slope.shape, extras)
     z = TR.soil_depth_field(slope, sp, bool(params.get("depth_vs_slope", True)))
     series = params["rain"]
     steps = RF.to_step_depths(series["times_h"], series["rate_mm_h"], 900)

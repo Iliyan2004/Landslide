@@ -70,11 +70,11 @@ def pfail(slope, valid, steps_mm, dt_s, spec, n=48, seed=0, min_slope=10.0, max_
         if m_scale is not None:
             m1 = torch.clamp(m1 * _t(m_scale, dev), 0, 1)
         sbe, cbe = (sb, cb) if slope_e is slope else (torch.sin(torch.deg2rad(_t(slope_e, dev))), torch.cos(torch.deg2rad(_t(slope_e, dev))))
-        gam = float(sp["unit_weight"]); c = _t(sp["effective_cohesion"], dev); cr = _t(c_root, dev); tphi = torch.tan(torch.deg2rad(_t(sp["friction_angle"], dev)))
+        gam = float(sp["unit_weight"]); c = _t(sp["effective_cohesion"], dev); cr = _t(c_root, dev); tphi = torch.tan(torch.deg2rad(_t(sp["friction_angle"], dev))); suc = _t(sp.get("suction_pa", 0.0), dev)
 
         def fs(m):
             sig = torch.clamp(gam * z * cbe ** 2 - torch.clamp(m, 0, 1) * GAMMA_W * z * cbe ** 2, min=0.0)
-            return (c + cr + sig * tphi) / torch.clamp(gam * z * sbe * cbe, min=1e-9)
+            return (c + cr + suc * (1.0 - torch.clamp(m, 0, 1)) + sig * tphi) / torch.clamp(gam * z * sbe * cbe, min=1e-9)
         stable0 = soil & (fs(m0) >= 1.0)
         fail = stable0 & cand & (fs(m1) < 1.0)
         acc += fail.float()

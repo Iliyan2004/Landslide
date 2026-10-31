@@ -1,11 +1,11 @@
 # Known Limitations
 
-1. **Not calibrated, mostly not validated.** See Ch. {{ch:accuracy_record}} for exactly what has and has not been checked.
+1. **Calibrated and validated only as far as the inventory allows.** See Ch. {{ch:accuracy_record}} for exactly what has and has not been checked.
 2. **One soil layer, infinite slope.** No deep-seated slides, no rock-slope kinematics, no rockfall, no snow avalanche, no glacial-lake outbursts.
-3. **Rain is spatially uniform** over the area and comes from a point (ERA5, CHIRPS, forecast) or a design storm.
-4. **Pore pressure is a proxy** from a wetting front, not groundwater flow.
-5. **Failure depth equals soil depth**, thinned with slope by an assumption; real slip surfaces are not mapped.
-6. **Earthquake ground motion** has no site amplification, no directivity, a single empirical model valid for M 5.0 to 7.7.
+3. **Rain is spatially uniform** over the area by default and comes from a point (ERA5, CHIRPS, forecast) or a design storm; a gridded-rain option exists (Ch. {{ch:rain_triggered_failure}}.7) but cannot be tested on this inventory.
+4. **Pore pressure is a proxy** from a wetting front, not groundwater flow. A topographic water-table option and a suction option exist; neither improved held-out skill, so both are off.
+5. **Failure depth equals soil depth**, thinned with slope by an assumption and optionally capped by the bedrock-depth map; real slip surfaces are not mapped, and no borehole or geophysical data for Pakistan were found.
+6. **Earthquake ground motion** uses NGA-West2 with a Vs30 site term (and a regional intraslab model for deep events) with no directivity; it is within a factor of about 1.5 of ShakeMap, low by about a quarter for M 7 and above (Ch. {{ch:earthquake_failure}}.2).
 7. **Runout friction is a scenario value by flow type;** the single-phase depth-averaged model does not separate solid and fluid phases.
 8. **Impacts** use assumed fragility medians and a single unit cost; no indirect loss, no lives.
 9. **Building heights** are assumed 6 m (display only); footprints come from a satellite-derived dataset with its own errors.

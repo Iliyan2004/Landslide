@@ -49,12 +49,20 @@ def _eff(slope, p, fields):
     return slope_e, c_root, wt, f.get("m_scale")
 
 
+def suction_cohesion(p, m):
+    """Apparent cohesion from matric suction (Pa): p['suction_pa'] x (1 - m). The unsaturated soil above the wetting front is held by suction, which is lost as
+    the saturated fraction m of the slip layer rises (Fredlund et al. 1978 with the suction term scaled to its dry value; m = 1 gives none).
+    Absent or zero by default: it needs a soil-water retention measurement that does not exist here, so it is a scenario input."""
+    sa = p.get("suction_pa", 0.0)
+    return 0.0 if (np.isscalar(sa) and sa == 0.0) else sa * (1.0 - np.clip(m, 0.0, 1.0))
+
+
 def mobilisable_mask(slope, valid, z, p, max_soil_slope=45.0, fields=None):
     """Cells that can fail in an event: soil can exist (slope <= max_soil_slope; steeper = bare rock) and the slope was STABLE
     before the event (FS >= 1 at the baseline water table). Pre-existing unstable cells would already have failed."""
     slope_e, c_root, wt, _ = _eff(slope, p, fields)
     m0 = green_ampt.m_from_water_table(z, wt)
-    fs0 = INF.factor_of_safety(slope_e, z, p["effective_cohesion"], p["friction_angle"], p["unit_weight"], m=m0, c_root=c_root)
+    fs0 = INF.factor_of_safety(slope_e, z, p["effective_cohesion"], p["friction_angle"], p["unit_weight"], m=m0, c_root=c_root + suction_cohesion(p, m0))
     soil = valid & (slope <= max_soil_slope)
     stable = soil & (fs0 >= 1.0)
     return stable, {"cells_valid": int(valid.sum()), "cells_rock_too_steep": int((valid & ~(slope <= max_soil_slope)).sum()),
@@ -78,6 +86,13 @@ def rain_failure_times(slope, valid, rain_mm_step, dt_s, p, z, min_slope=10.0, f
     """Returns t_fail_s (inf = never), min_fs, m_end, F history, and unstable-area-vs-time."""
     ga = green_ampt.run(rain_mm_step, dt_s, p["hydraulic_conductivity"], p["suction_head"], p["theta_s"], p["theta_i"], 1.0, m0=0.0)
     F = ga["F_m"]                                          # (T,) scalar series, independent of z
+    # spatially varying rain: p['rain_scale'] (ny, nx) multiplies the storm depth per cell (gridded ERA5/IMERG totals). Green-Ampt is not linear in rain, so the
+    # front is run for a handful of representative scale values and each cell takes its nearest one.
+    rs = p.get("rain_scale"); F_cell = None
+    if rs is not None and np.ndim(rs) == 2 and np.isfinite(rs).any():
+        reps = np.unique(np.round(np.nanpercentile(rs, [5, 25, 50, 75, 95]), 2)); idx = np.abs(np.nan_to_num(rs, nan=1.0)[..., None] - reps).argmin(-1)
+        Fb = np.stack([green_ampt.run(rain_mm_step * r, dt_s, p["hydraulic_conductivity"], p["suction_head"], p["theta_s"], p["theta_i"], 1.0, m0=0.0)["F_m"] for r in reps])
+        F_cell = (Fb, idx)
     dth = max(p["theta_s"] - p["theta_i"], 1e-6)
     slope_e, c_root, wt, m_scale = _eff(slope, p, fields)
     m0 = green_ampt.m_from_water_table(z, wt)
@@ -87,10 +102,11 @@ def rain_failure_times(slope, valid, rain_mm_step, dt_s, p, z, min_slope=10.0, f
     failed = np.zeros(slope.shape, bool)
     cand = valid & (slope >= min_slope)
     for t in range(len(F)):
-        m = np.maximum(m0, np.clip(F[t] / np.maximum(dth * z, 1e-9), 0.0, 1.0))
+        Ft = F[t] if F_cell is None else F_cell[0][:, t][F_cell[1]]
+        m = np.maximum(m0, np.clip(Ft / np.maximum(dth * z, 1e-9), 0.0, 1.0))
         if m_scale is not None:
             m = np.clip(m * m_scale, 0.0, 1.0)                       # subsurface drainage lowers the saturated fraction
-        fs = INF.factor_of_safety(slope_e, z, p["effective_cohesion"], p["friction_angle"], p["unit_weight"], m=m, c_root=c_root)
+        fs = INF.factor_of_safety(slope_e, z, p["effective_cohesion"], p["friction_angle"], p["unit_weight"], m=m, c_root=c_root + suction_cohesion(p, m))
         fs = np.where(cand, fs, np.inf)
         min_fs = np.minimum(min_fs, np.where(np.isfinite(fs), fs, np.inf))
         new = (fs < 1.0) & ~failed

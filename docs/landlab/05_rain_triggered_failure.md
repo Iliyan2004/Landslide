@@ -55,6 +55,22 @@ The 30 days come from ERA5-Land (server zarr) for the same point, whichever sour
 
 The single scenario moves every parameter together to one end of its prior range (the strength quantile). Setting `ensemble: n` in a run additionally draws n members by Latin hypercube with EVERY prior varied independently (cohesion, friction, depth, conductivity, water table, root cohesion), applies the same spatial-ground and antecedent adjustments to each member, and evaluates failure with the exact end-of-storm shortcut of Ch. {{ch:rain_triggered_failure}}.4. The outputs are a failure-probability raster (share of members in which the cell is mobilisable and fails) and the 5th, 50th and 95th percentile of the failing area. The probability is conditional on the priors and on independence between them (cohesion and friction are in fact negatively correlated in real soils); it is not a frequency of landslides. It runs on the GPU first.
 
-## 5.7 Limits
+## 5.7 Optional physics added for the limits, and what the data says about it
 
-Uniform rain over the area; no lateral flow or perched water table; no unsaturated suction strength; one soil layer; depth of failure is the soil depth, not a mapped slip surface; no rock slopes (Ch. {{ch:limitations}}).
+Three additions address limits that earlier versions listed. All are **off by default** and are run parameters:
+
+| Limit | Addition | Parameter | What it does |
+|---|---|---|---|
+| Uniform rain over the area | Gridded rain | `rain_field: true` | Multiplies each cell's storm depth by the ERA5-Land storm total of the cell under it, divided by the total at the cell the series was read from (scaling limited to 0.3 to 3). The Green-Ampt front is not linear in rain, so it is run for five representative scale values and each cell takes the nearest. Only for ERA5, IMERG and CHIRPS series that carry a start time. |
+| No lateral flow or perched water | Topographic water table | `wetness_beta` | The depth to the starting water table varies with the topographic wetness index, `water_table x exp(-beta x (TWI - mean)/sd)` (`engine/wetness.py`): hollows and valley floors start wetter than spurs. Upslope area is counted only inside the analysis area. |
+| No unsaturated suction strength | Suction cohesion | `suction_kpa` | Adds `suction x (1 - m)` of apparent cohesion, lost as the layer saturates (`trigger.suction_cohesion`). |
+
+The depth limit is handled by the bedrock-depth cap (Ch. {{ch:ground_calibration}}); the slip surface is still the soil depth, because a mapped slip surface needs boreholes or geophysics, and none exist for Pakistan in any source I could reach (public repositories hold none; the global soil-thickness map of Pelletier et al. needs an Earthdata login).
+
+**Test.** The temporal calibration (Ch. {{ch:physics_calibration}}) was re-run with the wetness exponent (0 to 2) and the suction (0 to 10 kPa) as two more fitted parameters, the wetness index taken from the national 90 m layer sampled in each report's accuracy disc. Held-out AUC: {{physics_calibration.json:calibrated.auc|3}} with them, against 0.683 without. That is no gain. The fitted values also differ wildly between folds (wetness exponent 0.2 to 1.7, suction 1.5 to 10 kPa), so the data cannot identify them. **They stay at zero by default.** They are available for sensitivity runs, not as calibrated physics.
+
+Rain is not scale-tested against the inventory: a report's accuracy disc and the 9 km ERA5 cell are the same scale, so the gridded rain cannot show a difference on this data. It matters only for areas several ERA5 cells wide.
+
+## 5.8 Limits
+
+Uniform rain over the area unless the gridded option is on; lateral flow only through the optional topographic water table; suction strength only as an uncalibrated option; one soil layer; depth of failure is the soil depth, not a mapped slip surface; no rock slopes (Ch. {{ch:limitations}}).

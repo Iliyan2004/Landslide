@@ -111,6 +111,33 @@ def era5_antecedent(lat, lon, start, days=30):
     return np.maximum(s.values.astype(float), 0).reshape(-1)[: 24 * days].reshape(days, 24).sum(1).tolist()
 
 
+def era5_scale_field(grid, series, ref_lat, ref_lon, lo=0.3, hi=3.0):
+    """Per-cell rain multiplier for the analysis grid: the storm total of the ERA5-Land cell under each analysis cell divided by the total at the cell the
+    series was taken from (ref_lat, ref_lon). Needs series['start_iso'] and its hourly length. Returns (ny, nx) float32 or None if the store lacks the window."""
+    import xarray as xr, pandas as pd
+    from pyproj import Transformer
+    if not series.get("start_iso"):
+        return None
+    t0 = pd.Timestamp(series["start_iso"].rstrip("Z")); t1 = t0 + pd.Timedelta(hours=int(round(series["duration_h"])) - 1)
+    d = xr.open_zarr(ERA5_TP); ny, nx = grid["height"], grid["width"]
+    tr = Transformer.from_crs(grid["crs"], 4326, always_xy=True); a = grid["affine"]
+    cols, rows = np.meshgrid(np.arange(nx) + 0.5, np.arange(ny) + 0.5); xs, ys = a * (cols, rows); lon, lat = tr.transform(xs, ys)
+    pad = 0.15; la0, la1, lo0, lo1 = lat.min() - pad, lat.max() + pad, lon.min() - pad, lon.max() + pad
+    tp = d.tp.sel(time=slice(t0, t1)); latn = d.latitude.values
+    tp = tp.sel(latitude=slice(la1, la0) if latn[0] > latn[-1] else slice(la0, la1), longitude=slice(lo0, lo1))
+    if tp.time.size < 2 or tp.latitude.size < 2 or tp.longitude.size < 2:
+        return None
+    tot = np.maximum(tp.sum("time").load().values.astype(float), 0.0); la_c, lo_c = tp.latitude.values, tp.longitude.values
+    from scipy.interpolate import RegularGridInterpolator
+    if la_c[0] > la_c[-1]:
+        la_c, tot = la_c[::-1], tot[::-1]
+    f = RegularGridInterpolator((la_c, lo_c), tot, bounds_error=False, fill_value=None)
+    ref = float(f([[ref_lat, ref_lon]])[0])
+    if ref <= 1.0:                                                           # a dry reference cell has no meaningful ratio
+        return None
+    return np.clip(f(np.stack([lat.ravel(), lon.ravel()], -1)).reshape(ny, nx) / ref, lo, hi).astype("float32")
+
+
 def era5_wettest_event(lat, lon, years=None, window_h=72):
     """Wettest rolling window at the point (the storm a hindcast would most plausibly target)."""
     import xarray as xr
