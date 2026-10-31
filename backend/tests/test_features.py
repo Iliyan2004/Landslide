@@ -191,6 +191,19 @@ class TestCalibrationMachinery(unittest.TestCase):
         y, sig = TR.bssa14_pga_g(6.5, 20.0, 400.0, return_sigma=True); self.assertTrue(0.4 < float(sig) < 0.9)
         self.assertAlmostEqual(float(TR.bssa14_pga_g(6.5, 20.0, 760.0)), float(TR.bssa14_pga_g(6.5, 20.0, 760.0)), 9)
 
+    def test_planting_never_increases_the_unstable_area_but_can_increase_the_failing_area(self):
+        spec, _ = P.build_spec({"strength_preset": "colluvium_shallow", "texture": "sandy loam"})
+        sp = TR.scenario_point(spec, 0.0); slope = np.tile(np.linspace(10, 44, 80)[None, :], (4, 1)).astype("float32"); valid = np.ones_like(slope, bool)
+        z = TR.soil_depth_field(slope, sp, True); steps = np.full(48, 12.0)
+        fields = {"c_root_add": np.full(slope.shape, 6000.0, "float32")}
+        def counts(f):
+            mob, _ = TR.mobilisable_mask(slope, valid, z, sp, 45.0, f); tf, *_ = TR.rain_failure_times(slope, mob, steps, 900, sp, z, 10.0, f)
+            tfa, *_ = TR.rain_failure_times(slope, valid, steps, 900, sp, z, 10.0, f)
+            return int(np.isfinite(tf).sum()), int(np.isfinite(tfa).sum())
+        (f0, u0), (f1, u1) = counts(None), counts(fields)
+        self.assertLessEqual(u1, u0)          # like-for-like measure: stronger roots can only remove unstable cells
+        self.assertGreater(u0, 0)
+
     def test_antecedent_wetness_and_ensemble(self):
         from landslide.engine import antecedent as ANT, ensemble as ENS
         self.assertEqual(ANT.api([0, 0, 0]), 0.0); self.assertGreater(ANT.api([0, 0, 50]), ANT.api([50, 0, 0]))     # recent rain counts more

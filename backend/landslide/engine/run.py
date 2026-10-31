@@ -440,4 +440,11 @@ def failing_area(ctx, nbs_spec=None):
     mob, st = TR.mobilisable_mask(ctx["slope"], ctx["valid"], ctx["z"], ctx["sp"], ctx["max_soil"], fields)
     tf, fs, area_t, _ = TR.rain_failure_times(ctx["slope"], mob, ctx["steps"], 900, ctx["sp"], ctx["z"], ctx["min_slope"], fields)
     fail = TR.clusters_min_size(np.isfinite(tf), ctx["cluster"])
-    return {"failing_cells": int(fail.sum()), "failing_km2": float(fail.sum() * ctx["res"] ** 2 / 1e6), "mobilisable_cells": st["cells_mobilisable"]}
+    # unstable_*: every soil-bearing cell that is unstable at the end of the storm, INCLUDING slopes already unstable before it. This is the like-for-like measure
+    # for comparing levers: a lever that strengthens a pre-existing unstable slope moves it out of this count, whereas "failing" (stable before, fails in the storm)
+    # can rise because the lever turned unstable cells into cells that can fail (planting alone did that on the Gilgit area).
+    soil = ctx["valid"] & (ctx["slope"] <= ctx["max_soil"])
+    tf_all, _, _, _ = TR.rain_failure_times(ctx["slope"], soil, ctx["steps"], 900, ctx["sp"], ctx["z"], ctx["min_slope"], fields)
+    unst = TR.clusters_min_size(np.isfinite(tf_all), ctx["cluster"])
+    return {"failing_cells": int(fail.sum()), "failing_km2": float(fail.sum() * ctx["res"] ** 2 / 1e6), "mobilisable_cells": st["cells_mobilisable"],
+            "unstable_cells": int(unst.sum()), "unstable_km2": float(unst.sum() * ctx["res"] ** 2 / 1e6)}

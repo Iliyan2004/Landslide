@@ -25,7 +25,7 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 | Rainfall-threshold validation against the inventory | **Done** (Ch. {{ch:rain_threshold_validation}}) |
 | Spatial validation, physics and ground calibration, runout check, ShakeMap comparison, quake-landslide check | **Run** (Ch. {{ch:spatial_validation}} to {{ch:runout_calibration}}, {{ch:earthquake_failure}}.2, {{ch:accuracy_record}}) |
 | Design storms from observed IDF, climate multiplier, average annual loss | Implemented and **run once on a 57 km2 Gilgit area** (Ch. {{ch:aal}}); the climate signal is within model spread, and the loss is an order of magnitude |
-| Nature-based levers, barriers, ranking, automatic barrier placement | Implemented and **run once on the same area** (Ch. {{ch:nature_based}}, {{ch:barriers}}); this exposed a counting artefact for planting and a placement bug (fixed) |
+| Nature-based levers, barriers, ranking, automatic barrier placement | Implemented and **run once on the same area** (Ch. {{ch:nature_based}}, {{ch:barriers}}); this exposed a counting artefact for planting and a placement bug, both fixed |
 | Landslide-dam screening, rainfall hotspots, scoring against an observed extent | Implemented (dam screening and hotspots run on real data; observed scoring needs a supplied extent) |
 | Rockfall simulation (GPU Monte Carlo, barriers, impacts) | Implemented and run on a Hunza area; friction set against published shadow angles, **not calibrated to Pakistani deposits** (none exist on the server; Ch. 14) |
 | Debris, earthquake and rockfall visualisation | Rebuilt and checked by rendering (Ch. {{ch:visualization}}) |

@@ -334,96 +334,6 @@
   },
   "error": null
  },
- "nbs_rank": {
-  "state": "done",
-  "elapsed_s": 5,
-  "result": {
-   "baseline": {
-    "failing_cells": 9506,
-    "failing_km2": 8.5554,
-    "mobilisable_cells": 37429
-   },
-   "note": "stability-only ranking with user-set effect sizes; runout benefit needs a full run",
-   "ranked": [
-    {
-     "failing_cells": 0,
-     "failing_km2": 0.0,
-     "levers": [
-      "planting",
-      "regrading"
-     ],
-     "mobilisable_cells": 52011,
-     "reduction_frac": 1.0,
-     "reduction_km2": 8.5554
-    },
-    {
-     "failing_cells": 0,
-     "failing_km2": 0.0,
-     "levers": [
-      "planting",
-      "regrading",
-      "drainage"
-     ],
-     "mobilisable_cells": 52011,
-     "reduction_frac": 1.0,
-     "reduction_km2": 8.5554
-    },
-    {
-     "failing_cells": 5518,
-     "failing_km2": 4.9662,
-     "levers": [
-      "drainage"
-     ],
-     "mobilisable_cells": 37429,
-     "reduction_frac": 0.419524510835262,
-     "reduction_km2": 3.589200000000001
-    },
-    {
-     "failing_cells": 6076,
-     "failing_km2": 5.4684,
-     "levers": [
-      "planting",
-      "drainage"
-     ],
-     "mobilisable_cells": 49021,
-     "reduction_frac": 0.3608247422680413,
-     "reduction_km2": 3.0870000000000006
-    },
-    {
-     "failing_cells": 11725,
-     "failing_km2": 10.5525,
-     "levers": [
-      "planting"
-     ],
-     "mobilisable_cells": 49021,
-     "reduction_frac": -0.23343151693667152,
-     "reduction_km2": -1.9970999999999997
-    },
-    {
-     "failing_cells": 20700,
-     "failing_km2": 18.63,
-     "levers": [
-      "regrading",
-      "drainage"
-     ],
-     "mobilisable_cells": 52011,
-     "reduction_frac": -1.1775720597517354,
-     "reduction_km2": -10.074599999999998
-    },
-    {
-     "failing_cells": 24431,
-     "failing_km2": 21.9879,
-     "levers": [
-      "regrading"
-     ],
-     "mobilisable_cells": 52011,
-     "reduction_frac": -1.57006101409636,
-     "reduction_km2": -13.4325
-    }
-   ]
-  },
-  "error": null
- },
  "optimise_barriers_buggy_first_attempt": {
   "state": "done",
   "elapsed_s": 2496,
@@ -671,6 +581,203 @@
     "road_blocked_km": 47.276495372423,
     "run_id": "bf7dffc815d2d2155652"
    }
+  },
+  "error": null
+ },
+ "nbs_rank_failing_only_first_attempt": {
+  "state": "done",
+  "elapsed_s": 5,
+  "result": {
+   "baseline": {
+    "failing_cells": 9506,
+    "failing_km2": 8.5554,
+    "mobilisable_cells": 37429
+   },
+   "note": "stability-only ranking with user-set effect sizes; runout benefit needs a full run",
+   "ranked": [
+    {
+     "failing_cells": 0,
+     "failing_km2": 0.0,
+     "levers": [
+      "planting",
+      "regrading"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": 1.0,
+     "reduction_km2": 8.5554
+    },
+    {
+     "failing_cells": 0,
+     "failing_km2": 0.0,
+     "levers": [
+      "planting",
+      "regrading",
+      "drainage"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": 1.0,
+     "reduction_km2": 8.5554
+    },
+    {
+     "failing_cells": 5518,
+     "failing_km2": 4.9662,
+     "levers": [
+      "drainage"
+     ],
+     "mobilisable_cells": 37429,
+     "reduction_frac": 0.419524510835262,
+     "reduction_km2": 3.589200000000001
+    },
+    {
+     "failing_cells": 6076,
+     "failing_km2": 5.4684,
+     "levers": [
+      "planting",
+      "drainage"
+     ],
+     "mobilisable_cells": 49021,
+     "reduction_frac": 0.3608247422680413,
+     "reduction_km2": 3.0870000000000006
+    },
+    {
+     "failing_cells": 11725,
+     "failing_km2": 10.5525,
+     "levers": [
+      "planting"
+     ],
+     "mobilisable_cells": 49021,
+     "reduction_frac": -0.23343151693667152,
+     "reduction_km2": -1.9970999999999997
+    },
+    {
+     "failing_cells": 20700,
+     "failing_km2": 18.63,
+     "levers": [
+      "regrading",
+      "drainage"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": -1.1775720597517354,
+     "reduction_km2": -10.074599999999998
+    },
+    {
+     "failing_cells": 24431,
+     "failing_km2": 21.9879,
+     "levers": [
+      "regrading"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": -1.57006101409636,
+     "reduction_km2": -13.4325
+    }
+   ]
+  },
+  "error": null
+ },
+ "nbs_rank": {
+  "state": "done",
+  "elapsed_s": 5,
+  "result": {
+   "baseline": {
+    "failing_cells": 9506,
+    "failing_km2": 8.5554,
+    "mobilisable_cells": 37429,
+    "unstable_cells": 24431,
+    "unstable_km2": 21.9879
+   },
+   "measure": "unstable_km2",
+   "note": "stability-only ranking with user-set effect sizes; runout benefit needs a full run. Ranked by the unstable area at the end of the storm, which includes slopes that were already unstable before it",
+   "ranked": [
+    {
+     "failing_cells": 0,
+     "failing_km2": 0.0,
+     "levers": [
+      "planting",
+      "regrading"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": 1.0,
+     "reduction_km2": 21.9879,
+     "unstable_cells": 0,
+     "unstable_km2": 0.0
+    },
+    {
+     "failing_cells": 0,
+     "failing_km2": 0.0,
+     "levers": [
+      "planting",
+      "regrading",
+      "drainage"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": 1.0,
+     "reduction_km2": 21.9879,
+     "unstable_cells": 0,
+     "unstable_km2": 0.0
+    },
+    {
+     "failing_cells": 6076,
+     "failing_km2": 5.4684,
+     "levers": [
+      "planting",
+      "drainage"
+     ],
+     "mobilisable_cells": 49021,
+     "reduction_frac": 0.6175760304531128,
+     "reduction_km2": 13.5792,
+     "unstable_cells": 9343,
+     "unstable_km2": 8.4087
+    },
+    {
+     "failing_cells": 11725,
+     "failing_km2": 10.5525,
+     "levers": [
+      "planting"
+     ],
+     "mobilisable_cells": 49021,
+     "reduction_frac": 0.392820596782776,
+     "reduction_km2": 8.6373,
+     "unstable_cells": 14834,
+     "unstable_km2": 13.3506
+    },
+    {
+     "failing_cells": 5518,
+     "failing_km2": 4.9662,
+     "levers": [
+      "drainage"
+     ],
+     "mobilisable_cells": 37429,
+     "reduction_frac": 0.15271581187835132,
+     "reduction_km2": 3.3579000000000008,
+     "unstable_cells": 20700,
+     "unstable_km2": 18.63
+    },
+    {
+     "failing_cells": 20700,
+     "failing_km2": 18.63,
+     "levers": [
+      "regrading",
+      "drainage"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": 0.15271581187835132,
+     "reduction_km2": 3.3579000000000008,
+     "unstable_cells": 20700,
+     "unstable_km2": 18.63
+    },
+    {
+     "failing_cells": 24431,
+     "failing_km2": 21.9879,
+     "levers": [
+      "regrading"
+     ],
+     "mobilisable_cells": 52011,
+     "reduction_frac": 0.0,
+     "reduction_km2": 0.0,
+     "unstable_cells": 24431,
+     "unstable_km2": 21.9879
+    }
+   ]
   },
   "error": null
  }

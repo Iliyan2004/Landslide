@@ -17,16 +17,20 @@ The page can rank all seven non-empty combinations of the three levers by the fa
 
 Tests: each lever never increases failure; a 25 degree cap on a 33 degree slope removes failure; the ranking returns seven options ordered by reduction.
 
-## First run on a real area, and a counting artefact
+## First run on a real area, and a counting artefact that was fixed
 
-On the same 57 km2 Gilgit area (60 mm/h triangular, 12 h; baseline failing area 8.56 km2) the ranking gave:
+On the 57 km2 Gilgit area (60 mm/h triangular storm for 12 h, strength preset "calibrated_reports") the first ranking, by the area that is *stable before the storm and fails in it*, put planting alone at 23% **more** failure than the baseline. That is not physical. The model counts only slopes that were stable before the storm (Ch. {{ch:terrain_parameters}}.5), because a slope that is already unstable would have failed earlier. Extra root cohesion turns slopes that were unstable (not counted) into slopes that are stable before the storm and then fail in it (counted), so the "failing" area could rise while the instability fell.
 
-| Levers | Failing area (km2) | Change |
+The ranking now uses the **unstable area at the end of the storm, including slopes that were already unstable** (`unstable_km2`, `failing_area` in `engine/run.py`). Every lever is compared on the same cells, so a lever can only remove instability. The "failing" figure is still reported for reference. A unit test checks that planting never increases the unstable area.
+
+| Levers | Unstable area (km2) | Change against the baseline ({{area_demo.json:nbs_rank.result.baseline.unstable_km2|1}} km2) |
 |---|---|---|
-| planting + regrading | 0 | -100% |
-| planting + regrading + drainage | 0 | -100% |
-| drainage | {{area_demo.json:nbs_rank.result.ranked.2.failing_km2|2}} | {{area_demo.json:nbs_rank.result.ranked.2.reduction_frac|pct}} less |
-| planting + drainage | {{area_demo.json:nbs_rank.result.ranked.3.failing_km2|2}} | {{area_demo.json:nbs_rank.result.ranked.3.reduction_frac|pct}} less |
-| planting alone | {{area_demo.json:nbs_rank.result.ranked.4.failing_km2|2}} | **more failure than the baseline** |
+| planting + regrading | {{area_demo.json:nbs_rank.result.ranked.0.unstable_km2|1}} | {{area_demo.json:nbs_rank.result.ranked.0.reduction_frac|pct}} less |
+| planting + regrading + drainage | {{area_demo.json:nbs_rank.result.ranked.1.unstable_km2|1}} | {{area_demo.json:nbs_rank.result.ranked.1.reduction_frac|pct}} less |
+| planting + drainage | {{area_demo.json:nbs_rank.result.ranked.2.unstable_km2|1}} | {{area_demo.json:nbs_rank.result.ranked.2.reduction_frac|pct}} less |
+| planting | {{area_demo.json:nbs_rank.result.ranked.3.unstable_km2|1}} | {{area_demo.json:nbs_rank.result.ranked.3.reduction_frac|pct}} less |
+| drainage | {{area_demo.json:nbs_rank.result.ranked.4.unstable_km2|1}} | {{area_demo.json:nbs_rank.result.ranked.4.reduction_frac|pct}} less |
+| regrading + drainage | {{area_demo.json:nbs_rank.result.ranked.5.unstable_km2|1}} | {{area_demo.json:nbs_rank.result.ranked.5.reduction_frac|pct}} less |
+| regrading | {{area_demo.json:nbs_rank.result.ranked.6.unstable_km2|1}} | {{area_demo.json:nbs_rank.result.ranked.6.reduction_frac|pct}} less |
 
-Planting alone *increasing* the failing area is not a physical result. The model counts only slopes that were **stable before the storm** (Ch. {{ch:terrain_parameters}}.5), because a slope that is already unstable would have failed earlier. Extra root cohesion makes slopes stable before the storm that were unstable without it (the count of cells that can fail rises from 37,429 to 49,021), and some of those then fail in the storm, so they are counted as new failures even though without planting they would have been counted as already failed. The unit test passes because the synthetic slope has no such cells. The honest reading is: the ranking is reliable for the *order* of the options that include regrading or drainage, and it must not be used to conclude that planting is harmful or useless. The fix (counting pre-existing instabilities in the baseline so that every lever is compared on the same cells) is a design decision left open.
+How to read it: planting is the strongest single lever here (the fitted soil is weak, 0.9 kPa cohesion, so added root cohesion matters most), and planting with regrading removes all instability. Regrading to the default 25 degree cap on its own does nothing for the saturated storm: a soil of friction angle 30 degrees with a fully saturated slip layer has a factor of safety below 1 even at 25 degrees, so a lower slope alone is not enough. These effect sizes (6 kPa root cohesion, 25 degree cap, drainage lowering saturation) are user inputs, not measurements, and the ranking is a stability-only comparison; the runout benefit needs a full mitigated run.

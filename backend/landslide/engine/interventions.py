@@ -86,11 +86,12 @@ def rank_nbs(eval_fn, spec_zone=None, defaults=None):
         for k, v in defaults.items():
             d.setdefault(k, {}).update(v)
     base = eval_fn(None)
+    key = "unstable_km2" if "unstable_km2" in base else "failing_km2"      # like-for-like: includes slopes already unstable before the storm
     rows = []
     for combo in nbs_combos():
         spec = {"zone": spec_zone, **{k: d[k] for k in combo}}
         r = eval_fn(spec)
-        rows.append({"levers": list(combo), **r, "reduction_km2": base["failing_km2"] - r["failing_km2"],
-                     "reduction_frac": (base["failing_km2"] - r["failing_km2"]) / base["failing_km2"] if base["failing_km2"] > 0 else 0.0})
+        rows.append({"levers": list(combo), **r, "reduction_km2": base[key] - r[key],
+                     "reduction_frac": (base[key] - r[key]) / base[key] if base[key] > 0 else 0.0})
     rows.sort(key=lambda x: -x["reduction_km2"])
-    return {"baseline": base, "ranked": rows, "note": "stability-only ranking with user-set effect sizes; runout benefit needs a full run"}
+    return {"baseline": base, "ranked": rows, "measure": key, "note": "stability-only ranking with user-set effect sizes; runout benefit needs a full run. Ranked by the unstable area at the end of the storm, which includes slopes that were already unstable before it"}

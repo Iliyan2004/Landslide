@@ -17,14 +17,14 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 
 | Feature | Status |
 |---|---|
-| Tiers 1 to 4, national product, districts, basins | Implemented and tested (120 unit tests) |
+| Tiers 1 to 4, national product, districts, basins | Implemented and tested (121 unit tests) |
 | Rainfall sources: design storm, forecast, recent, ERA5, CHIRPS, CSV | Implemented |
 | Impacts: buildings, roads, hospitals and schools, direct loss | Implemented (all thresholds assumed, Ch. 18) |
 | Live monitoring with webhook, compare runs, PDF report, MP4 export | Implemented |
 | Rainfall-threshold validation against the inventory | **Done** (Ch. 26) |
 | Spatial validation, physics and ground calibration, runout check, ShakeMap comparison, quake-landslide check | **Run** (Ch. 27 to 30, 6.2, 32) |
 | Design storms from observed IDF, climate multiplier, average annual loss | Implemented and **run once on a 57 km2 Gilgit area** (Ch. 21); the climate signal is within model spread, and the loss is an order of magnitude |
-| Nature-based levers, barriers, ranking, automatic barrier placement | Implemented and **run once on the same area** (Ch. 23, 24); this exposed a counting artefact for planting and a placement bug (fixed) |
+| Nature-based levers, barriers, ranking, automatic barrier placement | Implemented and **run once on the same area** (Ch. 23, 24); this exposed a counting artefact for planting and a placement bug, both fixed |
 | Landslide-dam screening, rainfall hotspots, scoring against an observed extent | Implemented (dam screening and hotspots run on real data; observed scoring needs a supplied extent) |
 | Rockfall simulation (GPU Monte Carlo, barriers, impacts) | Implemented and run on a Hunza area; friction set against published shadow angles, **not calibrated to Pakistani deposits** (none exist on the server; Ch. 14) |
 | Debris, earthquake and rockfall visualisation | Rebuilt and checked by rendering (Ch. 33) |
@@ -688,19 +688,23 @@ The page can rank all seven non-empty combinations of the three levers by the fa
 
 Tests: each lever never increases failure; a 25 degree cap on a 33 degree slope removes failure; the ranking returns seven options ordered by reduction.
 
-## First run on a real area, and a counting artefact
+## First run on a real area, and a counting artefact that was fixed
 
-On the same 57 km2 Gilgit area (60 mm/h triangular, 12 h; baseline failing area 8.56 km2) the ranking gave:
+On the 57 km2 Gilgit area (60 mm/h triangular storm for 12 h, strength preset "calibrated_reports") the first ranking, by the area that is *stable before the storm and fails in it*, put planting alone at 23% **more** failure than the baseline. That is not physical. The model counts only slopes that were stable before the storm (Ch. 4.5), because a slope that is already unstable would have failed earlier. Extra root cohesion turns slopes that were unstable (not counted) into slopes that are stable before the storm and then fail in it (counted), so the "failing" area could rise while the instability fell.
 
-| Levers | Failing area (km2) | Change |
+The ranking now uses the **unstable area at the end of the storm, including slopes that were already unstable** (`unstable_km2`, `failing_area` in `engine/run.py`). Every lever is compared on the same cells, so a lever can only remove instability. The "failing" figure is still reported for reference. A unit test checks that planting never increases the unstable area.
+
+| Levers | Unstable area (km2) | Change against the baseline (22.0 km2) |
 |---|---|---|
-| planting + regrading | 0 | -100% |
-| planting + regrading + drainage | 0 | -100% |
-| drainage | 4.97 | 42% less |
-| planting + drainage | 5.47 | 36% less |
-| planting alone | 10.55 | **more failure than the baseline** |
+| planting + regrading | 0.0 | 100% less |
+| planting + regrading + drainage | 0.0 | 100% less |
+| planting + drainage | 8.4 | 62% less |
+| planting | 13.4 | 39% less |
+| drainage | 18.6 | 15% less |
+| regrading + drainage | 18.6 | 15% less |
+| regrading | 22.0 | 0% less |
 
-Planting alone *increasing* the failing area is not a physical result. The model counts only slopes that were **stable before the storm** (Ch. 4.5), because a slope that is already unstable would have failed earlier. Extra root cohesion makes slopes stable before the storm that were unstable without it (the count of cells that can fail rises from 37,429 to 49,021), and some of those then fail in the storm, so they are counted as new failures even though without planting they would have been counted as already failed. The unit test passes because the synthetic slope has no such cells. The honest reading is: the ranking is reliable for the *order* of the options that include regrading or drainage, and it must not be used to conclude that planting is harmful or useless. The fix (counting pre-existing instabilities in the baseline so that every lever is compared on the same cells) is a design decision left open.
+How to read it: planting is the strongest single lever here (the fitted soil is weak, 0.9 kPa cohesion, so added root cohesion matters most), and planting with regrading removes all instability. Regrading to the default 25 degree cap on its own does nothing for the saturated storm: a soil of friction angle 30 degrees with a fully saturated slip layer has a factor of safety below 1 even at 25 degrees, so a lower slope alone is not enough. These effect sizes (6 kPa root cohesion, 25 degree cap, drainage lowering saturation) are user inputs, not measurements, and the ranking is a stability-only comparison; the runout benefit needs a full mitigated run.
 
 
 # 24. Barriers and Automatic Placement
@@ -979,7 +983,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 
 | Claim | Evidence | Status |
 |---|---|---|
-| The code solves its equations | 120 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
+| The code solves its equations | 121 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
 | Rainfall separates landslide days from ordinary days | AUC 0.73 (0.71 to 0.76) for 24 h intensity, leave-one-year-out | **Validated, modest** |
 | Published Guzzetti threshold is usable as a watch | TSS 0.32 on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics 0.56, with soil texture 0.65; mean slope 0.59 | **Weak** |
@@ -1164,7 +1168,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 
 ## 30.2 Tests
 
-`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 120 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
+`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 121 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
 
 ## 30.3 Files
 
