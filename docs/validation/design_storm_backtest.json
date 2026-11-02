@@ -1,0 +1,25 @@
+{
+ "points": 75,
+ "train_years": 31,
+ "test_years": 15,
+ "test_cells": 1125,
+ "by_T": {
+  "2": {
+   "expected_share": 0.5,
+   "observed_share": 0.4222222222222222
+  },
+  "5": {
+   "expected_share": 0.2,
+   "observed_share": 0.16266666666666665
+  },
+  "10": {
+   "expected_share": 0.1,
+   "observed_share": 0.09866666666666667
+  },
+  "25": {
+   "expected_share": 0.04,
+   "observed_share": 0.05422222222222222
+  }
+ },
+ "note": "pooled over points; points are correlated, so the sampling error is larger than binomial. ERA5-Land 24 h annual maxima, nearest cell."
+}

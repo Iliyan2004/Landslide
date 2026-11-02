@@ -504,6 +504,11 @@ Hunza (Karimabad), 6 x 5.5 km, about 8% of cells at 50 degrees or steeper: 120 r
 No Pakistani rockfall deposits are on the server, so the dissipation was checked on a synthetic profile (250 m cliff at 60 degrees, 700 m talus at 36 degrees, flat floor, 30 m cells). With the original friction the first percentile of the reach angle was 36 degrees; the literature shadow angle (the angle to the farthest 1% of rocks) is 27 to 32 degrees, and the median reach angle of rocks that stop on a 36 degree talus is 33 to 42. A sweep of roughness (5 to 13 degrees), restitution (0.8 to 1.25 times) and friction (0.15 to 1 times) showed that only friction moves the result materially: a factor of 0.4 to 0.5 gives a first percentile of 29 to 31 degrees and a median of 34 to 35 (`docs/validation/rockfall_shadow.json`). A factor of 0.45 is applied. This sets the order of magnitude of the dissipation from the literature; it is not a field calibration, and the Hunza reference numbers above predate it.
 
 
+## 14.10 Hunza rerun with the scaled friction
+
+The same Hunza area rerun after the friction change (120 release cells, 4,800 rocks, 15 s on the GPU): median reach angle 39 degrees (46 before), 10th percentile 30 (39 before), and 5% of rocks below 27.5 degrees (0.5% before). About 20% of rocks now leave the analysis area, up from 5%, because they travel further than the 5.4 km window; the area would need to be larger to capture their stopping points. The peak translational energy is 55,529 kJ and the longest runout 1,862 m. The numbers are consistent with published shadow angles but, again, no Pakistani rock path exists to test them against. The polygon is approximate (the earlier run's outline was not stored), so this is a comparison of kind, not of identical cells.
+
+
 # 15. Rainfall Sources
 
 | Source | Resolution | Notes |
@@ -1030,14 +1035,21 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 | Runout lengths are realistic | Corominas relations on synthetic slopes (Ch. 30) | **Right order of magnitude, within a factor of about 2** |
 | Earthquake PGA is realistic | 398 ShakeMaps: scatter 0.40 ln units (Ch. 6.2) | **Agrees with ShakeMap, which is itself a model** |
 | Shaking locates earthquake-triggered landslide reports | 31 reports, 7 earthquakes: PGA AUC 0.61, Newmark 0.57, slope 0.63 | **Not shown (n too small, reports cluster at roads)** |
-| Observed design storms are right | Gumbel fits recover known parameters; hyetograph depth equals the IDF depth; ERA5-Land smooths bursts | **Verified arithmetic; depths are lower bounds** |
+| Observed design storms are right | Back-test: Gumbel fitted to the first 30 years, the last 15 years of 75 points exceed the fitted level at 10 years 10% of the time (expected 10%), at 25 years 5% (expected 4%), at 2 years 42% (expected 50%); ERA5-Land smooths bursts | **Validated against held-out years; depths are lower bounds** |
 | Mitigation levers and barriers behave sensibly | Directional and mass tests on synthetic cases | **Verified; effect sizes are user inputs, not validated** |
 | Dam screening classes and formulas | Formula and synthetic-valley tests; no observed Pakistani dam used | **Verified; not validated** |
-| Annual average loss is realistic | Integration verified; assumes loss frequency equals rainfall frequency | **Verified arithmetic; not validated** |
-| Rockfall reach and energy are realistic | Synthetic-terrain physics checks pass; first Hunza run has reach angles above literature shadow angles | **Verified code; not validated; probably too dissipative** |
+| Annual average loss is realistic | Integration verified (identical method to SAILAB); stable when a return period is left out (within 2% for T of 10 years or more, +23% if the 2 year point is dropped) and 8% lower with log-log interpolation; assumes loss frequency equals rainfall frequency; no observed loss record | **Verified arithmetic and stable; the level is not validated** |
+| Rockfall reach and energy are realistic | Synthetic cliff-talus profile reproduces the literature shadow angle after friction is scaled by 0.45 (Ch. 14.9); Hunza rerun: reach angle median 39 degrees, 10th percentile 30; no Pakistani deposit data | **Consistent with published runout statistics; not validated against local events** |
 | Access and isolation analysis is right | Synthetic network tests; no observed closures | **Verified logic; not validated** |
-| Building damage and loss are realistic | No data | **Not validated, assumed** |
-| Flow depth and deposit extent are right | No mapped deposits | **Not validated** |
+| Building damage and loss are realistic | No damage records for any Pakistani landslide on the server; valuation follows SAILAB (JRC maximum damage value, storeys, contents) and the fragility is assumed | **Not validated, assumed** |
+| Failure depth and volume are right | Modelled patch volumes against the area-volume scaling of Larsen et al. 2010: median ratio of modelled to implied depth 0.95 over 2,028 failing patches; 2,000 to 20,000 m2 patches 1.00, over 20,000 m2 0.49. No mapped deposits for flow depth or extent | **Failure volume plausible for mid-size patches; flow depth and deposit extent not validated** |
+
+## 23.2 Checks added in the last round
+
+- **Design-storm back-test.** At 75 random points in the north, a Gumbel fitted to the first 31 years of ERA5-Land 24 hour annual maxima is compared with the last 15 years. The 10 and 25 year levels are exceeded about as often as they should be; the 2 and 5 year levels are exceeded a little less often than expected (42% against 50%, 16% against 20%), consistent with a short fitting record or slightly drier recent years. The points are spatially correlated, so this is one realisation, not an independent sample.
+- **Failure volume.** The soil depth fitted by the calibration (2.4 m) gives patch volumes that match the Larsen et al. (2010) soil-landslide scaling for patches of 2,000 to 20,000 m2 (the cohort holding most of the patches), and are about half the scaling for patches over 20,000 m2. Those larger patches are contiguous failing hillside made of many neighbouring slides, which the one-slide relation does not describe, so the total volume (130 million m3) is a third of what the relation would give if each patch were one slide. The relation's own scatter is a factor of 2 to 3. I could not re-read the paper in this session, so the coefficients are as recalled and cited.
+- **AAL stability.** See the table row above: the figure is insensitive to the rare end of the loss curve and moderately sensitive to the 2 year point and the frequent tail (88% of the total without the frequent tail).
+- **What cannot be checked here.** Building damage and loss, flow depth, deposit extent, runout against local events, closure and isolation, and the dam classes need observed Pakistani records (damage surveys, mapped deposits, road closures, dam inventories). None exist on the server, and I found none public. Each stays "not validated" until such records are supplied.
 
 ## 23.1 What the accuracy depends on
 

@@ -1,0 +1,19 @@
+{
+ "relation": "V = 0.146 A^1.332 (Larsen et al. 2010, soil landslides)",
+ "clusters": 2028,
+ "median_ratio": 0.9530151220415559,
+ "p10_ratio": 0.5100781744514524,
+ "p90_ratio": 1.262606685576719,
+ "by_area": {
+  "2,000-20,000 m2": {
+   "n": 1656,
+   "median_ratio": 1.0030581848134716
+  },
+  ">20,000 m2": {
+   "n": 372,
+   "median_ratio": 0.492900254863085
+  }
+ },
+ "total_volume_modelled_m3": 130384294.04182434,
+ "total_volume_implied_m3": 400338343.2906968
+}
