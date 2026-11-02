@@ -1,0 +1,46 @@
+﻿,EXPANATION OF FIELDS (if necessary),
+,REFERENCE_AREA_LIT,Area found in literature of borelogs
+,Hole_Well_ID,
+,CSIRO_bore_ID,"The ID assigned for this project (ABB_CCDD_ORIGINAL-ID: A = Province, B = District, C = CSIRO_Area, D = Canal Command Area)"
+,Longitude,
+,Latitude,
+,LCC1_E,Easting in LCC1 coordinate sytem
+,LCC1_N,Northing in LCC1 coordinate sytem
+,Depth_m,Depth of borelog (m)
+,Thick_m,Thichness of layer (m)
+,LayBottElev_m_ASL,Elevation of bottom of bottom layer (m ASL)
+,Ref_Elev_m_ASL,Reference elevation from 90m-DEM (m ASL)
+,Description,General description as found in borelog reports
+,MajorLithC,Major lithologic component
+,MinorLithC,Minor lithologic component
+,Grainsize,
+,Color,
+,Consistency,
+,Sorting,
+,Other,
+,Report_Year,
+,Description_of_Area_or_Site,
+,Explantion_of_well_ID,
+,Agency,
+,Source,
+,Comments,
+,Page,
+,The fields below were only used to derive the CSIRO_bore_ID,
+,PROVINCE,
+,DISTRICT,
+,PROVINCE_C,1-digit code of Province
+,DISTRICT_C,2-digit code of District
+,PROVNAME,Used for sorting purposes / CAUTION: Do not use Province (misspelled)
+,PROVNAME_corr,correction Wschmid
+,Geogr_Loc,"Geographic Location  (Peshawar Basin, Bannu Basin, East of Upper Indus, West of Upper Indus, Lower Indus)"
+,DOAB,
+,DOAB_corr,missing ones filled in by Wschmid
+,BASIN,
+,BASIN_corr,missing ones filled in by Wschmid
+,CSIRO_Area,Areas going North to South and East to West
+,CSIRO_Area_ID,
+,C_main_term,"CCA term without ""central, upper, lower, etc."""
+,CCANAME,
+,CANALCODE,often missing for new/proposed CCA
+,CSIRO_CCA_ID,2-digit code of Canal Command Area
+,STATUS,existing or proposed

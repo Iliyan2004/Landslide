@@ -66,7 +66,7 @@ details{border:1px solid var(--line-soft);border-radius:var(--radius-sm);padding
 .layerpick{display:flex;flex-wrap:wrap;gap:6px}.layerpick button{padding:5px 9px;font-size:11.5px}.layerpick button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 </style></head><body><div class="app">
 <header><div class="brand"><span>LANDLAB</span> <small style="font-size:11px;color:var(--ink-2);letter-spacing:.12em;font-weight:600">LANDSLIDE MODELLING · PAKISTAN</small></div>
-<div class="tagline"><span id="hwInfo"></span><span id="demSource"><span class="dot"></span>SRTM 29 m · national ML susceptibility · ERA5/CHIRPS</span></div></header>
+<div class="tagline"><span id="agentChip" title="Data and workflow agents" style="cursor:pointer;margin-right:12px"></span><span id="hwInfo"></span><span id="demSource"><span class="dot"></span>SRTM 29 m · national ML susceptibility · ERA5/CHIRPS</span></div></header>
 <div class="main"><div class="left-col">
 <div id="mapWrap"><div id="map"></div>
 <div class="maptools"><button id="tNat" title="National ML susceptibility, 90 m">Susceptibility</button><button id="tFrac" title="National physics stability product">Physics (national)</button><button id="tRisk">Risk index</button><button id="tDist">Districts</button><button id="tFault">Faults</button><button id="tPng">Export PNG</button></div>
@@ -405,4 +405,9 @@ function dragger(el,vert){let on=false;el.addEventListener("mousedown",e=>{on=tr
 dragger($("vResizer"),true);dragger($("resizerMain"),false);
 fetch("/api/hw").then(r=>r.json()).then(h=>$("hwInfo").textContent=h.text).catch(()=>{});
 loadWatches();loadHistory();
+</script><script>
+(function(){const chip=document.getElementById("agentChip");if(!chip)return;
+async function poll(){try{const r=await (await fetch("/api/agents/status")).json(),h=r.health,col={ok:"#2e9e5b",degraded:"#d9922b",down:"#d03b3b"}[h.status]||"#888";
+chip.innerHTML=`<span style="color:${col}">&#9679;</span> agents: ${h.status}`;chip.title=h.problems.length?h.problems.join("\n"):"All data feeds, the GPU and required files are healthy.\nClick for the event log.";chip.onclick=()=>window.open("/api/agents/status","_blank")}catch(e){chip.textContent="agents: unreachable"}}
+poll();setInterval(poll,120000)})();
 </script></body></html>

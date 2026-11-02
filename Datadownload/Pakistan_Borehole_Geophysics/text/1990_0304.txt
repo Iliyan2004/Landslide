@@ -1,0 +1,3029 @@
+                                DEPARTMENT OF THE INTERIOR
+                                   U.S. GEOLOGICAL SURVEY
+
+              Drilling Records and Logs for the Indus East area,
+               Coal Resource Exploration and Assessment Program
+
+                             March 1987 to February 1988
+                          Southern Sind Province, Pakistan
+
+                                     by
+
+                                     Roger E. Thomas
+                                U.S. Geological Survey
+
+                                            and
+        Rafiq Ahmed Khan, Sardar Saeed Akhtar, Mohammad Farriduddin,
+       S. Farah Fatmi, Mohammad Idrees, Mohammad Jaffar, Sayed Salim
+
+                Abid Jaffery, Iqbal A. Khan, Mumtaz Javed Khan,
+       Shafique Ahmed Khan, Zameer Mohammad Khan, Mohammad Riaz Khan,
+
+                 Mohammad Siddique Khan, Khanzada, Naimatullah,
+                      Saleem Rasheed, and Mohammad All Tariq
+                            Geological Survey of Pakistan
+
+                                  Open-File Report 90-304
+
+     Report prepared jointly by the Geological Survey of Pakistan and
+             the U.S. Geological Survey under the auspices of the
+                    U.S. Agency for International Development
+
+This report is preliminary and has not been reviewed for conformity with
+U.S. Geological Survey editorial standards and stratigraphic nomenclature
+
+                                            1990
+                                             Contents
+
+                                                                                           Page
+
+Introduction........................................................... 1
+
+Geographic Setting..................................................... 1
+
+Lithology.............................................................. 3
+
+Dri11i ng............................................................... 5
+
+Stand-by time............................. *............................ 6
+
+Problems encountered................................................... 7
+
+Conclusion............................................................. 7
+
+Acknowledgements....................................................... 8
+
+References............................................................. 9
+
+Drilling Records and Drilling Logs
+
+     Record for UAK-1................................................... 11
+         Log for UAK-1................................................... 13
+
+     Record for UAK-2................................................... 17
+         Log for UAK-2................................................... 19
+
+     Record for UAK-3................................................... 21
+         Log for UAK-3................................................... 23
+
+     Record for UAK-4................................................... 26
+         Log for UAK-4................................................... 28
+
+     Record for UAK-5................................................... 29
+         Log for UAK-5................................................... 31
+
+     Record for UAK-6................................................... 34
+         Log for UAK-6................................................... 36
+
+     Record for UAK-7................................................... 38
+         Log for UAK-7................................................... 40
+
+     Record for UAK-8................................................... 44
+         Log for UAK-8................................................... 46
+
+     Record for UAK-9................................................... 49
+         Log for UAK-9................................................... 51
+
+     Record for UAK-10.................................................. 53
+         Log for UAK-10.................................................. 55
+                                       Contents (Cont'd)
+
+                                                                                     Page
+
+     Record for UAK-11.................................................. 58
+         Log for UAK-11.................................................. 60
+
+     Record for UAK-12.................................................. 64
+         Log for UAK-12.................................................. 66
+
+     Record for UAK-13.................................................. 68
+         Log for UAK-13.................................................. 70
+
+     Record for UAK-14.................................................. 71
+         Log for UAK-14.................................................. .73
+
+     Record for UAK-15.................................................. 74
+         Log for UAK-15.................................................. 76
+
+     Record for UAK-16.................................................. 78
+         Log for UAK-16.................................................. 80
+
+                                          Illustrations
+
+Figure 1. - Index map of the Indus East area and location of
+               Coal Resource Exploration and Assessment Program
+               drill holes, Sind Province, Pakistan....................... 2
+                                          Introduction
+     The Coal Resource Exploration and Assessment Program (COALREAP), was
+funded by the United States Agency for International Development (USAID) and
+the Government of Pakistan (GSP) to explore for coal in Sind Province,
+Pakistan. This joint effort is being conducted as the Coal Resource
+Assessment Component of the Energy Planning and Development Project of USAID,
+under the Participating Agency Service Agreement (PASA) No. 1PK-0478-P-IC-
+5068-00. Sixteen coal-exploration drill holes were completed between March
+1987 to February 1988 in a 616 sq km area, designated as the Indus east coal
+area, south of the city of Hyderabad, Sind Province, Pakistan (fig. 1). Joint
+effort between the USGS and GSP enabled the discovery of additional coal
+deposits in areas that were previously unexplored. The technical aspects of
+the drilling as described herein serve to supplement the lithologic and
+geophysical logs contained in reports by Thomas, R.E., Landis, E.R., and Khan,
+R.A., 1988 and Landis, E.R., et al. 1988. This report contains information
+concerning the type of rig, drill size, length, and bits used. Day-to-day
+drilling logs and drilling reports were kept by GSP geologist at the site.
+Future coal exploration drilling in the area can be more efficient and timely
+if drilling problems are anticipated in advance by using the technical
+information in this report. The size, length, and type of casing or drill bit
+used on the project described herein will help future drillers accurately
+estimate material amounts and costs.
+
+                                      Geographic Setting
+     The Indus east area (fig. 1), covers 616 sq. km and is approximately
+150 km northeast from Karachi and is an extension of the Sonda coal field,
+west of the Indus River. The northern limit of exploration was the high
+limestone cliffs of Ganjo Takkar, (Thomas, R.E. and others, 1988a), whereas in
+                                                                 -25° 25
+
+                                  AFGHANISTAN
+
+                                                                 -25° 20
+
+                                                      0 J>00 km
+
+                                  Index map
+
+                                                                 - 847 00 °
+
+                                  EXPLANATION
+
+                                                                 25° 15
+
+                                                                 J 8 40 000
+
+                                  Village/City
+
+            \ INDUS EAST                       Paved road -25° 10
+                COAL AREA
+
+    SONDA
+COAL FIELD
+
+            Mulla                                 Tando -I830000
+            Katiar                             Muhammad
+
+                                                   Khan
+
+                                                                      1-25
+
+                                                                 820 000
+                                                                 -25° 00
+
+            , CJ            <y                                   812°°°
+
+            i i i i i .i i i r t
+
+68? 20              68° 25        68° 30'
+
+Figure 1.-Index map of the Indus East area and location of Coal Resource
+
+Exploration and Assessment Program drill holes, Sind.Province, Pakistan.
+the south, an arbitrary limit was designated as 4 km south of Charri Ohand.
+The eastern limit of exploration does not extend beyond the village of Tando
+Muhammad Khan and the western limit is the Indus River, thus the Indus east
+area described herein, is defined by existing drilling and arbitrary
+boundaries.
+
+    The Indus east area is relatively flat, except in the north near Ganjo
+Takkar. Most of the flat, southern area contains numerous shallow lakes and
+ponds. Extensive canals and intensive sugar-cane farming caused logistical
+problems for choosing suitable drill sites. Large sand and silt dunes, which
+probably formed on the river flood plain but which are far from the present
+location of the Indus River, occupy many of the best drilling locations. The
+soil is loose and sandy, restricting vehicle travel to roads boardering the
+canals. Significant logistical difficulties occurred when large, heavy drill
+and water trucks needed to cross canal bridges. Long and tedious routes had
+to be chosen to access the drill sites. Few roads and limited availability of
+water, coupled with intense heat and dust, made visits to the site
+difficult. Permission to drill on land in proximity of villages and/or crops
+was difficult or usually impossible to obtain. Drill sites had to be located
+out-of-sight from the villages and far away from sugar-cane harvesting.
+
+                                           Lithology
+     One of the objectives of the COALREAP program was to drill into the coal-
+bearing strata and sample coal beds that where penetrated during drilling.
+Drilling was confined to depths less than 400 m because of limits imposed by
+existing drill rigs and current mining practices (Schweinfurth, S.P., 1988).
+     Most of the area is covered by alluvium consisting of unconsolidated Indus
+River flood plain sand and silt with minor mud and clay deposits. Thickness
+of alluvium ranges from 110 m in drill hole UAK-9, in the southern part of the
+Indus east area, to 0 m in drill hole UAK-4, in the north. Average thickness
+of alluvial sand and silt is 41 m per drill hole. Most of the alluvial
+material was drilled by the rotary method, using a Tricon Roller bit .
+
+     The alluvial material was flushed out of the drill hole and samples were
+collected in a sieve. HW (4.5" diameter) casing was set through the alluvium
+to prevent the unconsolidated sediment from collapsing into the hole. On the
+basis of stratigraphic information, geologists determined the depth at which
+coring would be started. Problems with "boiling sand," commonly at depths of
+250 m, created a need for additional casing at that depth. Drill rods
+frequently became stuck in the unconsolidated material, which tended to rise
+between the rods ad the inside of the casing. Drill holes had to be washed
+clean of this material before drilling could continue. Recoverability of coal
+depended upon the type of roof rock and floor rock. Coal with unconsolidated
+sandstone as roof rock tended to be washed out of the drill hole with the
+sediment and was seldom completely recovered. Coal between hard, consolidated
+sandstone, siltstone, or claystone typically would have very good core
+recovery.
+
+     Bedrock consists of limestone, shale, siltstone, sandstone and coal.
+Generally, casing was not set into bedrock, except in those intervals of
+unconsolidated sand and silt. Casing was set through alluvium to bedrock in
+most drill holes. Boiling sand jammed the rods resulting in time lost for
+pulling casing and rods out of the drill hole. Jammed rods could be freed by
+constant flusing but this was possible only in very loose material.
+
+   Use of trade names is for identification of types of equipment only and does
+not imply endorsement by USGS, GSP, or USAID.
+     Limestone is thick-bedded to massive. Individual beds are separated by
+beds of siltstone and shale in some places. One-hundred percent core recovery
+was possible when drilling in this lithology. The on-site geologists
+determined whether the limestone beds should be cored or noncored.
+
+     Shale and siltstone beds are competent and can be cored with reasonable
+success. Shale, however, tends to become soft when mixed with water and poor
+core recovery can result.
+
+     Upon reaching total depth, the drill hole was extended an additional 5 or
+6 m to provide: (1) additional space for the geophysical probe which measured
+approximately 3.05 m in length, and (2) a hole for loose sediment and caved
+rock to accumulate. Drilling an additional 5 or 6 m beyond the last coal bed
+intercepted is highly recommended for future drilling.
+
+                                           Drilling
+     The drilling was performed by the Indus Valley Construction Company Ltd.,
+of Lahore under contract with USAID. Normally, 2 drill rigs operated and were
+positioned a few kilometers from each other for logistical and security
+reasons. Periodic maintenance and repairs to the drill rigs usually required
+a couple of days every 2 weeks. Down-time should be anticipated in every
+drilling project. Shortages of rods, casing, bits, and water also caused
+delays that set the program behind schedule.
+     Two types of drill rigs were used in the Indus east area. The Longyear-38
+and the Longyear-44, both skid-mounted, were barely adequate for the required
+drilling; a larger drill rig would have provided more power for turning and
+pulling the rods. The maximum depth each drill rig can drill depends upon the
+size (i.e., weight) and number of drill rods that must be backed-out of the
+drill hole and the amount of torque required to turn the rods.
+     During periods of intense heat, the hydraulic fluid in the drill rig's
+lines would deteriorate and lose viscosity. In addition, the casing and rods
+became so hot that gloves had to be worn to protect the drillers from burns.
+
+     Collapse of drill holes was a major problem. Various types of drilling
+"mud" was tested, but, the high viscosity of the tested mixtures reduced
+efficiency of the mud pump. Drill rods frequently became stuck in collapsed
+holes and various geophysical logs could not be run for fear of losing the
+geophysical probe. Saline groundwater, probably due to oversaturation from
+the Indus River and extensive irrigation, mixed with the drilling fluid and
+created a chemical imbalance making the drilling fluid less effective. In a
+program where 100% core recovery of the coal is essential, problems with
+caving sediment must be minimized. Chemical analysis of drilling fluid mixed
+with salt waiter is recommended before drilling.
+
+     Several mud pits, lined with concrete, were used to mix and recirculate
+the drilling fluid. Though concrete prevented seepage into the ground,
+evaporation and water loss within the drill hole necessitated frequent
+replenishment.
+
+                                         Stand-By Time
+     Stand-by time is time alloted to the driller, at a special financial rate,
+to allow either washing the drill hole or waiting for the geophysical logging
+to be completed. Periodic washing of the drill hole is routine; however,
+under certain circumstances, excess washing may be required and when this is
+directed by the supervising geologist, a provision must be made to compensate
+the drilling contractor. Additional stand-by time is also required for the
+geophysical probe to be lowered through either the casing and/or the drill
+rods. Allowance for stand-by time should be a part of every drilling program
+and funds allocated to cover those costs.
+                                     Problems encountered
+     Below is a list of various problems encountered during the duration of the
+drilling program in the Indus east area:
+      1. Supplies, such as casing and drill rods, were inadequate
+      2. Mud pumps frequently malfunctioned
+      3. Lack of drilling crew for the night shift
+      4. "Boiling" sand caused rods to stick
+      5. Heat reduced efficiency of the hydraulic fluid
+      6. Generators intermittently broke down
+      7. Lack of adequate water supply
+      8. Permission to gain access to drill sites
+      9. Load limits of canal bridges
+     10. Suitable drilling sites, preferably away from villages
+     11. Caving of the drill hole
+     12. Providing a sump or "rat" hole for the geophysical probe
+     13. Core recovery, especially of coal, was low in some drill holes
+
+                                            Conclusion
+     This report should be used in conjunction with Thomas, R.E., Landis, E.R.,
+and Khan, R.A., 1988b, and Landis, E.R., et al., 1988. An analysis of the
+data in these reports, in addition to this report, should eliminate some of
+the problems during drilling in the Indus east area. Depending upon the depth
+drilled, a more accurate estimate of both supplies and funds can be
+proposed. This report should be helpful to future drillers and geologists
+planning additional exploration in the Indus east area. Contracts between
+negotiating parties can be properly written with provisions such as stand-by
+time incorporated into the final cost. Mining companies also require such
+information if they initiate a developmental drilling program.
+                                       Acknowledgements
+     Special thanks go to the GSP personnel involved in the drilling project.
+They worked long hours and were very dedicated and conscientious.
+Additionally, the drillers and the various individuals involved with the
+operation deserve recognition. Working under intense heat and dust, coupled
+with the fear of being bitten by an unnoticed viper, create difficult working
+conditions. Thanks also goes to John R. SanFilipo of the USGS who helped with
+supplying needed data and the necessary drilling forms.
+                                          References
+Landis, E.R., Thomas, R.E., Outerbridge, W.F., Wnuk, Christopher,
+
+    Ourrani, N.A., and Shah, A.A., 1988, Report on COALREAP drilling and
+    related activities, September 1987 to March 1988, conducted in the Indus
+     East coal area; southern Sind Province, Pakistan: U.S. Geological Survey
+    Open-File Report 88-543, Part A-Summary, 16 p.; Part B-Lithologic Logs;
+     Part C-Geophysical Logs. (Also U.S. Geological Survey Pakistan Project
+    Report (IR) PK-80, 417 p., and Administrative Report to U.S.A.I.D.).
+Schweinfurth, S.P. and Husain, Farhat, eds., 1988, Coal resources of the
+     Lakhra and Sonda coal fields, southern Sind Province, Pakistan: A
+     Progress Report: U.S. Geological Survey Pakistan Project Report (IR) PK-
+     82, Part I - Executive Summary, 42 p.; Part II - Geology - coal resources
+     and coal quality, 220 p.; Part III - Basic stratigraphic information
+     collected by the Geological Survey of Pakistan and the U.S. Geological
+     Survey between July 1985 and May 1987, 8 p., 41 plates; Part IV - Basic
+     analytical data for coal samples collected between July 1985 and May 1987,
+     507 p.; Part V - Basic information used for coal-resource calculations 25
+     p., 94 plates; Part VI - Basic stratigraphic information collected by the
+     Geological Survey of Pakistan between 1981 and 1986 from coal-exploration
+     drill holes and coal-mine investigations, 1 p., 7 plates.
+Thomas, R.E., Khan, M.R., and Khan, S.A., 1988a, Measured sections of the Laki
+     Formation, Ganjo Takkar, and Saidpur Outlier, Hyderabad District,
+     Pakistan: U.S. Geological Survey Open-File Report 88-550, 69 p., (Also
+     U.S. Geological Survey Pakistan Project Report (IR) PK-81).
+Thomas, R.E., Landis, E.R., and Khan, R.A., 1988b, Report on coal resource
+     exploration program drilling and related activities, April 1986 to May
+     1987, Southern Sind Province, Pakistan: U.S. Geological Survey Open-File
+     Report 88-275, Part A - Summary, 19 p.; Part B - Lithologic Logs; Part C
+     Geophysical Logs. (Also U.S. Geological Survey Pakistan Project Report
+     (IR) PK-78 and Administrative Report to U.S.A.I.D.).
+Thomas, R.E., Khan, M.R., and Khan, S.A., 1989, Coal Exploration in Sind
+     Province, Pakistan: 28th International Geological Congress, Washington,
+     D.C., Abstracts, v. 3, p. 3-235.
+
+                                                 10
+                                      Drilling Record
+                                          COALREAP
+
+                                   DRILL HOLE UAK- l
+
+1. Topograp.hic sheet number ___40 c/8_____
+
+2. Grid reference: 8 28 105________(meters) Northing
+
+21 74 860______(meters) Easting
+
+3. Altitude above mean sea level 13.40____meters
+
+4. Drill rig type Longyear-38____________
+
+5. Ori11i ng sta rted March 23, 1987_____
+
+Drilling completed April 09, 1987_____
+
+6. Non-coring Surface (m ) to 64.00 (ra)
+
+Coring 64.00______ (m ) to 300.11 (m)
+
+7. Total depth drilled ____300.11 ______(ra)
+
+8. Drill bit:                      64.00                          Type
+
+                       Surface to            meters; Tri eon Roller 5V Dia.
+
+64.00 ( m ) to 221.25_____meters; Diamond HQ__________
+
+221.25 ( m ) to 300.11                       meters; Diamond NQ
+
+              ______ (m) to _________meters; _______
+9. Drilling fluid Bentonite
+
+10. Casing set from                8.24 (m)              Type
+                       Surface to                      5V^
+                       Surface to
+                                   64.30     ( m ) 4V* flush-joint HW
+
+64.30 (m ) to                      65.00____ (m ) ^ flush-joint HW
+
+Surface ( m ) to 224.01_____ ( m ) 3V* flush-joint NW
+
+11. Geologists Mohammad Siddique Khan
+
+Naimatullah
+
+Mohammad All Tariq
+
+                                             11
+    (UAK-1, cont.)
+12. Geophysical Logs
+
+           Type
+    4-fr density_______ from surface (m) to 289.00 (m) through NQ drill pipe
+    Gamma/Neutron_____ from Surface (m) to 287 -°° (m) through NQ drm pipe
+     3-Arm Call per______ from 70 -°° (m) to 167 '°° (m) through Open hole
+    Resistivity - G/N____ from surface (m) to 165.00 (m) through Open hole
+    High Resolution Density from ____ (m) to ____ (m) through _____-___
+13. Remarks:
+
+            Uhconsolidated sandstone and mechanical problems with the drill rig
+     contributed to early termination of drilling.Rods stuck frequently in the
+     loo se sed iment.
+     Geophysics
+     3-Arm Caliper-= 2K range, 3% standard deviation, .4" deflection,
+     Gamma-8 10 counts per inch, 3% standard deviation, log speed 6m per minute
+     Neutron=50 counts per inch, 1Z standard deviation, log speed 6m per minute.
+     Resistivity^ 10 ohms per inch, 1000 bias, log speed 6m per minute.
+
+                                                                      12
+                              DRILL HOLE UAK- 1
+
+        DATE            TIME  DRILLING LOG                           REMARKS
+JfercH-- 23^ 1987     17:00    DEPTH
+                      12:00
+            25        05:00   Surface            Drilling started with Tricon 5%"
+             25       09:00
+             25       15:00   64.0               Stooped non-coring
+             25       16:00
+             25       05:00   64.0               Washed hole, prepared for casing^
+Jfarch M^IW           06:15
+             26       12:00   64.0               Lowered HW casing to 64.30ja_ _
+ March 27, 1987       12:00
+             27       12:00   64.0               Cleaned mud pits, prepared mud
+             27       04:30
+             27    ' 1500     64.0               Drilling resumed, coring started
+ March 28, 1987       2100
+             28               87.1               Stopped to clean inner-tube and mud
+                      2330
+             28       0100    87.1               Drilling resumed
+ March 29, 1987       0530
+                              116.05             Stopped to lower casing to 65.0 m
+             29       0830
+                              116.05             Pulled rods due to bit blocked
+             29
+                              116.05             Wire line broken
+
+                              116.05             Drilling resumed
+
+                              173.25             Stopped, pulled 21.0 m of rods
+
+                              173.25             Drained mixed cuttings from mud, -
+
+                                                 cleaned pits, repaired mud pump,
+
+                                                 prepared mud
+
+                              173.25             Lowered -;rods, washed hole
+
+                              173.25             Drilling resumed
+
+                              181.20             Stopped to free stuck rods, bentonite
+
+                                                 mixed
+
+                              181.20             Drilling Resumed
+
+                                       13
+                       DRILL HOLE UAK- 1 (cont.)
+
+       DATE     TIME   DRILLING LOG                    REMARKS
+                1700    DEPTH
+March 30, 1987
+                       219.95        Stopped to rep_air mud jmmp__an4
+         30                          electric generator
+March 31, 1987
+                2300   219.95        Drilling resumed
+         31     12:00  221.25
+April 1, 1987                        Stopped to _pull 30 m-of rods, pre-
+                                     pared mud, repaired mud pump.
+         2
+         3      0700   221.25        Battery failure
+         3
+         4      1900   221.25        Started to lower NW casing
+         4
+                0700   221.25        Lowered 221.5 m of NW casing
+         5
+         5      1330   221.25        Drilling resumed
+         5
+         5      2300   234.01        Stopped to prepare mud and generator
+         6
+         6      2430   234.01        Drilling resumed
+
+                0845   243.11        Stopped due to leakage of mud
+
+                                     equilizer and ream casing
+
+                0700   243.11        Reamed casing up to 244.01 m
+                0830   243.11        Lowered NQ rods and repaired mud pump
+                1740   243.11        Milling resumed
+                2200   248.46        Stopped to wrap wireline
+                2400   248.46        Drilling resumed
+                0100   249.61        Stopped to repair electric generator,
+
+                                      mud equilizer leaked, cleaned mud
+                                      pits and mixed bentonite
+
+                               14
+                             DRILL HOLE UAK-1 (cont.)
+
+                             DRILLING LOG
+
+          DATE         TIME  DEPTH                     REMARKS
+                     0700
+   April 6, 1987      1430   249.61        Welded equil^z^r and ..repaired
+            6         1630   249". 61
+            6         1630                 Drilling resumed
+            6        2145
+            6        0200    252.21        Run 2.60^ CR 2.60, 100%
+
+   April 7, 1987     0430    252.21        Coal from 249.96-250.46^50)
+                     0700
+            7        1030    255.26        Run 3.05A CR 1.90m
+            7        1345    255.26        Pulled out-9.0 m of rods, circulated
+
+            7     ' 1730                   mud due to jamming
+            7        1900
+            7        0345    258.31    ~Run 3.05m, CR 1.05 m
+            7        0530
+            7        0700    261.31        Run 3.00m, CR 1.00m
+. April 8, 1987      1115
+                     1515    263.76        Run 2.45, CR 1.35
+            8        1800    266.81        Run 3.05, CR 0.50
+            8                267.36        Run 0.55, CR 0.20
+            8                270.36        Run 3.00, CR 0.60
+            8                273.36        Run 3.00, CR 0.40
+            8                273.36        Repaired mud pump
+
+                             276.41        Run 3.05^ CR 0.70
+                             279.46        Run 3.05^ CR 1.20
+                             282.51        Run 3.05^ CR 1.50
+                             285.51        Run 3.00^ CR 0.55
+                             287.96        Run 2.45^ CR 2.40
+                                           coal 285.76-286.16 (.40) + .05 loss
+
+                             15
+                                       DRILL HOLE UAK- 1 (cont.)
+
+         DATE                   TIME   DRILLING LOG               REMARKS
+                              .I900__   DEPTH
+_AKiiJLa.JJ?lL_.              .2045__
+_____8______                  i245_    .291..QL      Run          _L,20_.__.
+                              020Q     _291 i56_
+  April 9, 1987               0330                _Rup.^SS^^R^.JtO^.
+_____9_____
+                              0400     294.56     _Run_3^00^CR 0.60
+            9                 2215.    297.61        Run 3.05, CR 2.00
+                              2215     300.11        Run 2.50, CR 1.90
+ .____9_____                  2345
+ .____9_____                  0130                   Hole completed due to IVCC problems
+                              0220                   in drilling
+           9                  0630
+ April 10, 1987               0800     289.00        Caving^problems, IVCC washing hole
+                                       287.00        Geophysical logging started_______
+           10                                        4 Pi Density through drill pipe (NQ)
+            10                         167.00        Gamma/Neutron through drill pipe
+                                       165.00        3-Arm caliper stuck, pulled out
+                        -« »                         Pulled out NW casing
+                                                     Ran 3-Arm caliper without casing
+           10                                        Ran resistivity and gamma-neutron
+                                                     Completed hole
+
+                                       16
+                           Drilling Record
+                               COALREAP
+
+                        DRILL HOLE UAK-2
+
+1. Topographic sheet number 40 n           (meters) Northing
+2. Grid reference: 8 24 466
+                                           (meters) Easting
+                            21 68 316
+                                           14.00      meters
+3. Altitude above mean sea level
+
+4. Drill rig type Longyear-38
+
+5. Drilling started March 29 f 1987________
+      Drilling completed April 09 r 1987_______
+
+6. Non-coring surface____ (m) to 28.52___ (m)
+
+Coring 28.52_______ (m) to                 204.75 (m)
+                                           ______(m)
+7. Total depth drilled  204.75
+                                                                      Type
+8. Drill bit:                                  meters; Tricon Roller 5V dia.
+                                               meters; Diamond. 101 mm dia.. 25 cm long,
+                Surface to 28.52
+                                                          side discharge
+28.52 (m) to 204.75                            meters; ________________
+
+______ (m) to ____                            meters; __________________
+
+______ (m) to ______                                                   Type
+                                                        HW 4V dia. flush-joint
+9. Drilling fluid       Bentonite
+
+10. Casing set from
+                      Surface to 134 ' 22
+
+_______ (m) to ____                         W
+
+__________ (in) to _______                  (m)
+
+11. Geologists     Mohammad Jaffar Qureshi
+
+                   Mohammad Riaz Khan
+
+                   M. Idrees Khanzada
+
+                                                  17
+ (UAK-2, cont.)
+
+12. Geophysical Logs
+
+      Type
+4-fr density_______ from Surface (m) to 204 -40 (m) through Drill rods and casing
+
+Gaming/Neutron______ from Surface (m ) to 202,20 (m ) through Drill rods_____
+
+3-Arm Call per______from 130.00 (m) to 202 -°0 (m) through Open hole______
+
+Resistivity - G/N     from 130.00 (m) to 204 -°° (m) through Open hole______
+
+High Resolution Density from 130.00 (m) to 204 -°° (m) through Open hole______
+
+13. Remarks:
+
+Geophysics
+
+3-Arm Caliper3* 2K range, 3% standard deviation, .4" deflection, log speed 6m per minute
+
+Gamma= 10 counts per inch, 3% standard deviation, log speed 6m per minute
+
+Neutron= 50 counts per inch, 1% standard deviation
+
+                                                                                         «
+
+Resistivity= 10ohms per inch, 1000 bias, log speed 6 m per minute
+
+Core barrel broken at 203.50, unable to recover coal at this interval, driller
+fished inner tube out.
+                                DRILL HOLE UAK- 2 (cont.)
+
+                                DRILLING LOG
+
+           DATE           TIME  DEPTH                           REMABKS
+
+   March 29, 1987         1018  Surface       Drilling started
+            29
+            29           1715   28.52         Drilling stopped, coring gtajrte.4.
+            29           1820
+                        1910    28.52         Casing hole
+   March 30, 1987
+   March 31, 1987       0840    28.52         Generator shorted, core barrel
+                        0800                  assembly not available, drilling
+            31          1000
+   April 01, 1987       0300                  stopped
+                        1700
+            01          0700     28;52        Coring started
+            01       ' 0300      75.65        Drilling stopped, cased hole
+  April 02, 1987        1545     75.65        Started reaming and casing
+            02          0300     75.65        Started drilling
+, April 04, 1987        1315    103.00        Drilling stopped for casing hole
+            04          0225    103.00        Casing
+  April 05, 1987        0330    103.00        Drilling started
+            05          1545    120.00        Drilling stopped, mechanical fault
+            05          1900    120.00        Drilling started
+  April 06, 1987        1300    139.25        Drilling stopped for casing hole
+
+   Anr-il 07 1 Qfi7             139.25        Drilling started
+                                140.15        Drilling stopped, mechanical fault
+                                140.15        Drilling started
+                                180.85        Drilling resumed
+                                190.75        Drilling continues
+
+                                19
+                              DRILL HOLE UAK- 2 (cont.)
+
+                              DRILLING LOG
+
+        DATE          TIME    DEPTH                           REMARKS
+  April 07, 1987    1715
+  A£ril 08^ 1987    1600      203.25     _Drilling stopped, core barrel in hole
+_____08           __1730____
+                              203.25        Lowering rods, "fisn" fg£_cc>r£Jbarrel
+  April 09, 1987    1300
+          09        1530      J203.25 _  _Core barrel recovered T pipe left in
+                                            hole.
+
+                              203.25        Drilling started
+                              204.40        Drilling stopped
+
+                              20
+                                Drilling Record
+                                     COALREAP
+
+                            DRILL HOLE UAK- 3
+
+1. Topographic sheet number ___40 c/8_____
+
+2. Grid reference: 8 20 *22______(meters) Northing
+
+                     21 78 12°______(meters) Easting
+
+3. Altitu4e above mean sea level 9.10____meters
+
+4. Drill rig type Longyear-38________________
+
+5. Drilling started April 05. 1987________
+
+Drilling completed April 19, 1987______
+
+6. Non-coring Surface____ (m ) to AS nn__ (m)
+
+Coring 65.00______ (m) to 250.00 (m)
+
+7. Total depth drilled ____250.00_______ (m)
+
+8. Drill bit:                                         Type
+
+               Surface to 65.00_______meters; Tri con Roller 5V
+
+65.00 (m) to 250.00______meters; HQ Diamond, bottom discharge
+
+______ (m) to _________meters; ________________________
+
+______ (m) to ___________meters; ________________
+
+9. Drilling fluid           Bentonite______________________________
+
+10. Casing set from                                   Type
+
+               Surface to 12.38_____ (m) 5V casing
+
+                     , , .  145.29   , . 4V HW flush-joint
+                     (m) to __________ (m) _________
+
+                     (m) to __________ (m)
+
+11. Geologists Zameer Mohammad Khan
+
+               Shafique Ahraed Khan
+
+               Sardar Saeed Akhtar
+ (UAK-3, cont.)
+
+12. Geophysical Logs
+           Type
+
+    4-fr density________ from a^fa ^ (m) to 2*3.00 (m ) through Drill rods and casing
+    Gamma/Neutron______ from Surface (m ) to 243.00 (m) through Rods and casing
+     3-Arra Call per______ from Surface (m ) to 148.00 (m) through Open hole and casing
+    Resistivity - G/N___ from ____ (m) to ____ (m) through ____________
+    High Resolution Density from ____ (m) to ____ (m) through __________
+13. Remarks:
+
+            Hole collapsed after the casing was pulled out.
+            Hole collapsed below 148.00 m after the rods were pulled
+            Hole location staked by Rafiq A. Khan and Roger E. Thomas March 19, 1987.
+            Boiling sand problems at 136.05 m
+     Geophysics
+     4-Pi density8 500 counts per inch, 1% standard deviation, range 5K, log speed 6m per
+
+                          minute
+     Gamma = 20 counts per second per inch, 3% standard deviation, Log speed 6m per minute
+     Neutron » 50 counts per second per inch, 1% standard deviation,log speed 6m per min.
+     No resistivity, HRD, or Caliper logs
+
+                                                              22
+                                      DRILL HOLE UAK- 3 (cont.)
+
+          DATE         TIME           DRILLING LOG               REMARKS
+                                       DEPTH
+    Apr-M HS 1Q«7  _-l£UQ___
+_______5.________  _J73jQ___          12.38     _Drilljng^^topped for 5k"
+                                      36.40     Drilling Resumed, casing lowered to
+             5        1900                       12.38 m
+  April 06, 1987                      62.00     Drilling stopped due to shortage of
+                     0100             62.00     water, rods pulled out -
+  April 10, 1987                      65.^0
+            10      lilL              65.00     ^Lowered HW casing up to 50 m
+                    j?j?0p_,          93.55
+_____10_____         2200                       ^Tapper roller bearing         j>um>roke]
+           10
+                     2230                       Fuel pump Jtxroken on longyear^, taken to
+                     0130
+                                                jCarachi for^ repair______     ___
+                             MMM»4^M            Drilling resumed___
+
+                     1100                       Drilling stopped for reaming and casing
+                     0245                       Drilling resumed
+
+                                                Drilling stopped due to fault in mach.
+
+                                                -Brllllne
+
+                                                Drilling stopped^JpJ-fc
+                                                pulled out
+
+                   0830               1PJL-J60  Drilling resumed
+                                      136.05    Drilling stopped, rods stuck^ rods__
+                                                pulled out for reaming and lowering
+                                                casing
+
+                                      23
+                                  DRILL HOLE UAK- 3
+
+        DATE              TIME    DRILLING LOG                         REMARKS
+_AE.r_aJL3A__1987._   __1420_ __   DEPTH
+
+            13          1800      __136..05._        Drilljng^jresumed after casing^flBWX
+                                                     and lowering the rods
+ April 14 j_ 1987       0845
+            14          1245      145.05             Started pulling out rods due to
+            14          1245      145.05
+            14          1415                         problems in advancing, and for lowering
+            14           1810
+                        0105                         casing                     ._
+ April 15, 1987
+                        0720                         HW casing lowered to 145.29 m
+            15       ' 1150
+            15                    145.05             Mud pumn faulty, repaired __
+                         1745
+            15           1430     145.05             Drilling resumed
+ April 16, 1987          1540
+                                  148.10             Drilling mud prepared
+            16
+            16                    154.15             Mud pump faulty
+
+  April 17, 1987                  154.15             Drilling resumed, bit -blocked, pulled
+            17
+                                                     out all rods.
+
+                                  154.15             Drilling resumed
+
+                                  163.20             Drilling stopped, central izer broken
+
+                                                     bit blocked, rods pulled out
+
+                                  163.20             Drilling resumed, after lowering rods
+
+                                  185.70             Drilling stopped for mud preparation
+
+                                  185.70             Drilling resumed
+
+                     1900         190.60             Drilling sto_pped, central izer broken
+                                                     bit blocked, rods pulled out
+                     2430         190.60             Drilling resumed
+                     0600         198.95             Drilling stopped, centralizer broken,
+                                                     bit blocked, rods pulled out
+
+                                          24
+                DRILL HOLE UAK- 3
+
+DATE      TIME  DRILLING LOG       REMARKS
+                 DEPTH
+   18   .2000_
+   ll   0635           35_    Dr ill ing resumed
+   19   J.010.  250.00        Drilling stopped for mud preparation
+   19.   1035               _JDr_illing_j:esumed________________
+   19                       _D£illing completed T^.D., start^wa.shing
+   19
+    .9                             Geophysical. loggltig_started
+                                   Gamaa/Neutron and 4 Pi coigplet ed
+   19
+   J.9  1505                       Started pulling out rods___
+   J.9                             Pulled out rods, logging started
+    19  1545                       3 Arm caliper run below casing
+        1900                       Started pulling out casing
+                                   Casing pulled out
+        2000                       Caving below 148 m, geophysical
+                                   logging not possible
+
+                25
+                                     Drilling Record
+                                         COALREAP
+
+                                  DRILL HOLE UAK- 4
+
+1. Topographic sheet number              40 c/7
+
+2. Grid reference: 8 43 281                      (meters) Northing
+
+                21 75 092                        (meters) Easting
+
+3. Altitude above mean sea level 18.00                    meters
+
+4. Drill rig type Longyear-38
+
+5. Drilling started December 22, 1987
+
+Dri11i ng completed December 30, 1987
+
+6. Non-coring Surface             (m ) to 250.00          (m)
+
+Coring 250.00______ (ra ) to 312.00                       (m)
+
+7. Total depth drilled            312.00_____             On)
+
+8. Drill bit:                     30.90          meters             Type
+                   Surface to                             Tricon Roller 5V dia.
+
+Surface (m) to 77.00                             meters; Tricon Roller 4V dia,
+
+77.00 (m ) to 250.00                             meters; Crest bit 378_____
+
+250.00 (m ) to 312.00                            meters * **Q Diamond
+
+9. Drilling fluid Bentonite
+
+10. Casing set from                                                Type
+                      Surface to
+                                  30.90          (m) pw        dia., flush-joint
+
+Surface (m ) to 77.51                            ( m ) HW 4V dia., flush-joint
+
+_______ (m) to _____                             (m)
+
+11. Geologists  Mnml-a*
+
+                M. Fariduddin
+
+                                                      26
+  (UAK-4, cont.)
+
+12. Geophysical Logs
+
+Type
+
+4-7T density______ from Surface (m) to 307 - 00 (ra) through Drill pipe______
+
+Gamma/Neutron______ from Surface (m) to 306 '°° (ra) through Drill pipe_____
+
+3-Arm Caliper______ from Surface (ra) to 215 -°° (ra) through Casing and open hole
+
+Resistivity - G/N     from Surface (m) to 211 '°° (ra) through Casing and open hole
+
+    High Resolution Density from ____ (ra) to ____ (ra) through ____________
+13. Remarks:
+
+                                                                                                                  4
+
+Geophysics
+4-Pi density = 500 counts per second per inch, 1% standard deviation, range 5K,
+
+                         log speed 6 m per minute
+
+Gamma= 10 counts per second per inch, 3% standard deviation, log speed 6 m per min.
+
+Neutron= 100 counts per second per inch, 1% standard deviation, log speed 6 m
+              per minute
+
+                   - 10 ohms per inch, 900 bias,log speed 6 m per minute
+
+Neutron88 50 counts per second per inch, 1% standard deviation,log speed 6 m per min,
+
+3-Arm Caliper= 2K range, 3% standard deviation, .4" deflection, log speed 6 m
+                        per minute.
+
+                      27
+                              DRILLHOLE UAK-
+
+                              DRILLING LOG
+
+          DATE       TIME     DEPTH                  REMARKS
+
+  Dec. 22, 1987    1400       4.00            Drilling stopped due to shortage of
+
+         22        1510                       water
+         22        1900
+                              4.00            Drilling resumed
+  Dec. 23^ 1987__             19.80
+         23                                   Drilling stopped, Generator not
+         23                                   working
+         23
+         23          0900 __  _19,8Q          jjrjtllittg -EGSUJOfid
+                     1200      30.90          Drilling stopped for casing the hole
+  Dec. 24, 1987      1730      30.90          Drilling resumed
+  Dec. 25 f 1987     1830      31.84          Drilling stopped, generator not working
+                     2000      31.84          Drilling resumed
+         25          0700      77.00          Drilling stopped for casing set
+         25          0100      77.00          Drilling resumed
+. Dec. 26, 1987    - 1400     134.00          Drilling stopped, mud pump not working
+         26           1530    134.00          Drilling resumed
+         26           1230    160.00          Drilling stopped, mud pump not working
+                     0100     160.00          Drilling resumed
+  Dec. 27f i987       1900    250.00          Drilling stopped to start coring, -
+  Dec. 28» !987                               pulled rods, cleaned pits, mixed mud
+                   1900       250.00.
+         28        0500       261.45          Drilling resumed, coring started
+ Dec. 30, 1987                                Drilling stopped due to shortage of
+                   1300       261.45          water
+                   0830       312.00          Drilling resumed
+                                              Drilling completed
+
+                              28
+                                  Drilling Record
+                                      COALREAP
+
+                               DRILL HOLE UAK- 5
+
+1. Topographic sheet number 40 c/8______
+
+2. Grid reference: 8 37 643_______(meters) Northing
+
+               21 76 470_______(meters) Easting
+
+3. Altitude above mean sea level 20.4____meters
+
+4. Drill rig type Longyear-44___________
+5. Drilling started December 21, 1987_______
+
+Drilling completed January 06, 1988_____
+
+6. Non-coring Surface____ (m) to 3.00___ (m)
+
+Coring 3.00_______ (m) to 400.00 (m)
+
+7. Total depth drilled 400.00_________ (m)
+
+8. Drill bit:                                        Type
+
+               Surface to 3.00______ meters; Tricon Roller 5V dia.
+
+3.00           (m) to 400.00______ meters; Diamond HQ_________
+
+______ (m) to ____________ meters; ____________________
+
+         ______ (m) to _________meters; _______________
+
+9. Drilling fluid _____Bentonite
+
+10. Casing set from            3.00_____ (m )                Type
+                   Surface to                      HW 4V flush joint
+
+         ______ (m) to ________ (m) _____________
+         ______ (m) to __________ (m) ________
+
+11. Geologists Zameer Mohammad Khan
+                            Sardar Saeed Akhter
+                            Mohammad Riaz Khan
+                                                                29
+  (UAK-5, cont.)                                373.00 (m) through Drill rod
+                                                373.00 (m) through Drill rod
+12. Geophysical Logs
+           Type                                 225.00 (m) through Open hole and casing
+
+    4-fr density_______ from Surface (m) to
+    Gammy Neutron______ from Surface (m) to
+
+     3-Arm Call per_______ from Surface (m) to
+
+Resistivity - G/N____ from Surface (m) to 224.00 (m) through Open hole and casing
+
+     High Resolution Density from ____ (m) to ____ (m) through _______._______
+13. Remarks:
+
+Drill hole collapsed below 225.00 m
+
+Geophysics
+3-Arm Caliper= 2K range, 3% standard deviation, .4" deflection, log speed 6 m per min.
+Gamma= 10 counts per second per inch, 3% standard deviation, log speed 6 m per minute.
+
+Neutron= 50 counts per second per inch, 1% standard deviation, log speed 6 m per minute
+
+4-Pi density = 500 counts per second per inch, 1% standard deviation, range 5K,
+                      log speed 6 m per minute
+
+Resistivity3 10 ohms per inch, 1000 bias,log speed 6 m pel? minute
+
+                                     30
+                                  DRILL HOLE UAK- 5 Ccont.)
+
+        DATE               TIME   DRILLING LOG                    REMARKS
+                                   DEPTH
+-Jte.Q,_2UJ.28Z__     _^m _
+                                  -Surface_     Drilling started^_B20-C9rIng..., ...... , ..
+      21                  1400     3.00
+                       __1600___   3.j)0_       Drilling stopped for c3£jag.JLesscing_
+____ 21_______
+  Dec. 23^ 1987          1800                   Drilling resumed
+
+____23______             2145     60.75         Drilling stopped. generator not
+_Itec._24 i_JL_9a7 _     0700
+                         0900                   working, rods pulled
+          24             2000
+          24             2345     60.75         Drilling resumed
+          24             1000
+_8ec. 25, 1987                    74.30         Drilling stopped, generator repair
+                      ' 1100
+          25              1330    74.30         Drilling resumed
+  Dec. 26, 1987
+                         2000     86.40         Drilling stopped, mud pump not working
+          26             2400     86.40         Drilling resumed
+          26             2400
+          26              1730    104.60        Drilling stopped to clean pits and
+  Dec. 28A 1987                                 oil checking
+                          0900
+  Dec. 29, 1987                   104.60        Drilling resumed
+                                  146.70        Drilling stopped, rods pulled to check
+                                                bit, prepared mud
+
+                                  146.70        Lower ing_of rods completed
+                                  146.70                                                                -
+                                  146.70
+                                  201.65        Hole washed
+
+                                  201.65        Drilling started
+
+                                                Drilling stopped t mud pump not working
+
+                                                Shortage of water , rods pulled
+
+                                                Lowering of rods started
+
+                                  31
+                          DRILL HOLE UAK- 5 (cont.)
+
+        DATE        TIME  DRILLING LOG                    REMARKS
+  Dec. 29 1987    1540     DEPTH
+  Dec. 30 t 1987  0100
+                          201.65  Drilling resume^                 ,_
+  Dec. 30j_ 1987  1755
+  Dec. 31, 1987   1200    216.80  Drilling stopped .inner _tiihe__s£iick.
+_jan. 01, 1988    0315            in the rod. Rods pulled, shortage of
+                  0400
+          01      0700            HQ rods at site.
+          01
+                  0800    216.80^; .... Drilling resumed
+          01      1230
+  Jan. 02, 1988           256.20  Drilling in progress
+                  1815
+          02      0515    265.30  Drilling stopped for hole washing
+  Jan. 03, 1988           265.30  Drilling resumed
+                  0735
+          03      0735    268.35  Drilling stopped to clean pits and
+  Jan. 05^ 1988   0800            mud pump repaired
+                  0930
+          05      0700    268.35  Drilling resumed
+          05              293.55  Drilling stopped, bit blocked, rods
+  Jan. 06, 1988                   pulled
+                          293.55  Drilling resumed
+                          344.40  Drilling stopped to check the auto
+                                  chuck, adjusted
+
+                          344.40  Dr. ill ing_ resumed
+                          374.80  Drilling stopped inner tube stuck
+                          374.80  Washed hole
+                          374.80  _J)ri.lling resumed
+                                  TD, drilling completed
+                          wo: oo
+
+                          32
+                              DRILL HOLE UAK- 5 ( COQt -)
+
+                              DRILLING LOG
+
+      DATE              TIME  DEPTH                        REMARKS
+_Jan._06^_1988 __   _ H*:L«_
+                    _!5i:L__  _ .^92l.9JL   Carried ^^ washing
+         06_______
+                        1945  _.-J? 0 !??   Geophysical logging, 4 Pi through
+        06                                  HQ rods and Gamma Neutron
+
+                              400.00        Neutron and three arm caliper, logging
+                                            completed
+
+                              33
+                                Drilling Record
+                                    COALREAP
+
+                             DRILL HOLE UAK-6
+
+1. Topographic sheet number
+
+2. Grid reference: 8 30 97°                  (meters) Northing
+                          21 85 023
+                                             (meters) Easting
+
+3. Altitude above mean sea level             13.10      meters
+
+4. Drill rig type Longyear-38_______
+
+5. Drilling started                          1Q87
+
+Drilling completed October 18, 1987______
+
+6. Non -coring surface___ (m) to             150.00 (m)
+                                             297.05 (m)
+Coring 150.00______ (m) to
+                                             ______ On)
+7. Total depth drilled               297.05
+                                                                         Type
+8. Drill bit:                                   meters; Tricon 5V dia.
+                                                meters; Tricon 4V dia.
+                Surface to 56.00                meters; _________
+                                                 meters; ____________
+56 -°° (m) to __:i_
+                                                                       Type
+____ (m) to ________                             (m) PW Flush-1 oint
+                                                  /m \ HW Flush-joint
+____ (m) to ____
+
+9. Drilling fluid       Bentonite
+
+10. Casing set from
+
+     Surface to              55.33
+55 - 33 (m) to               150 - 25
+
+______ (m) to ______                                (m) _________
+
+11. Geologists  Mohammad All Tariq
+                Mohammad Riaz Khan
+
+                                                    34
+ (UAK-6, cont.)
+
+12. Geophysical Logs
+
+           Type
+
+4-fr density_________ from Surface (m) to 289.00 (m) through Drill pipe and casing
+
+Sarong/Neutron________ from Surface (m) to 287.00 (m) through Drill pipe and casing
+
+     3-Arm Caliper______ from surface (m) to 167.00 (m) through Casing and open hole
+     Resistivity - G/N____ from Surface (m) to 160.00 (m) through Outer casing, open hole
+     High Resolution Density from ____ (m) to ____ (m) through _____.______
+
+13. Remarks:
+
+3-Arm Caliper         from Surface (m) to 163.00 (m) through Outer casing, open hole
+Gamma-Neutron         from Surface (m) to ^.QQ (m) through Outer casing, open hole
+Resistivity
+
+3-Arm Caliper         from Surface (m) to 60.00 (m) through Open hole
+
+Gamma-Neutron -fe     from Surface (m) to 157.00 (m) through Open hole
+Resistivity
+
+Geophysics
+3-Arm Caliper** 2K range, 3% standard deviation, .4" defledtion, log speed 6 m per min.
+4-Pi density = 500 counts per second per inch, 1% standard deviation, range 5K, log
+
+                         speed 6 m per minute.
+Gamma- 10 counts per second per inch, 3% standard deviation, log speed 6 m per minute
+Neutron= 50 counts per second per inch, 1% standard deviation, Log speed 6 m per min.
+Resistivity8 10 ohms per inch, 1000 bias, log speed 6 m per minute
+
+                      35
+                              DRILL HOLE UAK- 6 ( cont -)
+
+         DATE           TIME  DRILLING LOG                    REMARKS
+                               DEPTH
+  Sept. 23. 1987   -0900. __
+           23        1900     J5urface___  -^iUJ££_&jLj£&L.
+                     0700         28.92      Drilling stopped, generator not .workin
+  Sept. 24, 1987     1730         28.92      Drilling started
+           24        1030         55.00      Drilling stopped to set PW casing
+                     1700         55.00      PW casing started
+  Sept. 25, 1987                  55.00      Casing completed, started lowering
+           25     _J745 __                   rods
+                     1815
+_____ 25_            0800      55.00        Drilling started             .
+           25        0915      56.00
+                     1015      56.00        Drilling stopped due to spindle defect
+  Sept. 26, 1987               56.00
+  Sept. 27, 1987  ' 1205       56.00        No work today
+                     0100      99.00
+           27        0200      99.00        Lowered drill rods
+  Sept. 28, 1987              150.00
+                                            Drilling started
+           28
+. Sept. 29, 1987                            Drilling stopped dut to mud preparatioi
+
+           29                               Drilling resumed
+  Sept. 30, 1987
+  Oct. 01, 1987                             Drilling stopped, pulled rods due to
+  Oct. 02, 1987
+                                            non-availibilty of core barrels at
+
+                                            drill site
+
+                  0900        150.00        No further _progres .
+
+                  1230        150.58        Drilling stopped for casing
+
+                  1000        150.58        No p_rqgress
+
+                  1000        150.58        No pjrogress
+
+                              36
+                          DRILL HOLE UAK- 6 (cont.)
+
+                          DRILLING LOG
+
+      DATE       TIME     DEPTH                           REMARKS
+Oct. 05, 1987  1300
+Oct. 09, 1987  1500       150.58        Started casing HW from 55.33 to base
+               1845
+        09     0700       150.95        HW casing completed
+Oct. 10, 1987
+               laoo.,.--  150.58        Drilling started
+        10
+Oct. 11, 1987  1040       168.23        Drilling in progress
+               2145
+        11     0800       171 27     JteJLHAng in progress
+Oct. 12, 1987             181.40     Drilling in progress
+               1315       190.65     Drilling in progress
+        12                201.80     Started repair and oil changing of
+               QZOQ __              rig, prepared mud
+Oct,-13^ 1287  1115       201.80    Started drilling
+        13     2330
+        13                J&4^25__  J?lilliB8_SLtpupp6.dL_fi)r._nnid pr^jyrirfif 1nr>
+               0800        224.95   Drilling parted
+Oct. 1«, 1987  2200        240.35
+        14     0735                 Drilling stopped due to defect in
+               0230        240.35   wire line
+Oct. 15, 1987  1800                 Rig being repaired
+Oct. 16, 1987  0445
+Oct. 17, 1987  0120       240.35    Drilling started
+Oct. 18, 1987  1125       252.25    Drilling in progress
+Oct. 19, 1987             275.80    Drilling in progress
+                          281.85    Drilling in progress
+        19                297.05    Drilling stuck, drilling completed
+                          289.00    Geophysical logging
+                          289.00    Geophysical logging completed
+
+                          37
+                         Drilling Record
+                              COALREAP
+
+                     DRILL HOLE UAK-7
+
+1. Topographic sheet number ___40 c/12_____
+2. Grid reference: 8 28 194_______(meters) Northing
+
+                                21 91 315______(meters) Easting
+3. Altitude above mean sea level 12.5____meters
+
+4. Drill rig type Longyear-44____________
+
+5. Drilling started September 02, 1987______
+
+Drilling completed October 15, 1987_____
+
+6. Non-coring Surface____ (m) to 132.00____ (m)
+
+Coring          132.00_____ (m) to 374.55     (m)
+
+7. Total depth drilled ____374.55_______ (m)
+
+8. Drill bit:                                                    Type
+
+                Surface to 92.00______ meters; Tricon Roller 5V dia.
+
+92.00 (m) to 132.00______meters; Tricon Roller 4V' dia.
+
+132.00 (m) to 374.55______ meters; HQ Diamond, bottom discharge
+
+______ (m) to _________ meters; _____________
+
+9. Drilling fluid ____Bentonite___________________________
+
+10. Casing set from                                Type
+
+                Surface to 92.42_____ (m) PW_______________
+
+        92.42 (m) to 133.82           (m ) __HW_
+
+        _____ (m) to __________ (m) ___
+
+11. Geologists  Mohammad Siddiq Khan
+
+                Iqbal A. Khan
+
+                Mumtaz Javed Khan and Shafique Ahmed Khan
+
+                                              38
+ (UAK-7, cont.)
+
+12. Geophysical Logs
+
+      Type
+4-lr density_______ from q.1T.fa,^ (m) to 365.00 (m) through Casing and HQ rods
+
+Gamma/Neutron______ from Surface (m) to 364.00 (m) through Casing and HQ rods
+3-Arm Call per______ from Surface (m) to 247 -°° (m) through Casing and open hole
+
+Resistivity - 6/N     from Surface (m) to 235.00 (m) through Casing and open hole
+
+     High Resolution Density from ____ (m) to ____ (m) through _____.______
+13. Remarks:
+
+Problem with mud pits filling with sand
+
+Geophysics
+
+4-Pi density= 500 counts per second per Inch, 1% standard deviation, range 5K-2K,
+                     Log Speed 6 m per minute
+
+3-Arm Caliper= 2K range, 3% standard deviation, .4" deflection, log speed 6 m per min.
+Gamma = 10 counts per second per inch, 3% standard deviation, log speed 6 m per minute
+Neutron= 100 counts per second per inch, 1% standard deviation, range 1 K, log speed
+
+             6 m per minute
+
+Resistivity= 10 ohms per inch, 1000 bias, log speed 6 m per minute
+
+Neutron= 50 counts per second per inch, 1% standard deviation, log speed 6 m per minute
+
+                                         39
+                             DRILL HOLE UAK- 7 (cont.V
+
+       DATE            TIME  DRILLING LOG                    REMARKS
+                     0830     DEPTH
+Sepjt. 21 L 1987     0830
+          21         0900    _Surface,     JElCilulJuis start£*!*_ nm -ro1"ing ,
+          21                    surface
+                     0910       0.50       n-intTEisanJftUar w «« V
+          21         1930
+          21         2025                  Drilling stropped ttj r_ejiaJj:_nilldLpUJnn_
+          21         0630
+Sept. 22, 1987                             and water swival    ________
+                     1715
+          22         0900    0.50          Stopped to mix mud
+Sept. 23, 1987               36.00
+                  " 1200     36.00         Drilling resumed
+Sept. 24, 1987               64.00
+                     0700                  Drilling continues
+         24          1900
+         24          2300                  Stopped to clean mud pits and
+         24
+                     1030    64.00         jprepjared mud
+Sept. 25,1987        1730    92.00         Drilling resumed
+         25          1900                  Stopped for rea,omg tje P size casing,
+         25                  92."00        circulated mud
+                                           Pulled out rods, Lowered P casing,
+
+                             92.00         stopped for genertor repair
+                             92.00         Started lowering casing
+                             92.00         Completed P casing up to 92.42 m
+                                           Cleaned the pits, prepared mud,
+
+                              92.00        generator repair
+                             104.00        Drilling resumed Non-coring.
+                             104.00        Stopped due to mud equalizer problem
+                                           Drilling resumed
+
+                             40
+                         DRILL HOLE UAK- 7 (cont.)
+
+                         DRILLING LOG
+
+      DATE         TIME  DEPTH                           REMARKS
+                 OQ45
+Sept. 2.6* 1287  1900    1 1? . no     _^  , cleaned pits, prepared mud
+                 0700    132.00
+          26     1900                  Stopped due to cleaning the drainage
+Sept. 27, 1987
+                    -    132.00        Started reaming the casing HW size
+          27        -
+Sept. 28, 1987   0500    132.00        Reaming casing up to 132.0 m
+Sept. 29, 1987   0630
+Oct. 01 ,_ 1987  1150    132.00        No work, waiting for core barrel head
+Oct. 02^ 1987    1100
+                         132.00        Waiting for core barrel head
+        02       0230
+Oct. 03, 1987    0615    132.00      JfeOlJaiJCfiBBMdL
+                         152.75     _PEiiJUsajstojzusi,-.cleaaingr^44;s ^
+Oct. 04, 1987    0700    152.75
+        04       0900    172.52        Drillin&jcesumed                     _
+                 1000
+        04       0620    172.52        Drilling stopj>ed due to innej Lub£
+        04               177.10
+        04                             blocked^jmlled rods^ lowered rqds^
+Oct. 07, 1987            177.10
+                         178.64        mechanical problems in mudj>ump_
+                         178.64
+                         250,10        Drilling resumed
+
+                                       Drilling stopped for repair of single
+
+                                       wire line
+
+                                       Drilling resumed
+
+                                       Drilling stopped, mechanical problems
+
+                                       Drilling resumed
+
+                                       Drilling stopped due to maintenance o:
+
+                                       machine, repaired mud pump, repaired
+
+                                       equalizer
+
+                         41
+                                              DRILL HOLE UAK- 7 (cont.)
+
+                                              DRILLING LOG
+
+       DATE                             TIME  DEPTH                           REMARKS
+                                       1700
+          07                                                Drilling resumed
+
+Oct. 08, 1987                                 256.15        Drilling stopped due to wire line
+Oct.^09,                                                                                                   wire
+
+        09                             0615   256.15        Drilling resumed
+        09                             0100   277.45
+                                       0200   277.45        Drilling stopped due to mixing mud
+pet. o                                 1130   289.55
+                                                      Drilling               resumed
+  Ml»«V«V«*«H»                         1400   304.85
+                                       0620           >«W »»«B^«B».^« «»* »  »« » » ^^*»»«»»*»«0»«»»*»«*»«l^«»«»«»^"»^^»^"»^»^»«»«"
+        10                                    304.85
+                                       1230                 Drilling stopped, mechanical fault
+                                       2400   341.25
+                                              359.35        in mud pump, repaired
+                                       _0140
+                                       0500                 Drilling resumed
+
+                                       0845                 Drilling stopped, wire line broken,
+                                       0630                 pulled rods, repaired wire line and
+                                                            lowered rods
+
+         12                                           Drilling resumed________________
+                                                      JOr ill ing^^stc>pped due tp^^e^airing of
+    " i  in i i i i       i ! » iia«i                 mud pump and wire line________
+                                                      Drilling resumed
+Oct. 13, 1987                                         Drilling stopped, mud pump repaired
+    ' i                   i ^»«                       mixed mud
+                                                      Drilling resumed
+         13                                           Drilling stopped due to repair of mud
+                                                      pump
+'i  i    i i         .11  »mm^
+
+Oct.14, 1987
+
+                                              42
+                        DRILL HOLE UAK 7 (cont.)
+
+        DATE      TIME  DRILLING LOG              REMARKS
+JLct. 14^1287   0900     DEPTH
+                1630
+         14             359.35  Drilling resumed
+                2030
+          14    2300    368.45  Drilling^ stopjged due to mixing of
+          14    1200            mud and washing
+ Oct. 15,1987   0200
+         15             368.45  Drilling^ resumed
+                0930    371.50  Washing
+          15    1200    371.50  Drilling resumed
+          15    1435    374.55  Drilling stopped due to caving of
+          15                    sand, problems of rods sticking '
+                1715    374.55  TD 374.55, hole completed
+          15    0915    374.55  Fresh aud circulated
+          15    1915    365.00  Started geophysical logging
+          15                    Run 4 Pi density up to 365.00 m and
+ Oct. 16, 1987          364.00  through casing and HQD drill pipes
+                        247.00  Run ganoia-neutron
+                        235.00  Run 3 -arm caliper in open hole
+                                Run gamma -Neutonn in casing
+                                Pulled out casing
+
+                        43
+                            Drilling Record
+                                 COALREAP
+
+                        DRILL HOLE UAK- 8
+
+1. Topographic sheet number 40 C/8
+
+2. Grid reference: 8 21 607_______(meters) Northing
+
+                     21 84 931_______(meters) Easting
+
+3. Altitude above mean sea level____11.60                     meters
+
+4. Drill rig type Longyear-44____________
+
+5. Drilling started October 23, 1987
+
+     Drilling completed November 09, 1987_____
+                                                       /
+
+6. Non-coring Surface____ (m) to 151.40___ (m)
+
+Coring 151.40______ (m) to 341.30                             (m)
+
+7. Total depth drilled  341.30________ (m)
+
+8. Drill bit:                                                         Type
+
+               Surface to 92.35_______meters; Tricon Rollar 5%" dla.
+
+92.35 (m) to 151.40______ meters; Tricon Rollar 4V dla.
+
+151.40 (m) to 341.30______meters; HQ Diamond, bottom discharge
+
+          ______ (m) to _________meters; ________________
+9. Drilling fluid _________Bentonite, causltc soda ash______________
+
+10. Casing set from                                                   Type
+
+               Surface to 92.35_____ (m ) PW 5V dia._________
+
+92.35 (m ) to 151.86______ (m ) HW 4V dia.
+
+151.86 (m ) to 243.15______ (m ) HW 4V dia
+
+11. Geologists Mohammad Siddiq Khan
+
+               IqBal Ahmed Khan
+
+               Mohammad Ali Tariq and Kamran
+                                                          44
+  (UAK-8, cont.)
+
+12. Geophysical Logs
+           Type
+
+     4^T density________ from Surface (m ) to 320.00 (m ) through Drill pipe and casing
+     Gamma/Neutron_______ from Surface (m ) to 318.00 (m ) through Drill pipe and casing
+
+     3-Arm Call per______ from siIT-far^ (m) to 247.00 (ni) through casing and open hole
+    Resistivity - G/N____ from ____ (m) to ____ (m) through ____________
+    High Resolution Density from ____ (m) to ____ (m) through ____________
+13. Remarks:
+
+         No resistivity :run
+         Loose sand problems
+       Geophysics
+       Gamma= 10 counts per second per inch, 3% standard deviation, log speed 6 m per minute
+       Neutron= 50 counts per second per inch, 1% standard deviation, log speed 6 m per min.
+       4-Pi density8 200 counts per second per inch, 1% standard deviation, Range 2K, Log
+
+                            speed 6 m per minute
+
+                                                               45
+                        DRILLHOLE UAK-8 (cont.)
+
+      DATE       TIME   DRILLING LOG             REMARKS
+Oct. 23j 1987  1015
+                         DEPTH
+        23
+Oct. 24, 1987           Surface  Drilling started wit^i Tricon-bit
+                                 Rollfcr 5§ dia.
+Oct. 25, 1987
+Oct. 26, 1987     1215     1.00   Stopped to connect mud pump_______
+                  1900   91.00   Drilling resumed
+        26
+        26        1345   91.00    Drilling^ stopped, lowered PW casing
+Oct. 27, 1987    0730   142.00    up^ to 92.0 m
+Oct. 29, 1987    0930   142.00    Drilling resumed
+                  1730  151.40    Stopped to clean pits and prepare'd mud
+       21         1545  151.40    Drilling resumed
+       29        0400   207.80    Stopped to lower HW casing, reaming
+               -                  Drilling resumed
+        29                        Drilling stopped due to maintenance of
+                                  rig and clutch adjustment
+Oct. 30, 1987
+        30     Q&QSL    ^2PJ^8Q  DrUHne T. «|
+               1745     218.55   Drilj. ing 8t9PP54 fPJC washing of bore
+               2000      218.55  hole , mixed_mud, generator Juraksn
+                                 Drilling resumed with the help of
+               1900      238.15  tractor head lights, generator out
+               2000      238.15  of order
+
+                                 Drilling stopped, cleaning^ of pits
+                                 Drilling resumed
+
+                        46
+                             DRILL HOLE UAK- 8 front-. V
+
+        DATE           TIME  DRILLING LOG                     REMARKS
+                      2350    DEPTH
+ Qptu 10^1287         0125
+                      0700   242.20        Drilling stopped due to mud pump repai
+ Oct. 31^1987
+          31           1000  242.20        Drilling^ resumed
+                       1050
+          31                 247.55        Drilling stopped for cleaning pitsA
+          31          0830                 prepared new mud
+                       1900
+ Nov. 01, 1987               247.55   Drilling resumed
+                      2200   250.80   Drilling stopped due to bit blocked f
+      01          ' 2410              pulled out all drill pipe, checked the
+                                     'bit and lowered the drill pipes .
+          01              -
+ Nov. 02, 1987               250.80        Drilling resumed
+ Nov. 03, 1987            _  260.75        Drilling stopped due to repair of mud
+                       0400                pump, mixing of mud, washing
+-HffiLr 04^1987        1200  260.75        Drilling resumed
+                             263.80        Drilling stopped for reaming casing
+  Nov. 05j_ 1987             263.80        Reaming in progress from 195 m to 230
+  Nov. 06^ 1987                            m, reamed up to 250 m
+  Nov. 07, 1987
+                             263.80        Lowering of HW casing^ casing^ stuck
+                                           at 243.05 m, HW casing up to 243.05 m,
+
+                                           started lowering drill rods by washing
+
+                             263,80        Started redrilling
+                             263.80        Drilling resumed
+                             286.80        Drilling stopped due to generator
+                                           out of order
+                                                 DRILL HOLE UAK- 8 (cont
+
+                                                 DRILLING LOG
+
+        2511                             TIME    DEPTH                            REMARKS
+                                       0400
+    Nov_._07JLJ.987                    0730      286.80        Drilling resumed wi£h_J*glB_Q£ _____
+
+    Nov. 08, 1987                      1000                    tractor lights____________,____
+                                       1630
+                                                 314.05        Dr ^H^g stopped due tp_cleaning._of_
+                                      > »«« *M»                mud pits, replaced rubber gasket of
+
+                                      2130                     mud pump
+                                      2230
+    .Nov. 08, 1987                               JH4.05^       Drilling resumed
+                                      043        323.10
+             08                                                Drilling stopped due ^^jaud^pumo^,^
+                                      1815       323.10
+            08                                   326.15        ball sets changed ort mud puj^^^"
+    Nov. 09, 1987                     0945
+                                                               Drilling resumed   __
+
+                                                               Drilling stopped due to broken mud
+
+                                                               pump
+
+          09                                                   Drilling resinned
+
+          09                                     341.30        Drilling resumed_______________
+          09                                     341.30        Prilling.stop^e^due to rods stuck t_
+          09                                     320.00        thread on rods stripped__________
+                                                               Drilliag completed _______ __
+       _09_____                                                Start geophysical logging_________
+                                                               Run 4 Pi density through drill pipe_
+Nov. 10, 1987
+
+l»  I  ,  ! !! ,11111.!
+
+          10
+
+»«*»« » « »* » < «». «»< »«»«  «»« i
+
+.__ia__                               -J145.
+
+                                                               pipe and casing
+
+                                                 48
+                                      Drilling Record
+                                           COALREAP
+
+                                   DRILL HOLE UAK- 9
+
+1. Topographic sheet number 40 D/5______
+
+2. Grid reference: 8 11 921_________(meters) Northing
+
+               21 82 335______(meters) Easting
+
+3. Altituie above mean sea level 11.30____meters
+
+4. Drill rig type Longyear-44__________________
+
+5. Drilling started October 23, 1987________
+
+Drilling completed November 06, 1987________
+
+6. Non-coring Sikrfacte____ (m) to 119.50              (m)
+
+Coring 119.50______ (m) to 350.05                      (m)
+
+7. Total depth drilled             350.05______ (m)
+
+8. Drill bit:                                               Type
+
+               Surface to 55.16_____ meters; Tricon 5V dia.
+
+55.16 (m) to 350.05______ meters; Tricon 4V dia.
+
+______ (m) to _________meters; __________________
+
+           ______ (m) to ______________meters; __________
+9. Drilling fluid _____Bentonite
+
+10. Casing set from                119.77______ ( m )             Type
+                       Surface to                      HW flush-joint 4V
+
+119.77 (m ) to 248.85______ (m )                       NW flush-joint 3V
+
+           ______ (m). to _________ (m) _________
+11. Geologists ____Mohammed Riaz Khan
+
+                                Mohammad Ali Tariq
+  (UAK-9, cont.)
+
+12. Geophysical Logs
+           Type
+
+     43T density_________ from Surface (m) to 341.00 (m) through Drill pipe and casing
+     Gamma/Neutron___________ from Surface (m) to 338.00 (m) through Drill pipe and casing
+     3-Arm Call per________from Surface (m) to 217.00 (m) through Casing and open hole
+     Resistivity - G/N____ from ____ (m) to ____ (m) through ___________
+     High Resolution Density from ____ (m) to ____ (m) through _____
+13. Remarks:
+
+          3-Arm caliper could not be run beyond 217.00 m due to caving sand
+       Geophysics
+        Gamma= 10 counts per second per inch, 3% standard deviation, Log speed 6 m per min.
+       Neutron^ 50 counts per second per inch, 1% standard deviation, log speed 6 m per min.
+       4-Pi density^ 200 counts per second per inch, 1% standard deviation, Range 2K, Log
+
+                             Speed 6 m per minute
+
+                                                                           50
+                        DRILL HOLE UAK- 9
+
+      DATE        TIME  DRILLING LOG                          REMARKS
+Oct. 23j_ 1987   1000    DEPTH
+                 1900
+        23       0715   Surface            Drilling started.
+Oct. 24, 1987
+                 0915   55.16              Drilling stopped .for caain&. ..... .
+        24       1900
+        24       1945   55.16              Casing_ in .progress to _JL5_«Jli Jn_using_
+        24       2055
+        24       2145                      PW 5^" dia.j lowered ro£s
+Oct. 25, 1987    0730
+Oct. 26, 1987    2240   55.16              Drilling resumed
+        26       1045
+Oct. 27, 1987    1700   114.00             Stopped to repair mud pump
+        27
+                 0700   114;00             Drilling resumed
+Oct. 28^ 1987    1345
+        28       0800   119.50             Casing HW
+                 1900
+Oct. 29,j_ 1987         119.50             Drilling started
+        29       0230
+                 0200   120.75             Drilling in progress
+Oct. 30, 1987
+Oct. 31 . 1987          145.10             Drilling in progress
+
+                        163.10             Drilling in progress
+
+                        169.00             Drilling stopped for casing advance-
+
+                                           ment but being stuck could not continue
+
+                        16^.00             Lowering rods
+                        169.00             Drilling rar,esume<J ,
+                        181.55             Drilling in progress
+                        185.55             Passage of mud blocked, all rods
+                                           pulled outj drill bit checked
+                        185.65             Drilling started
+                        214.90             Drilling stopped for the repair of
+                                           the mud pump
+
+                        51
+                                                    DRILL HOLE UAK- 9 (cont.)
+
+      DATE                                   TIME   DRILLING LOG                REMARKS
+     ,_31_J3£L.                                      DEPTH
+                                         _I1Q.Q.__
+.HO.Y^J&UJ^.SZ.                                                         f 1 in  .£or. lowoc.;
+                                         -OlQp, __
+.Noy_.- 03 i.JJ87.                                                casing
+.___03____.                              -oiao _
+.___03____m                                         -JUUQ-       JrlUJn&^taiLeiL .
+                                         _1315. __
+ ^ ^ ^ ^0^3*^^««*«»»»«                     1520     -^S^iQ..       Prilling in progress_
+          03                               2200      248^.50.-     Drilling in^ progress_
+                                                      248.50       Drilling in progress
+jtoYj-_oii_JL?§Z.                        _0700_ __    253.74       Drilling in progress
+                                         _J21°_ __  -_262_L89._    Drilling in progress
+          04                             _0830___   _J287^04_      Drilling completed
+
+    « » ^» ^» W» ^B^B «M ^B ^^ ^B MM* 4    1900     -J?J!ii§l-
+                                           0700        322.05
+N£v_._05,_JL987^                           1900        334.25
+___05_                                                350.05
+Nov. 06, 1987
+
+        06
+
+                                                    52
+                           Drilling Record
+                                COALREAP
+
+                        DRILL HOLE UAK- 10
+
+1. Topographic sheet number 40 c/8______
+
+2. Grid reference: 8 17 186_______(meters) Northing
+
+                   21 70 796             (meters) Easting
+
+3. AltituJte above mean sea level 14.6       meters
+
+4. Drill rig type Longyear-44_______
+
+5. Drilling started December 01, 1987
+
+Drilling completed December 14, 1987
+
+6. Non-coring Surface____ (m) to 40.00       (m)
+
+Coring 40.00_______ (m) to 177.85            (m)
+
+7. Total depth drilled  177.85               (m)
+
+8. Drill bit:                                              Type
+
+               Surface to 40.00          meters; Tricon Roller bit 5V* dia.
+
+40.00              (m) to 177.85         meters; HQ bottom discharge, diamond
+
+                   (m) to _____          meters; _____________________
+                                         meters;
+                   (m) to _____
+
+9. Drilling fluid       Bentonite
+
+10. Casing set from                                             Type
+                       Surface to 70.03  (m ) HW 4V flush-joint
+
+           ______ (m) to ____            (m) _______________
+           ______ (m) to                 (m) _________
+11. Geologists Zameer Mohammad Khan
+
+                   Sardar Saeed Akhtar
+
+                                         53
+  (UAK-10, cont.)
+
+12. Geophysical Logs
+           Type
+
+4^ density___________ from s1irfare (m) tO 173-QO  (m) through Drill pipe and casing
+
+Gamma/Neutron______ from surface (m) to 171.00     (m) through Drill pipe and casing
+3-Arm Caliper______ from surface (m) to 173.00     (m) through casing and open hole
+
+      Resistivity - G/N_____ from Surface (m) to 171.QQ (m) through Casing and open hole
+
+     High Resolution Density from ____ (m) to ____ (m) through ______._____
+13. Remarks:
+
+Geophysics
+Gamma= 10 counts per second per inch, 3% standard deviation, log speed 6 m per min.
+
+Neutron= 100 counts per second per inch, 1% standard deviation, range 1 K, log speed
+              6 m per minute
+
+Resistivity= 10 ohms per inch, 900 bias, log speed 6 m per minute
+4-Pi density= 500 counts per second per inch, 1% standard deviation, range 5K, '
+
+                      log speed 6 m per minute
+Neutron= 50 counts per second per inch, 1% standard deviation, log speed 6 m per min.
+
+                      54
+                          DRILL HOLE UAK- 10 (cont.)
+
+       DATE       TIME    DRILLING LOG                   REMARKS
+____12                     DEPTH
+Decv 02, 1^87    1.745_
+                .QZJJ5_.  JSurface_     Drilling
+         03     JL81JL.
+                                        Drilling stopped, no night
+Dec. 05, 1987   .LZ2JL.
+       05       J.2.QS-.                     ing f<agiTpig>d _ _ ^_.^ __ ^^x
+                .1030-.
+         05                                  inq gfr>pp«aH nr> y»"^fTht!
+         05    152JL
+                          39.00                         casing
+       06                            Lowering HW cas ing completed . washed _
+       06                 40.00
+                                     hole up to 4 Om, non-coring completed
+                          44.10
+                             ^.LQ__  Drilling started, coring                    __
+
+                                     Drilling ^stopped, rods pulled to check
+
+                                     casing
+
+                                     nrilli^g            added casing and
+                                     lowered rods
+
+               1630       47.15                           _dr tiling .stnp.ppj1
+                          50.20
+               0700_                 and rods pulled out
+               0830
+                                     Started lowering^ rods
+               0935
+                                     Lowering of rods completed_________
+
+                                     drilling resumed after washing hole
+
+                                     Dr illiag stopped T casjlng slipped, rods
+
+                                     pulled out of hole        ______ ___
+
+                          55
+                              DRILL HOLE UAK- 10 (cont.)
+
+          DATE          TIME  DRILLING LOG                    REMARKS
+                      1200     DEPTH
+  Dec. 06j,_ 1987     1715
+          06                  50.20         Drilling resumed
+                      0700
+  Dec. 07, 1987       0900    59.25         Drilling stopped, bit blocked_, rods
+          07          1230                  pulled out
+          07          1900
+          07          0700    59.25         Lowered rods, washed hole
+                      0710
+  Dec. 08, 1987               59.25         Drilling resumed
+          08          1030    65.30 ,
+                              65.30         Drilling stopped for reaming_ of casing
+          R8       ' j^^      65.30         Cased hole, lowered rods
+                              65.30
+____ -08 ___          0700                  Drilling resumed
+                      0845    65.30
+  Dec. 09A 1987       1800                  Drilling stopped, bit blocked, mud
+          09          0700                  pressure increased, rods pulled out
+          09           1000
+                       1900                 t _ 1_ 1- ^T»*» t»4f" _..
+  Dec. 10, 1987       0700
+          10                                Drilling resumed after checking the
+          10                                bit
+
+  Dec. 11, 1987               OL5SL.        Prilling..stopped.jjufi..to. overnight.. ._ .,
+
+                                            shift missing
+
+                               80.55        Prepared mud_, lowered rods
+                               80.55        Drilling resumed
+                               80.55        Drilling stopped to set casing
+                               80.55        Rods ;lowered
+                               80.55        Drilling resumed
+                              104.85        Drilling stopped, no night shift
+                              104.85        No drilling, mechanical problems
+
+                              56
+                             DRILL HOLE UAK- 10
+
+                             DRILLING LOG
+
+         DATE          TIME      DEPTH           REMARKS
+   Dec. 11^ 1987     1345
+  Dec. 12A 1987      0500        104.85    Drilling resumed
+                                 126.05
+          12         0700                  Bit blocked, drilling t&gnnefL rods
+          12         1030                  pulled to check bit
+  Dec. 13, 1987      1600
+                                 126.05    Lowering of rods started_______
+          13         1820        126.05    Drilling resumed
+  Dec. 14, 1987      0900        156.55    Drilling stopped due to water swival
+                     1000                  under repair
+          14         1430
+          14         1700        156.55    Drilling resumed
+          14                     171.80    Drilling stopped- >to check wire line
+                  _jj2Q__        171.80    Drilling resumed
+____jU______                     177.85    Drilling completed, TD
+                    2035         177.85    Washed hole through rotation,
+          14                               geophysical logging started
+                    2235
+          14        2350     -JLZajKL.   -,- A^EULoe thrOUeh. drill n-fn^ and rae-frn
+          1- t4.
+                                171.00     run to 172^00^
+                                173.00    _Gamma-Neutron_£un through, drJJ,! pipe
+                                           and casing to 171.00 m
+                                           Three arm caliper through open hole
+
+                                 171.00    Gamma -Neutron and resistivity
+                                         ^^through^ casing and open hole
+
+                             57
+                                  Drilling Record
+                                      COALREAP
+
+                               DRILL HOLE UAK- 11
+
+1. Topographic sheet number 40 C/8
+
+2. Grid reference: 8 24 471            (meters) Northing
+
+               21 73 676               (meters) Easting
+
+3. Altitude above mean sea level 14.3              meters
+
+4. Drill rig type Longyear-38_______
+
+5. Drilling started November 23, 1987______
+
+Drilling completed December 08, 1987_______
+
+6. Non-coring Surface____ (m) to 101.00            (m)
+
+Coring 101.00______ (m) to 251.30 (m)
+
+7. Total depth drilled         251.30 _____(m)
+
+8. Drill bit:                                              Type
+
+               Surface to 101.00       meters; Tricon Roller 5V dia.
+
+101.00 (m) to 251.30                   meters; Diamond, HQ 4*s" dia.
+
+             ___________ (m) to _____  meters; _______________
+             ______ (m) to ______      meters; ______________
+9. Drilling fluid Bentonite
+
+10. Casing set from            55.33                          Type
+                   Surface to          ( m ) PW 5V* flush-joint
+
+55.33 (m) to 153.56                    ( m ) HW 4V flush-joint
+
+______ (m) to ____                     (m)
+
+11. Geologists Mumtaz Javed Khan
+
+               Saleem Rasheed
+
+                                       58
+ (UAK-11, cont.)
+12. Geophysical Logs
+
+       Type
+
+4-1T density________ from Surface ( m ) to 246.00 (ra) through casing and rods
+Gamma/Neutron______ from Surface (m ) to 244.00 (ra) through HW casing and rods
+
+3-Arm Call per________ from Surface(m ) to 220.00 (ra) through Casing and open hole
+
+Resistivity - G/N     from Surface(m ) to 219.00 (m) through Cas±a^_____
+
+High Resolution Density from ____ (m) to ____ (m) through _____.____
+
+13. Remarks:
+
+3Arm caliper Surface to 89.0      through Broken casing
+
+No core recovery from 227.05 to 251.30 m
+
+Geophysics
+
+Gamma- 10 counts per second per Inch, 3% standard deviation, log speed 6 m per minute
+
+Neutron*= 100 counts per second per inch, 1% standard deviation, Range IK, Log
+               speed 6 m per minute
+
+Resistivity= 10 ohms per inch, 900 bias, log speed 6 m per minute
+
+3-Arm Caliper° 2K range, 3% standard deviation, .4" deflection, log speed 6 m per min,
+
+4-Pi density= 500 counts per second per inch, 1% standard deviation. Range 5K-2K,
+                       Log speed 6 m per minute
+
+                              59
+                           DRILL HOLE UAK- 11
+
+                           DRILLING LOG
+
+      DATE           TIME  DEPTH                                  REMARKS
+Nov. 23, 1987      0945
+                           4.50                Drilling stopped for leveling rig,
+Nov. 24, 1987      0900
+        24         0230                        shortage of crews
+
+Nov. 25j_ 1987     1000    4.50                Drilling resumed
+        25         1500
+                           41.00       Drilling stogped^ generator :problems a
+Nov. 26, 1987      0230               pulled rods
+        2>6        04000   41.00       Drilling resumed after reaming casing
+                           55.25       Drilling stogged^ pulled out rods for
+        26         0630               'inserting casing
+        26      ' 0800
+        26                  55.25              Drilling resumed after lowering casing
+        26         1130     60.00              Drilling stopped due to mud pump not
+                   2030                        working
+Nov. 27, 1987               60.00              Drilling resumed
+        27         1100     62.00              Drilling stopped mud pump not working
+        27         1400     62.00              Drilling resumed
+                   1600    101.00              Drilling stopped for setting HW
+Nov. 28, 1987      0400                        casing and to start coring, pulled
+                           101.00              rods and changed mud
+                           105.55              Drilling resumed
+                           105.55              Drilling stopped for mechanical fault
+                           132.90              Drilling resumed
+                                               Drilling stopped due to generator not
+                                               working
+
+                                  60
+                           DRILL HOLE UAK- 11
+
+                           DRILLING LOG
+
+          DATE       TIME      DEPTH                       REMARKS
+                     0630
+  Nov. 28, 1987      0900      132.90    Drilling resumed
+          28
+                     1800      139.00    Drilling stopped due to water not
+ Nov. 29, 1987       1920                circulating, pulled rods
+          29
+                     0930      139.00    Drilling resumed
+ Dec. 03, 1987       1105
+         03                    145.00  Grilling stopped, rod stuck, pulled
+                     1630              rods
+         03          0110      145.00  Drilling resumed
+ Dec. 04, 1987                 154.15  Drilling stopped, HW casing slipped
+                     0355              down, pulled rod? ^set casing to 153.56
+_De_c._05 a_J.987 _  0755      154.15  Drilling resumed
+         05          0945      172.40  Drilling stopped due to bit blocked,
+          05         1200              pulled rods changed mud, equilizer
+         05                    172.40  broken
+                               187.60  Drilling resumed
+          05                   187.60  Drilling stopped due to water blockage
+ Dec. 06, 1987                 190.65  Drilling resumed
+                                       Drilling stopped, core barrel stuck,
+          06                           pulled rods and lowered rods, mud
+         06                            ptMp"bTCfeeir, r"epaij?ecT mud pump 'T"J ~~^
+
+                     2130      190.65  Drilling resumed
+                     0200      196.75  Lowered rods to wash hole
+                     0355      196.75  Drilling resumed
+                     0600      199.75  Drilling stopped, mud pump not working
+
+                           61
+                             DRILL HOLE UAK- H Ccont.)
+
+        DATE           TIME  DRILLING LOG                     REMARKS
+-DftiU-.a6*.ii87     1100     DEPTH
+- - -flfi. - _ _     1300
+                     1400    199.75        Drilling resumed
+         06          1500
+          06         1530    202.75        Washing of hole
+         06          1630
+         06          1700    202.75        Drilling^ resumed
+         06          1730
+          06         1900    205.80        Washed
+          06         1930
+          06         2030    205.80        Drilling resumed
+          06         2100
+          06      ' 2300     208.85        Washed
+          06         2325
+          06         0200    208.85        Drilling resumed
+ Dec. 07, 1987       0225
+          07                 211.90        Drilling stopped for mud preparation
+                     1340
+          07                 211.90        Drilling resumed
+          07          1400
+          07          1515   211.90        Washed
+          07          1535
+                             211.90        Drilling resumed
+
+                             218.00        Washed
+
+                             218.00        Drilling resumed
+
+                             218.00        Washed
+
+                             218.00        Drilling resumed
+
+                             224.00        Drilling stopped, pulled rods, core
+
+                                           recovery is nil from 214.95 m
+
+                             224.00        Drilling resumed
+
+                             227^00        Washed
+                             227.00        Drilling resumed
+                             227.05        Washed
+
+                             62
+                            DRILL HOLE UAK- 11 (cont
+
+       DATE           TIME  DRILLING LOG                     REMARKS
+-Pec- ai^JI87 _       1650   DEPTH
+                      1710
+         07 __        1820  227.05        Drilling resumed
+         07           1840
+         07           1950  233.15        Washed
+         07          2030
+         07          2155   233.15        Drilling resumed
+         07           2215
+         07           1215  236.20        Washed
+ Dec. 08, 1987        1235
+         08          0150   236.20        Drilling^ resumed
+         08           0210
+         08      ' 0315     239.20        Washed, mixed mud
+         08            _
+         08                 239.20        Drilling resumed
+
+                            242.25        Washed
+
+                            242.25        Drilling resumed
+
+                            245.30        Washed
+
+                            245.30        Drilling resumed
+
+                            248.30        Washed
+
+                            248.30        Drilling resumed
+
+                            251.30        Drilling completed, TD
+                           Drilling Record
+                                COALREAP
+
+                       DRILL HOLE UAK- 12
+
+1. Topographic sheet number 40 c/8______
+2. Grid reference: a 26 90S_________(meters) Northing
+
+                          21 81 498_____(meters) Easting
+3. Altitude above mean sea level 12.50_____meters
+
+4. Drill rig type Longyear-38 (O.OQ to 163.05 m); Longyear-44 (163.05 to 310.00 m)
+
+5. Drilling started January 02, 1988_______
+     Drilling completed January 19, 1988______
+
+6. Non-coring Surface  (m) to 160.00 (m)
+
+     Coring 160.00______ (m) to 310.00 (m)
+7. Total depth drilled ____310,00________ (m)
+
+8. Drill bit:                                             Type
+
+               Surface to 33.87_____meters; Tricon Roller bit 5%" dia.
+
+33.87 (m) to 160.00________meters; Tricon Roller bit 3 7/8" dia.
+
+160.00 (m) to 310.00______meters; Diamond, bottom discharge NQ
+
+______ (m) to _________meters; ____________________
+
+9. Drilling fluid Bentonite_______________________
+
+10. Casing set from                            Type
+
+        Surface to     33.87_____ (m) pw_______________
+
+Surface (m) to         163.30_______ ("0 HW
+
+           _______ (m) to ___________ (m) __
+
+11. Geologists Shafique Ahmed Khan
+
+               Mohammad Fariduddin
+  (UAK-12, cont.)
+
+12. Geophysical Logs
+           Type
+
+     4-7T density________ from Surface (.) to 302 ' 00 (m) through Drill rods and casing
+    Gamma/Neutron______ from Surface (m) to 302.00 (m) through Drill pods and casing
+     3-Arm Call per______ from Surface (m) to 247.00 (m) through Casing and open hole
+    Resistivity - G/N____ from Surface (m) to 238.00 (m) through Casing and open hole
+    High Resolution Density from ____ (m) to ____ (m) through ______.______
+13. Remarks:
+
+          High resolution density probe was lowered down to 179.00 m but hole caved.
+       GEOPHYSICS
+       Gamma= 10 counts per second per Inch, 3% standard deviation, Log speed 6 m per minute
+       Neutron85 50 counts per second per inch, 1% standard deviation, log speed 6m per min.
+       4-Pi density^ 500 counts per second per Inch, 1% standard deviation, Range -5K, log
+
+                             speed 6 m per minute
+
+                                                          65
+                             DRILL HOLE UAK- 12 ( cont -)
+
+                                 DRILLING LOG                                          '
+
+        DATE           TIME      DEPTH                                     REMARKS
+  Jan. 02, 1988        1600      Surface       Drilling started
+                       1900
+          02          0700       12.00         Drilling in progress
+  Jan. 03, 1988        1900
+                      2300       50.00         Drilling in progress
+           03          1500
+          03           1900      60.00         Drilling in progress
+  Jan. 04, 1988        1945
+           04          1030      76.00         Hydraulic pump broken                .
+           04          1040
+  Jan. 005, 1988       1135      76.00         Drilling resumed
+           05
+           05          1430      100.00        Mechanical breakdown
+                  " 1545
+  Jan. 06, 1988                  100.00   "Drilling started
+           06          1700
+           06          0700      160.00        Non-coring completed
+                       1600
+- Jan. 07, 1988        1900      160.00        Started taking out rods
+           07          0700
+                                 160.00   All rods pulled, stopped drilling,
+  Jan. 08, 1988        1900      160.00
+           08          2100      163.05   _H2liJ"fnp ff^T JPfVTP Tft^ &
+                       1745
+  Jan. 09X 1988                           Drilling started .
+           09                             Rods stuck, started hammering
+
+   Jan. 10, 1988                 163.05        Pulled out few rods by hammering
+
+                                 163.05        Mechanical breakdown
+
+                                 163.05        Reamed casing from 58.35 to 71.35 m
+
+                                 163.05        Reamed and lowered HW casing to 95 m
+
+                                 163.05        Continued reaming
+
+                                 163.05        Coupling on hydralic pump was repa:Lred
+                                 163.05        Reamed to 118.00 m
+                                 163.05        Continued reaming
+
+                             66
+                           DRILL HOLE UAK- . . 12
+
+                               DRILLING LOG
+
+         DATE        TIME      DEPTH                     REMARKS
+  Jan. 11^ 1J88  .0300___
+                           _JL63*JQL-       _J^iLb3iii£aiL_turfiaMoini^_r^sln8. *»* i 3f\_m
+           11      1800
+  Jan. 12, 1988    1700       163.05        .Lqngyear. 44, .arrived, .started erenMno
+                   1930       163.05          Started lowering casing
+           12      2115
+           12                  163.05        Rods freed
+
+  Jan. 13, 1988                163.05        Pulled rods, no night work
+           13
+           13       0915       163.05        Started reaming and lowering pasjjOfi^
+                    1700       163.05 .;/-   Casing lowered to 163.30 m
+  Jan. 14, 1988     2400       163.05        Cleaned pits, prepared mud
+           14       0800       164.05        Lowered rods and washed hole
+          14        1030       164.05        Pulled rods, cleaned bit, lowered rods
+                    1200       182.10        Drilling in progress
+  Jan. 15, 1988     2230       206.40        Drilling in progress
+  Jan. 16, 1988  ' 2330        239.80        Drilling in progress
+  Jan. 17, 1988     2330       276.30        Drilling in progress
+. Jan. 18, 1988     2400       296.90        Drilling in progress
+  Jan. 19, 1988     0830       310.00        Drilling in progress
+                    0930       310.00        Prepared mud -
+           19       1300       310.00        Geophysical logging, ran 4 Pi and
+           19                                gamma-Neutron
+                    1500
+           19       1655       310.00        Took out rods
+           19       1912       310.00        Ran 3-arm caliper and resistivity logs
+           19                  310.00        Completed geophysical logging
+
+                           67
+                                Drilling Record
+                                    COALREAP
+
+                             DRILL HOLE UAK- 13
+
+1. Topographic sheet number          40 C/8
+2. Grid reference: 8 18 421                    (meters) Northing
+
+                   21 74 299           (meters) Easting
+
+3. Altitude above mean sea level 12.8                meters
+
+4. Drill rig type Longyear-?_______
+
+5. Drilling started January 12, 1988_______
+
+Drilling completed January 17, 1988______
+
+6. Non-coring surface____ (m) to 63.00___ (m)
+
+Coring 63.00_______ (m) to 206.00                    (m)
+
+7. Total depth drilled        206.00 _____(m)
+
+8. Drill bit:                                                     Type
+
+               Surface to 63.39        meters; Tricon Roller 5%" dia,
+
+63.39              (m) to 206.00       meters; Diamond, HQ______________
+
+_______ (m) to ___________             meters; ________________
+                                       meters; ________________
+________ (m) to __________
+
+9. Drilling fluid       Bentonite
+
+10. Casing set from                                       Type
+                   Surface to 23.17    (m) PW
+                                       (m) HW
+             23.17 (m ) to 63.39
+
+_____ (m) to __                        (m)
+
+11. Geologists Mohammad Riaz Khan
+
+                                                 68
+ (UAK-13, cont.)
+
+12. Geophysical Logs
+           Type
+
+     4-^lT density_________ from Surface (m) to 198.00 (m) through Drill pipe and casing
+     Gamma/Neutron_______ from Surface (m) to 200.00 (m) through Drill pipe and casing
+     3-Artn Caliper______ from Surface (m) to 198.00 (m) through Open hole and casing
+     Resistivity - G/N____ from Surface (m) to 200.00 (m) through Open hole and casing
+     High Resolution Density from Surface (m) to 67.00 (m) through Hole caved, open hole
+13. Remarks:
+
+         HRD probe was lowered but could not go beyond casing, hole caved
+
+       Geophysics
+       3-Arm Caliper «= 2K range, 3% standard deviation, .4" deflection, log speed 6 m per min.
+      4-Pi density8 500 counts per second per inch, 1% standard deviation, Range 5K, log .
+
+                             speed 6 m per minute
+       Gamma= 10 counts per second per inch, 3% standard deviation, log speed 6 m per min.
+      Neutron** 50 counts per second per inch, 1% standard deviation, log speed 6 m per min.
+       Neutron= 100 counts per second per inch, 1% standard deviation, Range IK, log speed
+
+                     6 m per minute.
+       Resistivity= 10 ohms per inch, 1000 bias,l<&g speed 6 m per minute
+
+                                                               69
+                                           DRILL HOLE UAK- 13 (cont-)
+
+                                           DRILLING LOG
+
+      DATE                           TIME    DEPTH                                      REMARKS
+Jan. 12, 1988                      1400    Surface       Drilling started
+                                   1700
+        12                         2200    22.00         Drilling stopped for casing
+                                   1000
+        12                         1617    22.00         Started drilling
+Jan. 13, 1988                      1400
+                                   1600    63.39         Casing completed
+        13                         2130
+                                           63.39         Started drilling
+m- « «B w» M» w» « »« » « «^ ^M .  1315
+                                   1500    96.75         Drilling in progress
+Jan. 14, 1988                      1700
+        14                         1040    100.15        Drilling stopped for mud preparation
+        14                         0845
+                                           100.15        Drilling started
+Jan. 15,^1988
+        15                                 133.20        Drilling in progress
+                                           136.25        Drilling stopped for mud preparation
+»^W^M«lMM»^M«B^a»«lV«lV«M.^M«              136.25        Started drilling
+                                           166.60        Drilling in progress
+      _J.5_____                            206.00        Drilling completed
+Jan. 16, 1988
+Jan. 17, 1988
+
+                                           70
+                                     Drilling Record
+                                         COALREAP
+
+                                  DRILL HOLE UAK-14
+
+! Topographic sheet number
+
+2. Grid reference: 8 20 335              (meters) Northing
+
+                   21 67 709             (meters) Easting
+
+3. Altitude above mean sea level___13.1               meters
+
+4. Drill rig type Unknown________
+
+5. Drilling started January 24. 1988____
+
+Drilling completed January 31. 1988
+
+6. Non-coring Surface____ (m) to 62.30
+
+Coring 62.30_______ (m) to ISQ.QQ
+
+7. Total depth drilled            180.00______        (m)
+
+8. Drill bit:                                                 Type
+
+                Surface to 3.09                       Tricon Roller       H-ta
+
+3.09               (m) to 180.00             meters; Tricon Roller        d-fa
+
+                   (m) to _____              meters; _________
+
+                   (m) to _____              meters;
+
+9. Drilling fluid       Bentonite
+
+10. Casing set from               22.00                             Type
+                                  30.72      /m \ PW flush-joint
+                      Surface to             / m \ HW flush-joint
+             22.00 (m) to
+                                             (m)
+                   (m) to
+
+11. Geologists     S. Farah Fatmi
+
+                   Mohammad Riaz Khan
+
+                                         71
+ (UAK-14, cont.)
+
+12. Geophysical Logs
+           Type
+
+4-fr density_______ from Surface (m) to 176.00 (m) through Rods and
+Gamma/Neutron______ from Surface (m) to 177.00 (m) through Rods and casing
+
+3-Arffl Caliper_________ from Surface (m) to 179.00 (m) through Open hole and casing
+
+      Resistivity - G/N_____ from Surface (m) to  178.00 (m) through Open hole and casing
+
+    High Resolution Density from surface (m) to   170.00 (m) through Open hole and casing
+13. Remarks:
+
+Geophysics
+4-Pi density= 500 counts per second per inch, 1% standard deviation,Range 5K,
+
+                     log speed 6 m per minute
+3-Arm Caliper*= Range 2K, .4" deflection, Log speed 6 m per minute
+Camma** 10 counts per second pe*r inch, 3% standard deviation, Log speed 6 m per minute
+Neutron88 50 counts per second per inch, 1% standard deviation, Log speed 6 m per min,
+
+Resist ivity= 10 ohms per inch, 1000 bias, Log speed 6m per minute
+
+                      72
+                             DRILL HOLE UAK- 14 (cont.V
+
+                             DRILLING LOG
+
+      DATE        TIME       DEPTH                           REMARKS
+Jan. 24, 1988   1030
+                             Surface       Started drilling
+        24      2130
+                             30.00         Drilling stopped ^for
+        24     >«^«^«^«M»M»
+Jan. 25, 1988                              ~             ancTliiud mixed
+
+        25     2245           30.00        Drilling started       ___________
+Jan. 26, 1988  0920           62.30
+Jan. 27, 1988  1600           62.30        Non-coring completed, started casing
+Jan. 28, 1988  1630           99.40
+               0120           99.40        Core drilling started
+       28      0700          109.35
+Jan. 31, 1988  2325          109.35        Stopped drilling, main clutch failure
+
+               0940          180.00        Drilling started
+
+                                           Stopped drilling, wire line defective
+
+                                           Drilling started
+
+                             73
+                                 Drilling Record
+                                     COALREAP
+
+                              DRILL HOLE UAK- 15
+
+1. Topographic sheet number 40 c/8
+
+2. Grid reference: 8 27 604               (meters) Northing
+                           21 69 200      (meters) Easting
+
+3. Altitu4e above mean sea level          15.50      meters
+
+4. Drill rig type Longyear-38_________
+
+5. Drilling started February 08, 1988_____
+
+Drilling completed February 23, 1988______
+
+6. Non-coring Surface___ (m) to 75.00___ (m)
+
+Coring 75.00_______ (m) to 229.20                    (m)
+
+7. Total depth drilled        229.20                 (m)
+
+8. Drill bit:                                                     Type
+                                          meters; Tricon Roller 5V dia.
+                Surface to 9.40           meters ; Crest bit 4*s" dia.____
+
+9. 40                (m) to 64.90
+
+64.90                (m) to 75.00         meters; Crest 3 7/8" dia.______
+
+75.00                (m) to 229.20        meters; Diamond bit HQ, bottom discharge
+
+9. Drilling fluid       Bentonite
+
+10. Casing set from                                                    Type
+                                                 (m) PW 5V dia. flush-joint
+                Surface to    9.40               (m ) HW 4^" dia. flush-joint
+                              65.73
+9.40                 (m ) to
+
+                    (m) to                       (m) __________
+                                     AMH
+11. Geologists
+                   Sardar Saeed Akhtar
+
+                                                 74
+  (UAK-15, cont.)
+12. Geophysical Logs
+
+             Type
+      4-7T density_______ from Surfaced*) to 223 '°° (m) through Drl11 plpe "* casing
+      Gamma/Neutron______ from Surface (m) to 223 '°° (m) through Dri11 pipe "* casing
+      3-Arm Call per______ from Surface (m) to 227.00 (m) through HW /casing and open hole
+     Resistivity - G/N____ from Surface(m) to 225.00 (m) through Casing and open hole
+      High Resolution Density from ____ (m) to ____ (m) through ____________
+13. Remarks:
+       Geophysics
+
+       3-Arm Caliper=2K Range, 3% standard deviation, Log speed 6 m per minute
+       Gamma =10 counts per second per inch, 3% standard deviation,Log speed 6 m per minute
+       Neutron= 100 counts per second per inch, 1% standard deviation, Range 1 K, Log speed
+
+                     6 m per minute
+       Resistivity^ 10 ohms per inch, 1000 bias,Log speed 6 m per minute
+   . 4-Pi density - 500 counts per second per inch, 1% standard deviation, Range 5K,
+
+                              Log speed 6 m per minute
+
+                                                                         75
+                                  DRILL HOLE UAK- 15 (contQ
+
+         DATE          TIME       DRILLING LOG               REMARKS
+                                   DEPTH
+JBfc* OS*. 1288      1710
+                     2200         Surface  Started drilling
+        08
+                     2345         16.00    Drilling stopped, pulled rods^ no
+ Feb. 09, 1988       1515                  water, auto chuck out of order
+ Feb. 10, 1988
+                     2000         64.90    Drilling resumed
+         10          2100
+         10          1020         64.90    Drilling stopped, rods pulled, casing
+ Feb. 11, 1988
+         11                                     lowered
+
+         11                       64.90    Drilling resumed
+ Fph. ,1?,. 1988...
+                                  68.00    'Drilling stopped due to lack of water
+         12
+ £fib_14. U88                     68.00    Drilling resumed
+
+         14          1135         75.00         Drilling stopped, non-coring completed
+ Feb. 15^1988
+                                                rods pulled
+         15
+ Feb. 16^_ 1988      1745         75.00         Core drilling resi,ed
+
+                     _D2lJQ._.._  92.20         Dr.illjfl£ . stopu^d.,., ^tQ^s.. pulJLe.4 due
+                       1055
+                                                to non-recovery of case
+
+                                                Drilling resumed
+
+                     . 0615       137.90        Drilling stopped, rods pulled out
+                         1005     137.90        Drilling resumed
+                         0700     163.30        Drilling stopped to change mud mix
+                         1105     163.30        Drilling resumed
+                         0100     181.45        Drilling stopped for repair of auto
+
+                                                chuck
+
+                                  76
+                     TIME        DRILLHOLE UAK-15 fcont.)  REMARKS
+                                          DRILLING LOG
+                                           DEPTH
+
+Feb. 18, 1988        1150        181.45       Rig under repair
+Feb. 19, 1988                    181.45       Autochuck needed modification, sent
+                                              to Hyderabad for repair
+ J£^L-_2{LJJ2§._     _!i30___    JJLLiil_
+__Feb_._2ii__198§__    0245____  _l_81J.45__  Rij^ .under. jreBair
+                                 -?2?^20      Dr illin&jresumed
+                     _5522L__
+
+                                 77
+                                     Drilling Record
+                                         COALREAP
+
+                                  DRILL HOLE UAK- 16
+
+1. Topographic sheet number              40 c/8______
+
+2. Grid reference: 8 30 634_______(meters) Northing
+
+                21 77 140                 (meters) Easting
+
+3. Altitude above mean sea level___12.50               meters
+
+4. Drill rig type Longyear-44_______
+
+5. Drilling Started February 05, 1988
+
+Dri11ing completed February 20, 1988
+
+6. Non-coring Surface____ (m) to 50100                 (m)
+
+Coring 50.00_____ (m) to 344.65                        (m)
+
+7. Total depth drilled            344.65              (m)
+                                                                 Type
+8. Drill bit:
+                                          meters; Tricon Roller bit 5%" dia.
+                Surface to 18.00          meters; Crest bit 4*$" dia.
+                                          meters; Diamond, HQ, bottom discharge
+18.00           (m) to 50.00
+
+50.00           (m) to 344.65
+
+             ______ (m) to                meters; ________________
+9. Drilling fluid Bentonite
+
+10. Casing set from               21.53                      Type
+                      Surface to  69.00
+                                          (m ) PW 5V flush-join^
+               Surface (m) to             (m ) HW 4V flush-joint
+
+_____ (m) to _____                        M________L_^
+
+11. Geologists  Shafique Ahmed Khan
+
+                                          78-
+ (UAK-16, cont.)
+
+12. Geophysical Logs
+           Type
+
+     4-7T density_________ from Surface (m) to 331.00 (m) through Drill pipe and casing
+     Gamma/Neutron_______ from Surface (m) to 330.00 (m) through Drill pipe and casing
+     3-Arm Caliper_______ from Surface (m) to 175.00 (m) through Casing and open hole
+     Resistivity - G/N____ from Surface (m) to 172.00 (m) through Casing and open hole
+     High Resolution Density from surface (m) to 142.00 (m) through Casing and open hole
+13. Remarks:
+
+      Geophysics
+       A-Pi density** Range 5K, 500 counts per second per inch, 1% standard deviation, Log
+
+                             speed 6 m per minute
+       Gamma= 10 counts per second per inch, 3% standard deviation, Log speed 6 m per minute
+      Neutrong 50 counts per second per inch, 1% standard deviation, Log speed 6 m per min.
+
+                                                                      79
+                          DRILL HOLE UAK- 1 A
+
+     DATE           TIME  DRILLING LOG                            REMARKS
+Feb. 05, 1988     0915     DEPTH
+                  1840
+        05        1330    Surface              Drilling started
+Feb. 06, 1988     1600
+                  1700        18.00            Pipe on hydraulic broken
+        06        1800
+        06        2030    18.00                Under repair
+        06        1210
+        06        0525    18.00                PW casing lowered to 18.44 m
+Feb. 07, 1988     0630
+        07        0945    21.00                Drilling in progress
+        07        1700
+        07     -          21v 0      r L6weredc>PW casing frdm. 18.44m to 21.53
+        07        0700
+                  1000    21.00                Drilling started
+Feb. 08, 1988
+        08        1130    36.00      'Drilling in progress
+                  0700
+        08        0800    50.00                Drilling in progress
+Feb. 09, 1988     1310
+                  1430    50.00                Prepared to lower casing
+        09        2000
+        09                50.00                HW casing lowered to 50.39 m
+        09
+        09                50.00                Drilling started with bottom discharge
+
+                                               HQ 3V1 bit and HQ 3%" reaming shell
+
+                          75.20                Drilling in progress
+
+                          75.20                Rods stuck, pulled rods and cleaned
+
+                                               bit, lowered rods
+
+                           75.20               Drilling started
+                           98.60               Drilling in progress
+                           75;20               Cleaned pits
+                          103.35               Drilling in progress
+                          103.35               No work, water shortage
+                          107.65               Drilling in progress
+
+                          80
+                              DRILL HOLE UAK-16 (cont.)
+
+        DATE            TIME  DRILLING LOG                    REMARKS
+  Feb. 09^1988         2100    DEPTH
+  Feb. 10^1988         0700
+                       0800   107.65        Added 0.57 m of HW casing
+          10            1715
+          10            1745  122.85        Drilling^ injgrogress
+          10           0700
+ Feb. 11, 1988         0845   122.85        Gleaned pits               _
+          11            1730
+          11            1800  134.95        Drilling in progress       ___
+          11           0300
+          11                  134.95        Added 0.38 HW casing
+                       0700
+  Feb. 12, 1988    ' 1700     155.57        Drilling in progress
+          12
+          12            1800  155.57        Mixed mud
+
+_Eek_ll*._1288__        0700  167.72        Drilling in progress
+  F_eb. 14^. 1988       0700
+          14            0800  167.72        HW casing sunk down, pulled rods
+          14            2145
+          14            0300  167.72        Generator out of order, casing
+  Feb. 15, 1988         0700
+          15            0900                lowered to 70.51
+
+                              167.72        Washed and reamed
+
+                              177.55        Drilling in progress
+
+                              177.55        Mixed mud
+
+                              192.65        Drilling in grqgress
+                              218.83        Drilling in progress
+                              218.83        Cleaned J^its^ mixed mud
+                              232.20        Drilling in progress
+                              232.20        No water, generator not working
+                              238.25        Drilling in progress
+                              238.25        Cleaned pits, mixed mud
+
+                                      81
+                           DRILL HOLE UAK-16 Ccont.)
+
+        DATE         TIME  DRILLING LOG                  REMARKS
+ Feb. 16^ 1988    0300      DEPTH
+                  1000
+          16      1100     259.55        Dr ill ing^ in _p_r.fi£r_eiis_  , ^
+          16      1400
+         16       1630     259.55        No water
+         16       1830
+         16       0700     259.55        Mixed mud
+ Feb. 17, 1988    0930
+         17       1155     262.55        Dr illing_ in _progress
+         17       1200
+         17       0700     262.55        Machine repair
+ Feb. 18, 1988    0930
+         18     . 1245     264.84        Drilling in progress ' "
+         18
+                           274.70        Drilling in jprogress
+         18
+'Feb. 19^ 1988             274.70        Mixed mud, cleaned pits
+
+         19                277.75        Drilling in progress
+ Feb. 20, 1988
+                           277.75        Fault in wiring repaired
+         20
+         20                301.05        Drilling in progress
+         20
+         20                301.05        Cleaned pits, prefared mud
+                           305.00        Drilling in progress
+
+                1345       IQlrDfl^       ProhlftR Vlth l"nbP irm**]- fn^
+                0630
+                0915       323.30        ..PriLitas .in progress __. ._ ,.,,._.
+                0500       323.30
+                0900       344.65        Cleaned, , pits, prepared .mid _. .,...,.,,
+                1120       344.65        Circulated mud
+                1405       344.65        Circulated mud
+                1605       344.05        Geopjiysical logging^
+                           344.65        Pulled rods
+                                         Geophysical logging
+
+                                     82
+

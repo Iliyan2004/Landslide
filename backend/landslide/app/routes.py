@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from flask import Response, abort, jsonify, request, send_file
 from .server import app, ROOT, RUNS, _env_token, JOBS, _run_lock
-from . import pipeline, rainfall as RF, runs as RUNS_MOD, render, layers as LY, paths
+from . import agents as AG, pipeline, rainfall as RF, runs as RUNS_MOD, render, layers as LY, paths
 from ..errors import LandslideError
 from ..data.preprocessing import aoi as AOI
 
@@ -257,7 +257,7 @@ def _phys_job(jid, geom, params):
                 raise Cancelled()
             j.update(stage=stage, frac=frac)
         try:
-            r = RUNS_MOD.execute(geom, params, str(RUNS), _env_token(), prog)
+            r = AG.run_with_recovery(lambda p: RUNS_MOD.execute(geom, p, str(RUNS), _env_token(), prog), params, note=lambda m: j.update(stage=m))
             j.update(state="done", frac=1.0, result=r, run_id=r["run_id"])
             _history_add(r, geom)
         except Cancelled:
@@ -430,7 +430,12 @@ def _check_watch(wid):
     res = {"t": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     try:
         om = RF.open_meteo(lat, lon, 1, 3)
-        fut = om["rate_mm_h"][om["now_hour_index"]:]
+        raw = om["rate_mm_h"][om["now_hour_index"]:]
+        if not om.get("stale_cache"):
+            AG.record_forecast(lat, lon, om["times_iso"], raw, om["now_hour_index"])               # forecast-audit agent: scored later against what was observed
+        fut = [x * AG.correction(i // 24) for i, x in enumerate(raw)]                               # bias correction per lead day (1.0 until audited)
+        res.update(forecast_peak_raw_mm_h=float(max(raw) if raw else 0), bias_corrected=any(abs(AG.correction(d) - 1) > 1e-6 for d in range(3)),
+                   stale_cache=bool(om.get("stale_cache")), data_age_h=om.get("data_age_h"))
         peak = float(max(fut) if fut else 0)
         idc = RF.id_check(fut or [0.0])
         res.update(forecast_peak_mm_h=peak, forecast_total_mm=float(sum(fut)), id_exceeded=idc["exceeded"], status="experimental_unvalidated")
@@ -471,6 +476,19 @@ def _watch_loop():
 
 
 threading.Thread(target=_watch_loop, daemon=True).start()
+
+
+@app.get("/api/agents/status")
+def agents_status():
+    return jsonify(AG.status())
+
+
+@app.post("/api/agents/audit")
+def agents_audit():
+    return jsonify(AG.audit())
+
+
+AG.start()
 
 
 @app.post("/monitor/watch")

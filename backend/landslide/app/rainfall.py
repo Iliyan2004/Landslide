@@ -76,7 +76,7 @@ def parse_csv(text, unit="mm_per_hour"):
     return series_payload(t_end - hours[0], rate, f"uploaded CSV ({os.path.basename('upload')})", start)
 
 
-def open_meteo(lat, lon, past_days=3, forecast_days=3):
+def _open_meteo_raw(lat, lon, past_days=3, forecast_days=3):
     r = requests.get(_OM, params={"latitude": lat, "longitude": lon, "hourly": "precipitation", "past_days": past_days,
                                   "forecast_days": forecast_days, "timezone": "UTC"}, timeout=25)
     r.raise_for_status()
@@ -87,6 +87,32 @@ def open_meteo(lat, lon, past_days=3, forecast_days=3):
     return series_payload(t, p, "Open-Meteo (recent observed + forecast)", h["time"][0] + ":00Z",
                           {"now_hour_index": now_idx, "past_mm": float(p[:now_idx].sum()), "forecast_mm": float(p[now_idx:].sum()),
                            "times_iso": h["time"]})
+
+
+OM_CACHE_MAX_AGE_H = 6.0
+
+
+def open_meteo(lat, lon, past_days=3, forecast_days=3):
+    """Live rain from Open-Meteo with recovery (the data-interruption agent, app/agents.py): up to 3 tries with back-off, then the last good response for the same
+    point (rounded to 0.1 degree) if it is under OM_CACHE_MAX_AGE_H old, marked 'stale_cache' and 'data_age_h' so callers and the page can say so. Otherwise raises."""
+    import time as _t
+    from . import agents
+    err = None
+    for k in range(3):
+        try:
+            out = _open_meteo_raw(lat, lon, past_days, forecast_days)
+            agents.cache_put(("om", round(lat, 1), round(lon, 1), past_days, forecast_days), out)
+            agents.note_source("open-meteo", True)
+            return out
+        except Exception as e:
+            err = e; _t.sleep(1.5 * (k + 1))
+    agents.note_source("open-meteo", False, str(err)[:120])
+    hit = agents.cache_get(("om", round(lat, 1), round(lon, 1), past_days, forecast_days), OM_CACHE_MAX_AGE_H)
+    if hit is not None:
+        data, age_h = hit
+        data = dict(data); data.update(stale_cache=True, data_age_h=round(age_h, 2), source=data["source"] + f" [CACHED {age_h:.1f} h ago: live feed down]")
+        return data
+    raise err
 
 
 def era5_event(lat, lon, start, end):

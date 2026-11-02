@@ -17,7 +17,7 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 
 | Feature | Status |
 |---|---|
-| Tiers 1 to 4, national product, districts, basins | Implemented and tested (123 unit tests) |
+| Tiers 1 to 4, national product, districts, basins | Implemented and tested (129 unit tests) |
 | Rainfall sources: design storm, forecast, recent, ERA5, CHIRPS, CSV | Implemented |
 | Impacts: buildings, roads, hospitals and schools, direct loss | Implemented (all thresholds assumed, Ch. 18) |
 | Live monitoring with webhook, compare runs, PDF report, MP4 export | Implemented |
@@ -27,6 +27,7 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 | Nature-based levers, barriers, ranking, automatic barrier placement | Implemented and **run once on the same area** (Ch. 23, 24); this exposed a counting artefact for planting and a placement bug, both fixed |
 | Landslide-dam screening, rainfall hotspots, scoring against an observed extent | Implemented (dam screening and hotspots run on real data; observed scoring needs a supplied extent) |
 | Rockfall simulation (GPU Monte Carlo, barriers, impacts) | Implemented and run on a Hunza area; friction set against published shadow angles, **not calibrated to Pakistani deposits** (none exist on the server; Ch. 14) |
+| Autonomous monitoring agents: feed fallback, job recovery, health, forecast audit and bias correction | Implemented, rule-based (Ch. 36); forecast back-test run |
 | Debris, earthquake and rockfall visualisation | Rebuilt and checked by rendering (Ch. 33) |
 | Spatially varying ground, access and isolation impacts, GIS export, token and rate limit, run clean-up, IMERG rainfall | Implemented |
 | Physics, ground, runout and PGA calibration and validation | **Run** on the real inventory, ShakeMaps and synthetic slopes; results and their weak points in Ch. 27 to 32 |
@@ -222,7 +223,7 @@ Rain is not scale-tested against the inventory: a report's accuracy disc and the
 
 ## 5.8 Limits
 
-Uniform rain over the area unless the gridded option is on; lateral flow only through the optional topographic water table; suction strength only as an uncalibrated option; one soil layer; depth of failure is the soil depth, not a mapped slip surface; no rock slopes (Ch. 40).
+Uniform rain over the area unless the gridded option is on; lateral flow only through the optional topographic water table; suction strength only as an uncalibrated option; one soil layer; depth of failure is the soil depth, not a mapped slip surface; no rock slopes (Ch. 41).
 
 
 # 6. Earthquake-Triggered Failure
@@ -399,7 +400,7 @@ The map offers four national layers as XYZ tiles read straight from the rasters 
 
 ## 10.3 Area screening
 
-For a drawn area, Tier 1 reads the DEM at 30 m (or coarser), the ML layer, runs the stability ensemble for the chosen rain, optionally Newmark with a scenario PGA, and a reach-angle run-out envelope (Corominas-style H/L, not a simulated depth), then reports population in the area and in unstable and reached cells. Population is people per 90 m cell and is rescaled by cell area when resampled; reading it bilinearly onto a 30 m grid had counted each person nine times (Ch. 38).
+For a drawn area, Tier 1 reads the DEM at 30 m (or coarser), the ML layer, runs the stability ensemble for the chosen rain, optionally Newmark with a scenario PGA, and a reach-angle run-out envelope (Corominas-style H/L, not a simulated depth), then reports population in the area and in unstable and reached cells. Population is people per 90 m cell and is rescaled by cell area when resampled; reading it bilinearly onto a 30 m grid had counted each person nine times (Ch. 39).
 
 > The ML layer is an external product trained on these reports with a random split and flat-ground negatives. It ranks slope proneness; it does not describe a specific storm.
 
@@ -1027,7 +1028,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 
 | Claim | Evidence | Status |
 |---|---|---|
-| The code solves its equations | 123 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
+| The code solves its equations | 129 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
 | Rainfall separates landslide days from ordinary days | AUC 0.73 (0.71 to 0.76) for 24 h intensity, leave-one-year-out | **Validated, modest** |
 | Published Guzzetti threshold is usable as a watch | TSS 0.32 on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics 0.56, with soil texture 0.65; mean slope 0.59 | **Weak** |
@@ -1103,7 +1104,41 @@ Interface checks (after the mitigation tab and run tools were added): the page a
 - **API tests.** Flask test-client tests cover the page, area validation, design-storm validation, refusal of runs with missing inputs, the token and the rate limit, unknown runs returning 404, and the dry-run default of cleanup. They run no simulations.
 
 
-# 36. Discovery Tools
+# 36. Autonomous Monitoring Agents
+
+The brief for this section asked for agents that manage continuous data streams, preprocess and diagnose workflows, detect interruptions, activate fallbacks, and keep validating and correcting forecasts. Part of that applies to LANDLAB and part does not, and the agents here are **rule-based programs, not language models**: each is a small deterministic procedure with a log, so it can be tested and explained (`app/agents.py`, 6 unit tests).
+
+## 36.1 What applies and what does not
+
+| Brief | Applies? | What was built |
+|---|---|---|
+| Continuous data stream management | Partly. The platform has one live stream (Open-Meteo rainfall for the watches and forecast runs); the terrain, land cover, population and inventory are static files. | Every live fetch reports success or failure to the interruption agent; `/api/agents/status` shows each feed's counts and consecutive failures. |
+| Detect data interruptions, activate fallbacks | Yes | Open-Meteo calls retry three times with back-off, then fall back to the last good response for the same 0.1 degree point if it is under 6 hours old, marked `stale_cache` with its age so the page and the watch say so. Outages and recoveries are logged. |
+| Preprocessing and workflow diagnostics | Partly. Preprocessing is a fixed pipeline, not a stream. | A health snapshot checks the required data files, the age of the ERA5 archive, the GPU and its free memory, disk space and the live feeds. Failed physics jobs are classified (user input, GPU, network, other): GPU and network failures are retried once (CPU solver, or a pause) and the recovery is written onto the result; user-input and unknown errors are not retried because a repeat would fail the same way. |
+| Evaluate and optimise models through forecast validation and error correction | Yes, for the rain forecast that drives the watches | Each monitored forecast is stored and later scored against what Open-Meteo reports as observed for the same hours; a bias factor per lead day, shrunk toward 1, scales the forecast before the watch threshold is tested. |
+| Continuous learning of the landslide model itself | No | The physics and thresholds are calibrated offline against the inventory (Ch. 28); there is no stream of confirmed landslides or damage to learn from, so nothing is adjusted automatically. |
+
+## 36.2 The forecast back-test
+
+Open-Meteo's previous-runs service archives forecasts made 1 and 2 days ahead. For 40 random points in northern Pakistan over 15 June to 30 September 2026, those forecasts were compared with the Open-Meteo archive (ERA5-based reanalysis rain, **not gauges**) on daily totals (`scripts/validate_forecasts.py`, `docs/validation/forecast_audit.json`).
+
+| Lead | Bias (forecast / observed) | Mean absolute error (mm/day) | Correlation | Detection of a 20 mm/day event | False alarms |
+|---|---|---|---|---|---|
+| 1 day | 1.08 | 2.1 | 0.67 | 42% | 64% of alerts |
+| 2 days | 1.12 | 2.3 | 0.65 | 33% | 70% of alerts |
+
+What this says: the forecasts run 8% (1 day) and 12% (2 days) wetter than the reanalysis, they track the daily pattern moderately (correlation about 0.65), and they are **poor at heavy-rain days**: of the 72 days of 20 mm or more, a 1-day forecast flagged 42% and a 2-day forecast 33%, and about two thirds of the alerts at that level were false. The correction applied to the watch is therefore small (factor 0.93 at one day, 0.90 at two) and cannot repair that. The 0-day row (not shown) is perfect by construction because the archive is built from the same short-lead analysis, so it tests nothing; it is excluded from the conclusions, and the lead-0 factor stays at 1. Because the truth is itself a model, the correction removes forecast drift from the analysis, not bias against real rainfall; against gauges (none on the server) the picture could differ.
+
+## 36.3 Live audit and the event log
+
+The watches store every forecast they issue. Every 30 minutes the audit agent scores the forecasts whose horizon has passed and updates the live bias factors, which take precedence over the back-test prior once they exist. Events (feed down and recovered, job errors and recoveries, audits, health changes) are kept in `datasets/state/agents/events.jsonl` (the last 2,000) and shown at `/api/agents/status`; a status chip in the page header links to it. At the time of writing the health snapshot reports one real problem: the ERA5-Land archive on the server ends on 2026-05-20, so hindcasts of storms after that date (and the calibration of any recent event) are not possible until the archive is extended.
+
+## 36.4 Limits
+
+The interruption agent can only keep a watch running on a feed that returns at all: when Open-Meteo is down for more than 6 hours, the watch reports the error rather than guessing, and there is no second forecast provider to switch to. Recovery from a GPU failure repeats the whole run on the CPU, which is slower, and a run that fails for a reason not in the list is reported, not repaired. The agents do not fix the model: they keep it fed, running and honestly scored.
+
+
+# 37. Discovery Tools
 
 Three aids for choosing where to look, all independent of any run:
 
@@ -1114,7 +1149,7 @@ Three aids for choosing where to look, all independent of any run:
 > Values are those of the source dataset. The largest RX1day values (several hundred millimetres in a day in places such as Balochistan) come from ERA5-Land and were not independently checked here; the source's own README documents that ERA5-Land misses localised convective extremes in other places, so the dataset can both overstate and understate at a point.
 
 
-# 37. Reports, Comparison and Exports
+# 38. Reports, Comparison and Exports
 
 - **PDF report** (`/runs/<id>/report.pdf`): trigger, runout and exposure tables, the loss note and every warning and assumption, rendered with WeasyPrint.
 - **Compare two runs** (same polygon and grid): impacted area in A only, B only and both, maximum depth, mean depth change, direct loss. Example: a 70 mm/h storm against an M 7.2 earthquake on the Gilgit test area impacts 3.9 and 12.4 km2, with 3.0 and 11.1 billion PKR direct loss.
@@ -1124,7 +1159,7 @@ Three aids for choosing where to look, all independent of any run:
 - **Mitigation comparison**: unmitigated against mitigated run, with the change in failing area, impacted area, loss, blocked road length and buildings at DS3 or above (Ch. 23, 24).
 
 
-# 38. Chronicle of Findings and Bugs
+# 39. Chronicle of Findings and Bugs
 
 Each entry was found by checking a result against something known, not by inspection of the code.
 
@@ -1159,11 +1194,11 @@ Each entry was found by checking a result against something known, not by inspec
 | 27 | With land-cover root cohesion the Gilgit failing area rose from 1.2 to 4.4 km2 | Comparing runs | Reported as a sensitivity, not hidden (Ch. 20) |
 
 
-# 39. Considered and Declined
+# 40. Considered and Declined
 
 - **Coupling with flood modelling.** Declined by the owner: LANDLAB and SAILAB stay separate products. Debris flows are not run through a water solver.
 - **Using the national ML susceptibility as a predictor in the validation models.** It was trained on the inventory; using it would leak the answer. It is shown as a labelled optimistic reference only.
-- **Bilinear resampling of population.** Counts are not intensities; see Ch. 38 (#1).
+- **Bilinear resampling of population.** Counts are not intensities; see Ch. 39 (#1).
 - **Promoting year-only dates to a day.** Invents precision that would corrupt the rainfall validation.
 - **A Pakistan-specific I-D threshold.** Fitted, but no better out of sample than the published Guzzetti curve (Ch. 26.4), so not adopted.
 - **Absolute landslide probabilities.** Not identifiable from a report inventory.
@@ -1180,7 +1215,7 @@ Each entry was found by checking a result against something known, not by inspec
 - **Real-time seismic wave speed in the animation.** Physically correct and invisible; the rings are time-scaled and say so.
 
 
-# 40. Known Limitations
+# 41. Known Limitations
 
 1. **Calibrated and validated only as far as the inventory allows.** See Ch. 32 for exactly what has and has not been checked.
 2. **One soil layer, infinite slope.** No deep-seated slides, no rock-slope kinematics, no rockfall, no snow avalanche, no glacial-lake outbursts.
@@ -1204,7 +1239,7 @@ Each entry was found by checking a result against something known, not by inspec
 20. **Access analysis** sees only roads inside the area and ignores speeds.
 
 
-# 41. Operations and Testing
+# 42. Operations and Testing
 
 ## 30.1 Running
 
@@ -1219,7 +1254,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 
 ## 30.2 Tests
 
-`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 123 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
+`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 129 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
 
 ## 30.3 Files
 
@@ -1236,7 +1271,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 One heavy job at a time; the GPU is shared, so it is released after every job; any GPU failure falls back to the CPU; all data paths are read-only; the application never writes into SAILAB or the shared data folders.
 
 
-# 42. References
+# 43. References
 
 - Azarafza, M. et al. (2021). Deep learning-based landslide susceptibility mapping. *Scientific Reports* 11, 24112 (the national ML method).
 - Bates, P. D., Horritt, M. S., Fewtrell, T. J. (2010). A simple inertial formulation of the shallow water equations. *Journal of Hydrology* 387, 33-45.

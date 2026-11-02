@@ -1,0 +1,10 @@
+{
+ "era5": {
+  "last_time": "2026-05-20",
+  "age_days": 166
+ },
+ "status": "degraded",
+ "problems": [
+  "ERA5 archive is 166 days behind: hindcasts of recent events are unavailable"
+ ]
+}
