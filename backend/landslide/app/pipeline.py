@@ -28,11 +28,13 @@ TEXTURES = list(SOIL.GA_PRIORS)
 STRENGTH_PRESETS = {
     "colluvium_shallow": {"soil_depth": {"min": 0.5, "max": 2.0}, "effective_cohesion": {"min": 1e3, "max": 8e3},
                           "friction_angle": {"min": 26, "max": 36}},
-    "calibrated_reports": {"soil_depth": {"min": 2.54, "max": 2.54}, "effective_cohesion": {"min": 916.0, "max": 916.0}, "friction_angle": {"min": 29.9, "max": 29.9}},   # point values fitted to the reports (Ch. 28); shallow-colluvium ranges do not apply
     "residual_soil": {"soil_depth": {"min": 1.0, "max": 4.0}, "effective_cohesion": {"min": 3e3, "max": 15e3},
                       "friction_angle": {"min": 22, "max": 34}},
     "weak_clayey": {"soil_depth": {"min": 1.0, "max": 3.0}, "effective_cohesion": {"min": 2e3, "max": 10e3},
                     "friction_angle": {"min": 15, "max": 26}},
+    # Last on purpose: the page selects the FIRST preset by default. These are point values that make the model rank reported-landslide days best (Ch. 28); they are
+    # weak (0.9 kPa cohesion), leave about a quarter of the slopes unstable even when dry and over-predict failure in absolute terms. Use for relative comparison only.
+    "calibrated_reports_weak": {"soil_depth": {"min": 2.54, "max": 2.54}, "effective_cohesion": {"min": 916.0, "max": 916.0}, "friction_angle": {"min": 29.9, "max": 29.9}},
 }
 
 

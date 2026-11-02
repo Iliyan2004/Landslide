@@ -686,7 +686,7 @@ Each return period is an expensive simulation, so the page asks for confirmation
 
 ## First run on a real area
 
-Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports", losses valued as in Ch. 19 (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
+Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports_weak", losses valued as in Ch. 19 (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
 
 | Return period (y) | Storm depth (mm) | Failing area (km2) | Direct loss today (PKR) | Direct loss, SSP5-8.5 (PKR) |
 |---|---|---|---|---|
@@ -746,7 +746,7 @@ Tests: each lever never increases failure; a 25 degree cap on a 33 degree slope 
 
 ## First run on a real area, and a counting artefact that was fixed
 
-On the 57 km2 Gilgit area (60 mm/h triangular storm for 12 h, strength preset "calibrated_reports") the first ranking, by the area that is *stable before the storm and fails in it*, put planting alone at 23% **more** failure than the baseline. That is not physical. The model counts only slopes that were stable before the storm (Ch. 4.5), because a slope that is already unstable would have failed earlier. Extra root cohesion turns slopes that were unstable (not counted) into slopes that are stable before the storm and then fail in it (counted), so the "failing" area could rise while the instability fell.
+On the 57 km2 Gilgit area (60 mm/h triangular storm for 12 h, strength preset "calibrated_reports_weak") the first ranking, by the area that is *stable before the storm and fails in it*, put planting alone at 23% **more** failure than the baseline. That is not physical. The model counts only slopes that were stable before the storm (Ch. 4.5), because a slope that is already unstable would have failed earlier. Extra root cohesion turns slopes that were unstable (not counted) into slopes that are stable before the storm and then fail in it (counted), so the "failing" area could rise while the instability fell.
 
 The ranking now uses the **unstable area at the end of the storm, including slopes that were already unstable** (`unstable_km2`, `failing_area` in `engine/run.py`). Every lever is compared on the same cells, so a lever can only remove instability. The "failing" figure is still reported for reference. A unit test checks that planting never increases the unstable area.
 
@@ -954,7 +954,7 @@ The server holds lithology (GLiM), soil texture (SoilGrids), land cover and NDVI
 | Held-out AUC, calibrated | 0.685 |
 | Calibrated values (median over folds) | c=1.05e+03, phi=18.6, cr=1.02e+03, z=2.4, wt=5.57, ks=5.03e-05, api_wet=70.6, k=0.965, s_dry=0.3, s_wet=0.935, f_wt=0.342, beta=1.41, suc=6.76e+03 |
 
-The calibrated set beat the defaults by more than the 0.02 adoption margin, so the antecedent constants are the platform's defaults now (`engine/antecedent.py`) and a strength preset "calibrated_reports" carries the fitted soil depth (2.5 m), cohesion (0.9 kPa) and friction (29.9 degrees).
+The calibrated set beat the defaults by more than the 0.02 adoption margin, so the antecedent constants are the platform's defaults now (`engine/antecedent.py`) and a strength preset "calibrated_reports_weak" carries the fitted soil depth (2.5 m), cohesion (0.9 kPa) and friction (29.9 degrees).
 
 Read this with care:
 
@@ -964,7 +964,11 @@ Read this with care:
 
 ## 21.5 Second run, with topographic wetness and suction
 
-The same fit repeated with two more parameters (wetness exponent, suction; Ch. 5.7) gives held-out AUC 0.685 against 0.683 before: no improvement, and the added parameters are not identifiable between folds. The first fit (0.683, the antecedent constants and the "calibrated_reports" preset) is the one adopted in the code; the file `physics_calibration_v1_no_wetness_suction.json` keeps it.
+The same fit repeated with two more parameters (wetness exponent, suction; Ch. 5.7) gives held-out AUC 0.685 against 0.683 before: no improvement, and the added parameters are not identifiable between folds. The first fit (0.683, the antecedent constants and the "calibrated_reports_weak" preset) is the one adopted in the code; the file `physics_calibration_v1_no_wetness_suction.json` keeps it.
+
+## 21.6 The fitted preset is not a default
+
+The fitted point values are stored as the strength preset `calibrated_reports_weak` (cohesion 0.9 kPa, friction 29.9 degrees, depth 2.5 m). They make the model rank *reported landslide days* above ordinary days, which is a ranking task; they are not a description of how much failure a storm causes. On the Gilgit area they leave about a quarter of the soil-bearing slopes unstable even when dry, and they fail 0.2% of the area for a 15 mm shower and 6% for a 120 mm storm. A magnitude 7.2 earthquake fails 8% of a 190 km2 area and releases 41 million m3, with debris 71 m deep at the deepest cell: a worst case, not a forecast. The preset was briefly the first in the list, which made it the page's default and made every run look catastrophic; it is now last, the page defaults to `colluvium_shallow`, and any run that fails more than 5% of its area carries a warning. The shipped presets differ sharply: for the same M 6.8 earthquake `colluvium_shallow` fails nothing (at a 5 cm criterion), `residual_soil` 7.7 km2, `weak_clayey` 17.8 km2 and `calibrated_reports_weak` 14.7 km2. Which one describes a real hillside is a question for soil data that do not exist for the mountains (Ch. 3.4); until then the preset is the dominant uncertainty of every absolute number in the platform.
 
 
 # 29. Calibration of the Spatial Ground
@@ -1110,6 +1114,11 @@ The page follows SAILAB's design system (colours, Barlow Condensed headings, Pub
 Right-column panels, top to bottom: draw or upload an area; district discovery (ranked by a national metric); river basins; rainfall and triggers (Open-Meteo, antecedent index, ERA5 wettest 72 h, threshold check); live monitoring; six tabs (screening, instant, physics, earthquake, mitigate, rockfall); layers of the current run with the PDF report link, landslide-dam screening, scoring against an observed extent and a batch PDF; GIS export, run history and comparison. Discovery also offers national rainfall hotspots. Barrier lines are drawn with the same drawing tool as the area polygon (the polygon is the area, lines are barriers). Every panel states what it is and is not, and the footer repeats that results are screening grade.
 
 Interface checks (after the mitigation tab and run tools were added): the page and the 3D scene load in headless Chromium without JavaScript errors, and the inline script passes `node --check`. Individual controls have been exercised through the API, not clicked through in a real browser.
+
+
+## Run report
+
+The report (`/runs/<id>/report.html` and `.pdf`) follows SAILAB's report format: a masthead with the model name and run meta, a summary tile grid (failing area, peak PGA for earthquakes, released volume, impacted area, maximum depth, runout, damaged buildings, direct loss, blocked roads, people, isolated buildings; for rockfall the rocks, reach angle, energy and reach), map plates over a hillshade with captions and a legend row (flow depth, deposit, failure time, factor of safety, PGA; rockfall reach, energy, bounce), hover charts of the storm and of the failed area against time, a run-configuration table, an assumptions and warnings list, and a footer, with SAILAB's light and dark theme (`app/report.py`).
 
 
 # 35. Access Control, Run Management and Operations Additions

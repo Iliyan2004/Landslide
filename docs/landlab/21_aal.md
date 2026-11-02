@@ -18,7 +18,7 @@ Each return period is an expensive simulation, so the page asks for confirmation
 
 ## First run on a real area
 
-Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports", losses valued as in Ch. {{ch:loss}} (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
+Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports_weak", losses valued as in Ch. {{ch:loss}} (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
 
 | Return period (y) | Storm depth (mm) | Failing area (km2) | Direct loss today (PKR) | Direct loss, SSP5-8.5 (PKR) |
 |---|---|---|---|---|

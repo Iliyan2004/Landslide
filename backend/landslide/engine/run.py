@@ -149,6 +149,10 @@ def _execute(geom, params, run_dir, progress):
         summary["ensemble"] = {"members": n_ens, "device": ens["device"], "failing_area_km2": {"p05": float(np.percentile(ar, 5)), "p50": float(np.percentile(ar, 50)),
                                "p95": float(np.percentile(ar, 95)), "mean": float(ar.mean())}, "cells_p_fail_ge_0.5": int(np.nansum(p_fail_arr >= 0.5)),
                                "note": "every prior drawn independently (Latin hypercube); p_fail = share of members in which the cell fails; the main run is one scenario"}
+    if n_fail / max(1, int(valid.sum())) > 0.05:
+        warns.append(f"{100 * n_fail / max(1, int(valid.sum())):.0f}% of the area fails in this scenario. Real storms and earthquakes rarely fail more than a few percent of a catchment; "
+                     "this usually means the strength scenario is too weak (the 'calibrated_reports_weak' preset, a low strength quantile, or a weak clayey soil) or the storm is extreme. "
+                     "Read the runout as a worst case, not a forecast.")
     if n_fail == 0:
         summary["outcome"] = "no_failure"
         summary["note"] = "No cell reaches FS<1 under this scenario. Try heavier/longer rain, a weaker strength scenario, or a higher PGA."

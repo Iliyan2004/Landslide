@@ -383,16 +383,9 @@ def compare_runs():
 
 
 def _report_html(rid):
-    d = json.loads((RUNS / rid / "summary.json").read_text()); s = d["summary"]
-    fl, ex, tr = s.get("flow") or {}, s.get("exposure") or {}, s.get("trigger") or {}
-    rows = lambda o: "".join(f"<tr><td>{k.replace('_',' ')}</td><td>{v:,.4g}</td></tr>" if isinstance(v, (int, float)) else "" for k, v in o.items())
-    warn = "".join(f"<li>{w}</li>" for w in d.get("warnings", []))
-    return f"""<html><head><meta charset="utf-8"><style>body{{font-family:sans-serif;margin:30px;color:#1a2a33}}h1{{font-size:20px}}h2{{font-size:14px;border-bottom:1px solid #aaa;margin-top:22px}}
-table{{border-collapse:collapse;font-size:12px}}td{{padding:3px 10px;border-bottom:1px solid #ddd}}.n{{font-size:11px;color:#a33}}</style></head><body>
-<h1>Landslide run report &mdash; {rid}</h1><p>Mode: {s.get('mode')} &middot; Area {s.get('area_km2',0):,.1f} km&sup2; &middot; {s.get('resolution_m')} m cells &middot; backend {s.get('backend')}</p>
-<p class="n">Screening-grade decision support. Not for engineering design or evacuation orders. Soil strength and flow friction are scenario values; nothing is calibrated.</p>
-<h2>Trigger</h2><table>{rows(tr)}</table><h2>Runout</h2><table>{rows(fl)}</table><h2>Exposure and loss</h2><table>{rows(ex)}</table>
-<p class="n">{ex.get('loss_note','')}</p><h2>Warnings and assumptions</h2><ul>{warn}</ul></body></html>"""
+    """SAILAB-format run report (app/report.py)."""
+    from . import report as REP
+    return REP.build_html(rid, RUNS)
 
 
 @app.get("/runs/<rid>/report.html")

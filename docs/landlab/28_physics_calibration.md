@@ -23,7 +23,7 @@ The server holds lithology (GLiM), soil texture (SoilGrids), land cover and NDVI
 | Held-out AUC, calibrated | {{physics_calibration.json:calibrated.auc|3}} |
 | Calibrated values (median over folds) | {{physics_calibration.json:calibrated.params_text}} |
 
-The calibrated set beat the defaults by more than the 0.02 adoption margin, so the antecedent constants are the platform's defaults now (`engine/antecedent.py`) and a strength preset "calibrated_reports" carries the fitted soil depth (2.5 m), cohesion (0.9 kPa) and friction (29.9 degrees).
+The calibrated set beat the defaults by more than the 0.02 adoption margin, so the antecedent constants are the platform's defaults now (`engine/antecedent.py`) and a strength preset "calibrated_reports_weak" carries the fitted soil depth (2.5 m), cohesion (0.9 kPa) and friction (29.9 degrees).
 
 Read this with care:
 
@@ -33,4 +33,8 @@ Read this with care:
 
 ## 21.5 Second run, with topographic wetness and suction
 
-The same fit repeated with two more parameters (wetness exponent, suction; Ch. {{ch:rain_triggered_failure}}.7) gives held-out AUC {{physics_calibration.json:calibrated.auc|3}} against 0.683 before: no improvement, and the added parameters are not identifiable between folds. The first fit (0.683, the antecedent constants and the "calibrated_reports" preset) is the one adopted in the code; the file `physics_calibration_v1_no_wetness_suction.json` keeps it.
+The same fit repeated with two more parameters (wetness exponent, suction; Ch. {{ch:rain_triggered_failure}}.7) gives held-out AUC {{physics_calibration.json:calibrated.auc|3}} against 0.683 before: no improvement, and the added parameters are not identifiable between folds. The first fit (0.683, the antecedent constants and the "calibrated_reports_weak" preset) is the one adopted in the code; the file `physics_calibration_v1_no_wetness_suction.json` keeps it.
+
+## 21.6 The fitted preset is not a default
+
+The fitted point values are stored as the strength preset `calibrated_reports_weak` (cohesion 0.9 kPa, friction 29.9 degrees, depth 2.5 m). They make the model rank *reported landslide days* above ordinary days, which is a ranking task; they are not a description of how much failure a storm causes. On the Gilgit area they leave about a quarter of the soil-bearing slopes unstable even when dry, and they fail 0.2% of the area for a 15 mm shower and 6% for a 120 mm storm. A magnitude 7.2 earthquake fails 8% of a 190 km2 area and releases 41 million m3, with debris 71 m deep at the deepest cell: a worst case, not a forecast. The preset was briefly the first in the list, which made it the page's default and made every run look catastrophic; it is now last, the page defaults to `colluvium_shallow`, and any run that fails more than 5% of its area carries a warning. The shipped presets differ sharply: for the same M 6.8 earthquake `colluvium_shallow` fails nothing (at a 5 cm criterion), `residual_soil` 7.7 km2, `weak_clayey` 17.8 km2 and `calibrated_reports_weak` 14.7 km2. Which one describes a real hillside is a question for soil data that do not exist for the mountains (Ch. {{ch:data_sources}}.4); until then the preset is the dominant uncertainty of every absolute number in the platform.
