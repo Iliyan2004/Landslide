@@ -9,7 +9,7 @@
 7. **Runout friction is a scenario value by flow type;** the single-phase depth-averaged model does not separate solid and fluid phases.
 8. **Impacts** use assumed fragility medians and a single unit cost; no indirect loss, no lives.
 9. **Building heights** are assumed 6 m (display only); footprints come from a satellite-derived dataset with its own errors.
-10. **ML susceptibility** covers the north only.
+10. **ML susceptibility** covers the north only (about 31 N and up), because the landslide inventory used to train it has almost no records in the south. The physics screening (Tier 1 national physics product, Tier 3) covers all of Pakistan; the south is mostly flat, so little of it can fail.
 11. **Terrain** is SRTM at 29 m: gullies, small scarps and road cuts are not resolved.
 12. **Spatial misregistration** of the 3D canvas (lon/lat rectangle over a UTM grid) is small for tens of kilometres and grows with area.
 13. **Design storms** are point depths from 46 years of ERA5-Land annual maxima: 100- and 200-year values are extrapolations, short durations are lower bounds, and storms are limited to 24 h.

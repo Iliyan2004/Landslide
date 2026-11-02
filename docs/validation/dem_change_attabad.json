@@ -1,0 +1,22 @@
+{
+ "event": "Attabad rock avalanche, Hunza, 4 Jan 2010",
+ "before": "Pak_srtm.tif (documented as SRTM, Feb 2000)",
+ "after": "Copernicus GLO-30 (2011-2015)",
+ "window_km": 70.0,
+ "grid_m": 90.0,
+ "raw_dz_mad_m": 5.616940021514893,
+ "smoothed_dz_percentiles_m": {
+  "p0.1": -7.051318660736084,
+  "p1": -4.855795154571533,
+  "p50": -0.010258212685585022,
+  "p99": 4.84985681533813,
+  "p99.9": 6.8681743392944465
+ },
+ "smoothed_dz_extremes_m": [
+  -11.258707046508789,
+  9.588905334472656
+ ],
+ "patches_beyond_threshold": [],
+ "threshold_m": 12.0,
+ "result": "no coherent change beyond the threshold anywhere in the window"
+}

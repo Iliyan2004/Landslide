@@ -12,7 +12,7 @@ from scipy import ndimage
 from ..app import paths, rasters, pipeline as P, rainfall as RF, layers as LY
 from ..data.preprocessing import aoi as AOI, terrain
 from ..errors import GateError, InsufficientData
-from . import loss as LS, flow as FL, trigger as TR, interventions as IV, ground as GR, access as AC, site as SITE, antecedent as ANT, ensemble as ENSM, wetness as WET
+from . import loss as LS, flow as FL, trigger as TR, interventions as IV, ground as GR, access as AC, site as SITE, antecedent as ANT, ensemble as ENSM, wetness as WET, census as CEN
 from .thermal import Governor
 
 MAX_PHYS_CELLS = 700_000
@@ -26,20 +26,29 @@ IMP = {"rho": 1800.0, "cost_m2": 35000.0,   # cost_m2/floors: the old flat valua
        "burial_m": [0.3, 1.0, 2.0, 4.0], "floors": 1, "persons_per_building_note": "population raster used instead"}
 
 
-def _ds_probs(p_kpa):
+# Fragility medians scale with the construction class of the census (assumed multipliers of the pakka medians; no Pakistani damage data to fit them)
+CLASS_SCALE = {"pakka": 1.0, "semi": 0.6, "kacha": 0.3}
+
+
+def _ds_probs(p_kpa, scale=1.0):
     from scipy.stats import norm
-    ex = np.array([norm.cdf(np.log(max(p_kpa, 1e-6) / m) / IMP["beta"]) for m in IMP["med_kpa"]])
+    ex = np.array([norm.cdf(np.log(max(p_kpa, 1e-6) / (m * scale)) / IMP["beta"]) for m in IMP["med_kpa"]])
     pr = np.concatenate([[1 - ex[0]], ex[:-1] - ex[1:], [ex[-1]]])
     return np.clip(pr, 0, 1)
 
 
-def building_damage(hmax, vmax, area_m2):
-    """Expected damage ratio from dynamic-pressure fragility, floored by burial depth. All thresholds are ASSUMED."""
-    p = IMP["rho"] * vmax ** 2 / 1e3
-    pr = _ds_probs(p) if hmax >= 0.3 else np.array([1.0, 0, 0, 0, 0])
-    floor_ds = int(np.searchsorted(IMP["burial_m"], hmax, side="right"))   # 0..4
-    if floor_ds > 0:
-        pr2 = np.zeros(5); pr2[floor_ds:] = pr[floor_ds:]; pr2[floor_ds] += pr[:floor_ds].sum(); pr = pr2
+def building_damage(hmax, vmax, area_m2, mix=None):
+    """Expected damage ratio from dynamic-pressure fragility, floored by burial depth. All thresholds are ASSUMED.
+    mix = (pakka, semi, kacha) shares from the district census: the damage probabilities are the mix-weighted average over the three classes (default: all pakka)."""
+    p = IMP["rho"] * vmax ** 2 / 1e3; mix = mix or (1.0, 0.0, 0.0); pr = np.zeros(5)
+    for share, cls in zip(mix, ("pakka", "semi", "kacha")):
+        if share <= 0:
+            continue
+        pc = _ds_probs(p, CLASS_SCALE[cls]) if hmax >= 0.3 else np.array([1.0, 0, 0, 0, 0])
+        floor_ds = int(np.searchsorted(IMP["burial_m"], hmax, side="right"))   # 0..4
+        if floor_ds > 0:
+            p2 = np.zeros(5); p2[floor_ds:] = pc[floor_ds:]; p2[floor_ds] += pc[:floor_ds].sum(); pc = p2
+        pr += share * pc
     dr = float(np.dot(pr, IMP["dr"]))
     return dr, int(np.argmax(pr)), dr * area_m2 * IMP["floors"] * IMP["cost_m2"]        # third value: old flat valuation, kept for callers; _exposure now uses engine/loss.py
 
@@ -379,6 +388,16 @@ def _exposure(geom, bbox, grid, epsg, hmax, vmax, H, pop, dx, frame_t, warns):
     inv = ~grid["affine"]
     ny, nx = hmax.shape
     ex = {}
+    ex["population_source"] = "population raster (WorldPop, 90 m)"
+    if pop is None or not np.nansum(np.nan_to_num(pop)) > 0:           # south of the raster: district density from the census instead
+        try:
+            vmask = rasters.polygon_mask(geom, grid); pop, share = CEN.population_field(grid, vmask)
+            if share > 0:
+                ex["population_source"] = f"2023 census district density (uniform within each district; {100 * share:.0f}% of the area covered)"
+            else:
+                pop = None; ex["population_source"] = "none: no raster and no census district for this area"
+        except Exception as e:
+            pop = None; ex["population_source"] = f"none ({str(e)[:50]})"
     if pop is not None:
         ex["population_in_impacted_cells"] = float(np.nan_to_num(pop)[hmax > 0.3].sum())
         ex["population_in_aoi"] = float(np.nan_to_num(pop).sum())
@@ -392,12 +411,21 @@ def _exposure(geom, bbox, grid, epsg, hmax, vmax, H, pop, dx, frame_t, warns):
         x, y = tr.transform(lon, lat); c, rr = inv * (x, y)
         return int(rr), int(c)
     cost = 0.0; struct = 0.0; ds_count = [0] * 5; b_out = []
-    for bd in b:
+    try:                                                              # census housing mix per building (engine/census.py); national mean where the census has no row
+        keys = CEN.districts_for([x["cx"] for x in b], [x["cy"] for x in b]) if b else []
+    except Exception as e:
+        keys = [None] * len(b); warns.append(f"Census housing data unavailable ({str(e)[:60]}): all buildings treated as pakka.")
+    census_known = 0; kacha_sum = 0.0; hh_people = 0.0
+    for bd, key in zip(b, keys):
         rr, cc = cell(bd["cx"], bd["cy"])
         if not (0 <= rr < ny and 0 <= cc < nx):
             continue
         h, v = float(hm3[rr, cc]), float(vm3[rr, cc])
-        dr, ds, _ = building_damage(h, v, bd["area_m2"])
+        mix, known = CEN.housing_mix(key) if keys else ((1.0, 0.0, 0.0), False); hh = CEN.hh_size(key)[0] if keys else 0.0
+        census_known += int(known); kacha_sum += mix[2]
+        dr, ds, _ = building_damage(h, v, bd["area_m2"], mix)
+        if ds >= 2:
+            hh_people += hh
         c = LS.building_structure_loss(dr, bd["area_m2"], bd.get("height_m", 6.0))
         ds_count[ds] += 1; cost += c; struct += c
         bd["rr"], bd["cc"], bd["dmg"] = rr, cc, dr
@@ -411,6 +439,8 @@ def _exposure(geom, bbox, grid, epsg, hmax, vmax, H, pop, dx, frame_t, warns):
     ex.update({"buildings_in_aoi": nb, "buildings_damaged_ds_ge1": int(sum(ds_count[1:])), "buildings_ds_ge3": int(sum(ds_count[3:])),
                "damage_states_count": ds_count, "direct_loss_pkr": struct + content + agri_pkr,
                "loss_parts_pkr": {"structure": struct, "contents": content, "agriculture": agri_pkr}, "cropland_cells_damaged": agri_cells,
+               "census": {"buildings_with_district_census": census_known, "mean_kacha_share": (kacha_sum / nb if nb else None), "people_in_buildings_ds_ge2_est": hh_people,
+                          "note": "housing mix and household size from the 2023 census by district; Gilgit-Baltistan and Azad Kashmir have no row, so the national mean is used there; people = damaged buildings (DS >= 2) x district household size (assumes one household per footprint)"},
                "loss_note": LS.method_note()})
     # roads blocked
     blocked_m, total_m = 0.0, 0.0

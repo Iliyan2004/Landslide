@@ -70,8 +70,8 @@ def _fmt(v, d=2):
 
 
 def _money(v):
-    v = float(v or 0)
-    return "PKR " + (f"{v / 1e9:,.2f} bn" if v >= 1e9 else f"{v / 1e6:,.1f} M")
+    v = float(v or 0); sg = "-" if v < 0 else ""; v = abs(v)
+    return "PKR " + sg + (f"{v / 1e9:,.2f} bn" if v >= 1e9 else f"{v / 1e6:,.1f} M")
 
 
 def _tile(label, value, sub=""):
@@ -194,3 +194,89 @@ def build_html(rid, runs_root):
 {sec("Run configuration", f'<table class="appendix">{cfg_rows}</table>')}
 {sec("Assumptions &amp; warnings", f'<ul class="notes">{notes}</ul>' if notes else "")}
 <footer><span>{MODEL_NAME} &middot; infinite-slope + Green-Ampt trigger, Voellmy local-inertial runout (Bates et al. 2010)</span><span>Generated {when}</span></footer></div>{HOVER_JS}</body></html>"""
+
+
+# ------------------------------------------------------------------ compare and batch reports in SAILAB's band format (fis_app.REPORT_CSS)
+BAND_CSS = """
+body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; color: #17242A; background: #F4F8F9; }
+.report-band { background: linear-gradient(120deg, #0B2A2E 0%, #114044 55%, #0E3438 100%); color: #EAF6F6; padding: 26px 36px 22px; }
+.report-band h1 { margin: 0; font-size: 23px; font-weight: 700; letter-spacing: 0.02em; }
+.report-band .tagline { color: #9FE0DC; margin: 4px 0 0; font-size: 12.5px; letter-spacing: 0.01em; }
+.report-body { max-width: 900px; margin: 0 auto; padding: 28px 36px 40px; background: #FFFFFF; }
+h2 { font-size: 15px; color: #0E4448; margin: 30px 0 10px; padding-left: 11px; border-left: 3px solid #1FB6AE; letter-spacing: 0.01em; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 13px; }
+th, td { text-align: left; padding: 8px 11px; border-bottom: 1px solid #E1E8E9; }
+th { color: #4C6367; font-weight: 600; background: #EEF5F5; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+tr:nth-child(even) td { background: #FAFCFC; }
+.legend span { display: inline-block; width: 11px; height: 11px; margin-right: 5px; vertical-align: middle; border-radius: 3px; }
+img { max-width: 100%; border: 1px solid #E1E8E9; border-radius: 8px; margin: 10px 0; display: block; }
+.note { color: #6C8286; font-size: 12px; line-height: 1.6; margin-top: 14px; }
+"""
+
+
+def _band_page(title, inner):
+    return (f'<!DOCTYPE html><html><head><meta charset="utf-8"><title>{escape(MODEL_NAME)} {escape(title)}</title><style>{BAND_CSS}</style></head><body>'
+            f'<div class="report-band"><h1>{MODEL_NAME} &mdash; {escape(title)}</h1><p class="tagline">{MODEL_TAGLINE}</p></div><div class="report-body">{inner}</div></body></html>')
+
+
+def _png_b64(rgb, max_px=900):
+    im = Image.fromarray(rgb); s = max(1.0, max(im.size) / max_px)
+    if s > 1:
+        im = im.resize((int(im.width / s), int(im.height / s)), Image.NEAREST)
+    b = io.BytesIO(); im.save(b, "PNG"); return base64.b64encode(b.getvalue()).decode()
+
+
+def _load_run(rid, runs_root):
+    r = Path(runs_root) / rid; d = json.loads((r / "summary.json").read_text()); z = np.load(r / "arrays.npz") if (r / "arrays.npz").exists() else None
+    man = json.loads((r / "manifest.json").read_text()) if (r / "manifest.json").exists() else {}
+    return d["summary"], z, man
+
+
+def _scenario(s, man):
+    p = man.get("params") or {}; q = s.get("quake") or {}; rn = s.get("rain") or {}
+    if q:
+        return f"M {q.get('magnitude')} earthquake"
+    return f"{_fmt(rn.get('total_mm'), 0)} mm rain, peak {_fmt(rn.get('peak_mm_h'), 0)} mm/h" + (f" · {p.get('strength_preset')}" if p.get("strength_preset") else "")
+
+
+def compare_html(a_id, b_id, runs_root):
+    sa, za, ma = _load_run(a_id, runs_root); sb, zb, mb = _load_run(b_id, runs_root)
+    if za is None or zb is None or za["hmax"].shape != zb["hmax"].shape:
+        raise ValueError("both runs need physics results on the same area and grid (same polygon and resolution)")
+    cell = (ma["grid"]["resolution_m"] ** 2) / 1e6; ha, hb = np.nan_to_num(za["hmax"]), np.nan_to_num(zb["hmax"]); wa, wb = ha > 0.3, hb > 0.3
+    valid = np.isfinite(za["hmax"]) | np.isfinite(zb["hmax"]); dem = za["dem"]; hs = (0.55 + 0.45 * _hillshade(dem, ma["grid"]["resolution_m"])) * 235
+    img = np.stack([hs, hs, hs], -1).astype(np.uint8); img[wa & ~wb] = (46, 204, 113); img[wb & ~wa] = (200, 30, 30); img[wa & wb] = (63, 140, 224)
+    ea, eb = sa.get("exposure") or {}, sb.get("exposure") or {}; fa, fb = sa.get("flow") or {}, sb.get("flow") or {}; ta, tb = sa.get("trigger") or {}, sb.get("trigger") or {}
+    row = lambda label, x, y: f"<tr><td>{label}</td><td>{x}</td><td>{y}</td></tr>"
+    loss_a, loss_b = ea.get("direct_loss_pkr"), eb.get("direct_loss_pkr")
+    loss_rows = row("Direct loss", _money(loss_a), _money(loss_b)) + (f"<tr><td>Loss difference (B&minus;A)</td><td colspan='2'>{_money((loss_b or 0) - (loss_a or 0))}</td></tr>" if loss_a is not None and loss_b is not None else "")
+    inner = (f"<table><tr><th></th><th>Run A ({escape(a_id[:8])})</th><th>Run B ({escape(b_id[:8])})</th></tr>"
+             + row("Scenario", escape(_scenario(sa, ma)), escape(_scenario(sb, mb))) + row("Failing area", f"{_fmt(ta.get('failing_area_km2'), 3)} km&sup2;", f"{_fmt(tb.get('failing_area_km2'), 3)} km&sup2;")
+             + row("Released volume", f"{_fmt(fa.get('released_volume_m3'), 0)} m&sup3;", f"{_fmt(fb.get('released_volume_m3'), 0)} m&sup3;") + row("Impacted area", f"{_fmt(fa.get('impacted_area_km2'), 3)} km&sup2;", f"{_fmt(fb.get('impacted_area_km2'), 3)} km&sup2;")
+             + row("Max depth", f"{_fmt(fa.get('max_depth_m'), 1)} m", f"{_fmt(fb.get('max_depth_m'), 1)} m") + row("Buildings DS &ge; 3", _fmt(ea.get("buildings_ds_ge3"), 0), _fmt(eb.get("buildings_ds_ge3"), 0)) + loss_rows + "</table>"
+             f"<h2>Cell-by-cell comparison</h2><table><tr><td>Only run A impacted</td><td>{_fmt((wa & ~wb).sum() * cell, 4)} km&sup2; ({int((wa & ~wb).sum()):,} cells)</td></tr>"
+             f"<tr><td>Only run B impacted</td><td>{_fmt((wb & ~wa).sum() * cell, 4)} km&sup2; ({int((wb & ~wa).sum()):,} cells)</td></tr><tr><td>Both impacted</td><td>{_fmt((wa & wb).sum() * cell, 4)} km&sup2; ({int((wa & wb).sum()):,} cells)</td></tr>"
+             f"<tr><td>Mean depth change (B&minus;A) where either is impacted</td><td>{_fmt(float((hb - ha)[wa | wb].mean()) if (wa | wb).any() else 0.0, 2)} m</td></tr></table>"
+             '<p class="legend"><span style="background:#2ecc71;"></span>Only run A &nbsp;<span style="background:#c81e1e;"></span>Only run B &nbsp;<span style="background:#3f8ce0;"></span>Both &nbsp;<span style="background:#e8ecec;"></span>Neither</p>'
+             f'<img src="data:image/png;base64,{_png_b64(img)}" alt="Run difference map"><p class="note">Cell-by-cell comparison of each run\'s maximum flow depth (impacted = depth over 0.3 m); only valid for two runs on the same area and grid.</p>')
+    return _band_page("Run Comparison", inner)
+
+
+def batch_html(ids, runs_root):
+    rows, labels, fa, imp = "", [], [], []
+    for rid in ids:
+        if not (Path(runs_root) / rid / "summary.json").exists():
+            continue
+        s, _z, man = _load_run(rid, runs_root); ex, fl, tr = s.get("exposure") or {}, s.get("flow") or {}, s.get("trigger") or {}
+        rows += (f"<tr><td>{escape(rid[:8])}</td><td>{escape(_scenario(s, man))}</td><td>{_fmt(tr.get('failing_area_km2'), 2)}</td><td>{_fmt(fl.get('released_volume_m3'), 0)}</td><td>{_fmt(fl.get('impacted_area_km2'), 2)}</td>"
+                 f"<td>{_fmt(fl.get('max_depth_m'), 1)}</td><td>{_fmt(ex.get('buildings_ds_ge3'), 0)}</td><td>{_money(ex.get('direct_loss_pkr'))}</td></tr>")
+        labels.append(rid[:6]); fa.append(tr.get("failing_area_km2") or 0.0); imp.append(fl.get("impacted_area_km2") or 0.0)
+    chart = ""
+    if len(labels) >= 2:
+        import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(8, 3.2), dpi=110); x = np.arange(len(labels)); ax.bar(x - 0.2, fa, 0.4, label="Failing area (km²)", color="#1FB6AE"); ax.bar(x + 0.2, imp, 0.4, label="Impacted area (km²)", color="#0E4448")
+        ax.set_xticks(x); ax.set_xticklabels(labels); ax.legend(frameon=False); ax.spines[["top", "right"]].set_visible(False); fig.tight_layout(); b = io.BytesIO(); fig.savefig(b, format="png"); plt.close(fig)
+        chart = f'<h2>Trend across runs</h2><img src="data:image/png;base64,{base64.b64encode(b.getvalue()).decode()}" alt="Trend">'
+    inner = ("<h2>Run summary</h2><table><tr><th>Run</th><th>Scenario</th><th>Failing km&sup2;</th><th>Released m&sup3;</th><th>Impacted km&sup2;</th><th>Max depth m</th><th>Buildings DS&ge;3</th><th>Direct loss</th></tr>"
+             f"{rows}</table>{chart}<p class=\"note\">Screening-grade; scenario strengths and friction; losses valued as in SAILAB (JRC maximum damage value, storeys, contents).</p>")
+    return _band_page("Batch Run Summary", inner)

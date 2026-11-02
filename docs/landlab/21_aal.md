@@ -18,7 +18,7 @@ Each return period is an expensive simulation, so the page asks for confirmation
 
 ## First run on a real area
 
-Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports_weak", losses valued as in Ch. {{ch:loss}} (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
+Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength scenario "weak_clayey" at quantile 0.3 (the weakest standard preset with a graded response; the strong presets fail nothing in these storms and the fitted one over-predicts, Ch. {{ch:physics_calibration}}.6), losses valued as in Ch. {{ch:loss}} (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
 
 | Return period (y) | Storm depth (mm) | Failing area (km2) | Direct loss today (PKR) | Direct loss, SSP5-8.5 (PKR) |
 |---|---|---|---|---|
@@ -34,6 +34,8 @@ The climate factor for the 50 year, 24 hour rainfall under SSP5-8.5, 2036 to 206
 
 Cautions that apply to these numbers:
 
-- The loss rises faster than the failing area (the 2 year loss is {{area_demo.json:aal_current.result.scenarios.0.loss_pkr|0}} PKR for 0.09 km2, the 5 year {{area_demo.json:aal_current.result.scenarios.1.loss_pkr|0}} PKR for 0.14 km2): the loss depends on which buildings the flow happens to reach, so it moves in steps. The SSP5-8.5 column is higher mainly at the frequent end ({{area_demo.json:aal_ssp585.result.scenarios.0.loss_pkr|0}} against {{area_demo.json:aal_current.result.scenarios.0.loss_pkr|0}} PKR at 2 years) because a 1.6% deeper storm tips a few more buildings into damage; that is a threshold effect of the building layer, not a doubling of hazard.
+- **The climate scenario changes the average annual loss by only {{area_demo.json:aal_ssp585.result.eal_pkr|0}} against {{area_demo.json:aal_current.result.eal_pkr|0}} PKR**, because the climate factor is 1.016. That is the honest result of a factor inside the model spread, not a finding that climate has no effect.
+- The failing area is a fraction of a square kilometre for every return period ({{area_demo.json:aal_current.result.scenarios.0.failing_km2|2}} to {{area_demo.json:aal_current.result.scenarios.5.failing_km2|2}} km2), but the impacted area is about five times larger ({{area_demo.json:aal_current.result.scenarios.0.impacted_km2|1}} to {{area_demo.json:aal_current.result.scenarios.5.impacted_km2|1}} km2): runout carries debris to buildings well beyond the slope that failed, and the loss depends on which buildings it reaches, so it moves in steps.
 - The AAL adds a frequent tail (storms more frequent than the 2 year, linear to zero at p = 1) that contributes {{area_demo.json:aal_current.result.parts.frequent_tail|0}} PKR of the total; the result is therefore sensitive to the 2 year loss.
+- The earlier version of this table used the fitted weak preset and gave about 1 billion PKR with a larger spread of losses; the preset is the dominant uncertainty of every absolute number here.
 - Every caveat above in this chapter applies: loss frequency is taken equal to rainfall frequency, with no antecedent wetness. Read the figure as an order of magnitude for this area, not a budget.

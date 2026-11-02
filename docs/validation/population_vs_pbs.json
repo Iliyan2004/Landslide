@@ -1,0 +1,52 @@
+{
+ "districts_with_census": 142,
+ "districts_checked": 37,
+ "raster_total_M": 43.483643109375,
+ "census_total_M": 37.172579,
+ "ratio_total": 1.1697774079483427,
+ "ratio_median": 1.0512916002359585,
+ "ratio_p25_p75": [
+  1.0194460486480532,
+  1.14027121796035
+ ],
+ "share_within_20pct": 0.7567567567567568,
+ "worst": [
+  {
+   "district": "Mirpur",
+   "raster": 548035.5625,
+   "census": 15610.0,
+   "ratio": 35.10797966047406
+  },
+  {
+   "district": "Muzaffarabad",
+   "raster": 787154.6875,
+   "census": 174708.0,
+   "ratio": 4.505544608718547
+  },
+  {
+   "district": "Peshawar",
+   "raster": 5218758.0,
+   "census": 2186153.0,
+   "ratio": 2.3871879049636506
+  },
+  {
+   "district": "Kolai Palas",
+   "raster": 138761.828125,
+   "census": 280162.0,
+   "ratio": 0.49529139613866263
+  },
+  {
+   "district": "Malakand",
+   "raster": 819914.875,
+   "census": 439912.0,
+   "ratio": 1.8638156608594447
+  },
+  {
+   "district": "Buner",
+   "raster": 1070831.125,
+   "census": 693454.0,
+   "ratio": 1.5441992186936697
+  }
+ ],
+ "not_covered_by_raster": 11
+}

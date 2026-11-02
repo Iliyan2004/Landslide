@@ -5,7 +5,7 @@ import json, sys, time, urllib.request
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]; BASE = "http://127.0.0.1:5070"
 G = {"type": "Polygon", "coordinates": [[[74.26, 35.88], [74.34, 35.88], [74.34, 35.95], [74.26, 35.95], [74.26, 35.88]]]}
-P = {"mode": "rain", "strength_preset": "calibrated_reports_weak", "texture": "sandy loam", "strength_quantile": 0.5, "backend": "auto"}
+P = {"mode": "rain", "strength_preset": "weak_clayey", "texture": "sandy loam", "strength_quantile": 0.3, "backend": "auto"}
 t = [i * 0.25 for i in range(1, 49)]; rate = [60.0 * (1 - abs(x - 6) / 6) for x in t]; STORM = {"times_h": t, "rate_mm_h": rate, "source": "design triangular 60 mm/h, 12 h"}
 def call(path, body=None):
     r = urllib.request.Request(BASE + path, json.dumps(body).encode() if body is not None else None, {"Content-Type": "application/json"}); return json.load(urllib.request.urlopen(r, timeout=900))
@@ -21,7 +21,7 @@ def job(path, body):
         time.sleep(5)
 out_f = ROOT / "docs/validation/area_demo.json"
 out = json.loads(out_f.read_text()) if out_f.exists() else {}
-out.update(area=G, storm=STORM["source"], strength="calibrated_reports_weak, quantile 0.5")   # resumable: finished steps are kept
+out.update(area=G, storm=STORM["source"], strength="weak_clayey, quantile 0.3")   # resumable: finished steps are kept
 def save(): out_f.write_text(json.dumps(out, indent=1, default=str))
 for step, (path, body) in {
     "climate_ssp585_T50": ("/area/climate-factor", {"geometry": G, "scenario": "ssp585", "period": [2036, 2065], "T": 50, "models": 8}),

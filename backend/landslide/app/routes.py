@@ -366,6 +366,25 @@ def _load_arr(rid):
     return np.load(f) if f.exists() else None
 
 
+@app.get("/compare-runs/<a>/<b>/report.html")
+def compare_report_html(a, b):
+    from . import report as REP
+    try:
+        return Response(REP.compare_html(a, b, RUNS), mimetype="text/html")
+    except (ValueError, FileNotFoundError) as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.get("/compare-runs/<a>/<b>/report.pdf")
+def compare_report_pdf(a, b):
+    from . import report as REP
+    import weasyprint
+    try:
+        return Response(weasyprint.HTML(string=REP.compare_html(a, b, RUNS)).write_pdf(), mimetype="application/pdf", headers={"Content-Disposition": f"inline; filename=compare_{a[:6]}_{b[:6]}.pdf"})
+    except (ValueError, FileNotFoundError) as e:
+        return jsonify({"error": str(e)}), 400
+
+
 @app.post("/compare-runs")
 def compare_runs():
     b = request.get_json(force=True); a_id, b_id = b["a"], b["b"]

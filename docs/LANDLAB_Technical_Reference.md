@@ -17,7 +17,7 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 
 | Feature | Status |
 |---|---|
-| Tiers 1 to 4, national product, districts, basins | Implemented and tested (123 unit tests) |
+| Tiers 1 to 4, national product, districts, basins | Implemented and tested (126 unit tests) |
 | Rainfall sources: design storm, forecast, recent, ERA5, CHIRPS, CSV | Implemented |
 | Impacts: buildings, roads, hospitals and schools, direct loss | Implemented (all thresholds assumed, Ch. 17) |
 | Live monitoring with webhook, compare runs, PDF report, MP4 export | Implemented |
@@ -118,6 +118,15 @@ Five collections were supplied to find slip-surface depth, regolith and soil str
 | USGS Indus borehole logs, depth-to-bedrock raster | 16 deep holes in the eastern Indus plain; the raster is the same SoilGrids 250 m map already used | Plain / already held | Nothing new. |
 
 **Is it enough?** No, for the purpose it was gathered for. The collections are almost entirely on the flat Indus plain, where landslides do not happen. There is no borehole, geophysical profile, shear-strength test or regolith thickness on a slope in the mountains, which is what a mapped slip surface, a two-layer soil or a calibrated cohesion would need. What it does is confirm three assumptions on the plain or at sparse points (water-table depth range, SoilGrids texture, and a 1 to 2 m soil depth in the foothills) and show one input to distrust (the SoilGrids bedrock depth on the plain). No parameter of the model was changed by it. To close the gap the model needs boreholes or geophysical (seismic refraction, resistivity) lines on slopes in the Hindu Kush, Karakoram and Himalaya foothills, ideally with shear tests.
+
+
+## 3.5 Census (Pakistan Bureau of Statistics, 2023)
+
+`Datadownload`-era folder `PBS DATA district` holds district tables of population, density, household size and housing type (permanent, semi-permanent, mud or temporary). The population and housing-type tables and the district boundaries are copied to `datasets/external/pbs/` and used for construction-class fragility, household size and the population fallback (Ch. 17). Coverage: 142 districts; **Gilgit-Baltistan and Azad Kashmir are absent**, so the highest-landslide districts fall back to national means.
+
+**Population raster against the census.** For the 37 census districts that lie wholly inside the raster's footprint, the median ratio of the WorldPop 2025 total to the 2023 census total is 1.05 (25th to 75th percentile 1.02 to 1.14), about the two years of growth, and 76% of the districts are within 20%. The outliers are census-row or boundary problems rather than raster errors: the census table gives Mirpur 15,610 people, Muzaffarabad 174,708 and Peshawar 2.19 million (district totals in the raster are 548,000, 787,000 and 5.2 million), which are tehsil-sized or pre-reorganisation figures. The raster total over the checked districts is 1.17 times the census total, driven by those rows.
+
+**Building heights.** No usable source was found. Google's Open Buildings 2.5D height layer is on Earth Engine, whose project on this server denies access (a missing service-usage role); Overture Maps has a height for only 30 of 24,216 Gilgit buildings and a floor count for 29. Heights stay at the assumed 6 m (two storeys), and the loss chapter says so (Ch. 18).
 
 
 # 4. Terrain, Soil Depth and the Parameter Model
@@ -534,7 +543,8 @@ A watch stores an area, a forecast-intensity threshold (default 10 mm/h), a chec
 | Buildings | Google Open Buildings, local parquet tiles via DuckDB | Footprints whose centroid is inside the area; each takes the 3 x 3 cell maximum of flow depth and speed at its centroid; assumed height 6 m (3D only) |
 | Roads | HOTOSM roads | A segment is blocked if flow depth at a vertex or at the segment midpoint is at least 0.5 m; blocked length is summed |
 | Hospitals, schools | government shapefiles | Impacted if depth at the point is at least 0.3 m |
-| Population | WorldPop 2025 via 05_risk | People per 90 m cell, rescaled by cell area; people in cells reached at 0.3 m or more |
+| Population | WorldPop 2025 via 05_risk | People per 90 m cell, rescaled by cell area; people in cells reached at 0.3 m or more. Where the raster has no data (south of about 31 N) the 2023 census district density is used, uniform within each district, and the result says so (a district total, not a map of settlements). |
+| People in damaged buildings | damaged buildings (DS 2 or worse) x district average household size from the 2023 census | assumes one household per footprint; the national mean household size where the district has no census row |
 
 ## 16.2 Building damage
 
@@ -546,6 +556,10 @@ P(DS >= k) = Phi( ln(p / median_k) / 0.6 ),   medians 5, 15, 40, 100 kPa for DS1
 burial floor: depth >= 0.3 / 1 / 2 / 4 m  ->  at least DS1 / DS2 / DS3 / DS4
 damage ratio by state: 0, 0.05, 0.20, 0.55, 1.00
 ```
+
+**Construction class from the census.** Each building is assigned to the district polygon that contains its centroid, and the three fragility curves below are averaged with that district's household shares of pakka (permanent), semi-pakka and kacha (mud or temporary) construction from the 2023 census (`engine/census.py`; `datasets/external/pbs/`). The pressure medians of the pakka curve are multiplied by 1.0, 0.6 and 0.3 for pakka, semi-pakka and kacha (assumed multipliers: there is no Pakistani damage data to fit them). The household shares are district-wide, so a mud hamlet in a pakka-dominated district is still scored with the district mix. The census tables have **no row for Gilgit-Baltistan or Azad Kashmir** (23 of the 164 district polygons, the highest-landslide areas); there the national mix (about 67% pakka, 13% semi-pakka, 20% kacha) is used and the result's census note says so.
+
+For a flow of 1.5 m depth at 5 m/s the expected damage ratio is 0.44 for an all-pakka building and 0.77 for a district that is 70% kacha: the mix matters more than any other single exposure input.
 
 The expected damage ratio is the probability-weighted ratio. Buildings in cells that never reach 0.3 m are DS0. **Every threshold above is an assumption inherited from the earlier prototype; none is calibrated to observed damage in Pakistan.**
 
@@ -577,7 +591,7 @@ What differs from the flood method, and why:
 
 ## 19.2 Limits
 
-The unit value is a regional (Asia) average: Pakistan has no figure of its own in the source table. The exchange rate is a current-date conversion applied to a 2010-price figure, not inflation-adjusted. Footprint area times two storeys overstates single-storey kacha houses and understates multi-storey urban blocks, which is why housing type from the census (a planned addition) matters. Indirect losses (road closure days, business interruption, lives) are **not** estimated. The result is an order-of-magnitude figure for comparing scenarios, not an insured value.
+The unit value is a regional (Asia) average: Pakistan has no figure of its own in the source table. The exchange rate is a current-date conversion applied to a 2010-price figure, not inflation-adjusted. Footprint area times two storeys overstates single-storey kacha houses and understates multi-storey urban blocks, which is why housing type from the census (now used for the damage ratio, Ch. 17) matters; the valuation itself is still one value per square metre for every class. Indirect losses (road closure days, business interruption, lives) are **not** estimated. The result is an order-of-magnitude figure for comparing scenarios, not an insured value.
 
 
 # 19. Access and Isolation Impacts, and GIS Export
@@ -621,24 +635,26 @@ Each return period is an expensive simulation, so the page asks for confirmation
 
 ## First run on a real area
 
-Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports_weak", losses valued as in Ch. 18 (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
+Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength scenario "weak_clayey" at quantile 0.3 (the weakest standard preset with a graded response; the strong presets fail nothing in these storms and the fitted one over-predicts, Ch. 27.6), losses valued as in Ch. 18 (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
 
 | Return period (y) | Storm depth (mm) | Failing area (km2) | Direct loss today (PKR) | Direct loss, SSP5-8.5 (PKR) |
 |---|---|---|---|---|
-| 2 | 15 | 0.09 | 489,828,402 | 909,459,452 |
-| 5 | 18 | 0.14 | 1,716,326,586 | 2,070,665,078 |
-| 10 | 21 | 0.17 | 2,565,628,556 | 2,640,197,623 |
-| 25 | 24 | 0.22 | 3,503,186,560 | 3,664,942,795 |
-| 50 | 26 | 0.27 | 4,291,303,959 | 4,314,342,098 |
-| 100 | 28 | 0.33 | 5,256,822,026 | 5,382,182,025 |
-| **Average annual loss** | | | **1,027,796,315 PKR** | **1,281,178,180 PKR** |
+| 2 | 15 | 0.09 | 606,055,977 | 606,942,709 |
+| 5 | 18 | 0.16 | 1,224,447,023 | 1,229,370,267 |
+| 10 | 21 | 0.23 | 2,317,665,342 | 2,429,264,794 |
+| 25 | 24 | 0.28 | 3,189,036,333 | 3,195,274,664 |
+| 50 | 26 | 0.32 | 3,734,438,110 | 3,773,198,537 |
+| 100 | 28 | 0.38 | 4,495,795,969 | 4,791,500,034 |
+| **Average annual loss** | | | **923,739,987 PKR** | **939,273,786 PKR** |
 
 The climate factor for the 50 year, 24 hour rainfall under SSP5-8.5, 2036 to 2065, is 1.016 (ensemble median over 8 CMIP6 models whose individual ratios range from 0.90 to 1.32). A factor that close to 1 with that spread is **no detectable change**, not a prediction of none.
 
 Cautions that apply to these numbers:
 
-- The loss rises faster than the failing area (the 2 year loss is 489,828,402 PKR for 0.09 km2, the 5 year 1,716,326,586 PKR for 0.14 km2): the loss depends on which buildings the flow happens to reach, so it moves in steps. The SSP5-8.5 column is higher mainly at the frequent end (909,459,452 against 489,828,402 PKR at 2 years) because a 1.6% deeper storm tips a few more buildings into damage; that is a threshold effect of the building layer, not a doubling of hazard.
-- The AAL adds a frequent tail (storms more frequent than the 2 year, linear to zero at p = 1) that contributes 122,457,101 PKR of the total; the result is therefore sensitive to the 2 year loss.
+- **The climate scenario changes the average annual loss by only 939,273,786 against 923,739,987 PKR**, because the climate factor is 1.016. That is the honest result of a factor inside the model spread, not a finding that climate has no effect.
+- The failing area is a fraction of a square kilometre for every return period (0.09 to 0.38 km2), but the impacted area is about five times larger (0.5 to 2.1 km2): runout carries debris to buildings well beyond the slope that failed, and the loss depends on which buildings it reaches, so it moves in steps.
+- The AAL adds a frequent tail (storms more frequent than the 2 year, linear to zero at p = 1) that contributes 151,513,994 PKR of the total; the result is therefore sensitive to the 2 year loss.
+- The earlier version of this table used the fitted weak preset and gave about 1 billion PKR with a larger spread of losses; the preset is the dominant uncertainty of every absolute number here.
 - Every caveat above in this chapter applies: loss frequency is taken equal to rainfall frequency, with no antecedent wetness. Read the figure as an order of magnitude for this area, not a budget.
 
 
@@ -681,21 +697,21 @@ Tests: each lever never increases failure; a 25 degree cap on a 33 degree slope 
 
 ## First run on a real area, and a counting artefact that was fixed
 
-On the 57 km2 Gilgit area (60 mm/h triangular storm for 12 h, strength preset "calibrated_reports_weak") the first ranking, by the area that is *stable before the storm and fails in it*, put planting alone at 23% **more** failure than the baseline. That is not physical. The model counts only slopes that were stable before the storm (Ch. 4.5), because a slope that is already unstable would have failed earlier. Extra root cohesion turns slopes that were unstable (not counted) into slopes that are stable before the storm and then fail in it (counted), so the "failing" area could rise while the instability fell.
+An early ranking counted only slopes that were *stable before the storm and fail in it*, and put planting alone at 23% **more** failure than the baseline, which is not physical: the model counts only slopes that were stable before the storm (Ch. 4.5), and extra root cohesion turns slopes that were unstable (not counted) into slopes that are stable before the storm and then fail in it (counted). The ranking now uses the **unstable area at the end of the storm, including slopes that were already unstable** (`unstable_km2`, `failing_area` in `engine/run.py`). Every lever is compared on the same cells, so a lever can only remove instability; the "failing" figure is still reported for reference. A unit test checks that planting never increases the unstable area.
 
-The ranking now uses the **unstable area at the end of the storm, including slopes that were already unstable** (`unstable_km2`, `failing_area` in `engine/run.py`). Every lever is compared on the same cells, so a lever can only remove instability. The "failing" figure is still reported for reference. A unit test checks that planting never increases the unstable area.
+The ranking below is for the 57 km2 Gilgit area, a 60 mm/h triangular storm of 12 hours (an extreme storm, 360 mm) and the "weak_clayey" scenario at quantile 0.3:
 
-| Levers | Unstable area (km2) | Change against the baseline (22.0 km2) |
+| Levers | Unstable area (km2) | Change against the baseline (23.7 km2) |
 |---|---|---|
-| planting + regrading | 0.0 | 100% less |
-| planting + regrading + drainage | 0.0 | 100% less |
-| planting + drainage | 8.4 | 62% less |
-| planting | 13.4 | 39% less |
-| drainage | 18.6 | 15% less |
-| regrading + drainage | 18.6 | 15% less |
-| regrading | 22.0 | 0% less |
+| ['planting'] | 0.0 | 100% less |
+| ['planting', 'regrading'] | 0.0 | 100% less |
+| ['planting', 'drainage'] | 0.0 | 100% less |
+| ['planting', 'regrading', 'drainage'] | 0.0 | 100% less |
+| ['regrading', 'drainage'] | 14.7 | 38% less |
+| ['drainage'] | 22.0 | 7% less |
+| ['regrading'] | 22.7 | 4% less |
 
-How to read it: planting is the strongest single lever here (the fitted soil is weak, 0.9 kPa cohesion, so added root cohesion matters most), and planting with regrading removes all instability. Regrading to the default 25 degree cap on its own does nothing for the saturated storm: a soil of friction angle 30 degrees with a fully saturated slip layer has a factor of safety below 1 even at 25 degrees, so a lower slope alone is not enough. These effect sizes (6 kPa root cohesion, 25 degree cap, drainage lowering saturation) are user inputs, not measurements, and the ranking is a stability-only comparison; the runout benefit needs a full mitigated run.
+How to read it: every option that includes planting removes all the instability, because the assumed 6 kPa of root cohesion is as large as the scenario's own cohesion (2 to 10 kPa); that is a property of the user-set effect size, not of planting in general. Without planting the levers are weak: regrading to the 25 degree cap and drainage together remove 38%, drainage alone a few percent, and regrading alone almost nothing, because a saturated slope of friction angle 15 to 26 degrees is unstable even at 25. The effect sizes (6 kPa root cohesion, 25 degree cap, drainage lowering saturation) are user inputs, not measurements, and the ranking is a stability-only comparison; the runout benefit needs a full mitigated run.
 
 
 # 23. Barriers and Automatic Placement
@@ -720,15 +736,15 @@ Tested on a synthetic valley with a toy objective: the corridor follows the down
 
 ## First run on a real area
 
-The same 57 km2 Gilgit area, 60 mm/h triangular storm for 12 h, 2 barriers, a budget of 16 simulations (`area_demo.json`, 37 minutes). The first attempt returned barriers of zero length: cells outside the area had been filled with a high elevation, so the pit-filling step flooded the whole area flat and no flow path existed. That bug is fixed (`flow_corridor` now leaves outside cells empty so they act as outlets; the corridor is 7 cells, 210 m). The result:
+The same 57 km2 Gilgit area and extreme storm (60 mm/h triangular for 12 h), the "weak_clayey" scenario at quantile 0.3, 2 barriers, a budget of 16 simulations (`area_demo.json`, 80 minutes). The first attempt returned barriers of zero length: cells outside the area had been filled with a high elevation, so the pit-filling step flooded the whole area flat and no flow path existed. That bug is fixed (`flow_corridor` now leaves outside cells empty so they act as outlets; the corridor is 7 cells, 210 m). The result:
 
 | | Baseline | With the best 2 barriers |
 |---|---|---|
-| Direct loss (PKR) | 66,084,219,132 | 64,325,795,429 |
-| Buildings with damage state 3 or worse | 6,155 | 5,965 |
-| Impacted area (km2) | 25.8 | 25.7 |
+| Direct loss (PKR) | 38,088,729,486 | 37,888,770,942 |
+| Buildings with damage state 3 or worse | 3,706 | 3,704 |
+| Impacted area (km2) | 13.7 | 13.7 |
 
-Two barriers (one 11 m high and about 400 m long, one 3 m high) cut the loss by about 2.7%. That is small because the slide here is 8.6 km2 of failing hillside sending 21 million m3 across a 26 km2 area: the failure is spread over thousands of release cells, so a barrier on one flow path intercepts only a share of it. The optimiser works as a tool, but this storm scenario is too large for barriers to matter; it is meant for one gully-sized failure, and the scenario is useful mainly as a limit on what barriers can do. With a 16 simulation budget the result is "a better option", not an optimum.
+Two barriers (5 m and 10 m high) cut the loss by 0.5%, the damaged buildings by 2 of 3,706 and the impacted area not at all. That is small because the failure is spread over thousands of release cells across the area (4.3 km2 of failing hillside sending debris over about 14 km2), so a barrier on one flow path intercepts only a small share. The optimiser works as a tool, but this storm scenario is too large for barriers to matter; it is meant for one gully-sized failure, and the scenario is useful mainly as a limit on what barriers can do. With a 16 simulation budget the result is "a better option", not an optimum.
 
 
 # 24. Calibration and Validation Protocol
@@ -962,6 +978,10 @@ Synthetic channelised slopes (V-shaped valley, concave profile, heights 500, 800
 
 Both medians and all nine cases of each type lie inside a factor of 2.3 of the relation, but the two types sit on opposite sides: the debris flow is somewhat too long for its drop in the wettest sense (ratio below 1) and the shallow slide too short, and the shallow-slide ratio grows with volume (1.0 at 10^4 m3, about 2.1 at 10^6). So **mu and xi were left unchanged**: the synthetic valley is not a Pakistani valley, the Corominas relations are for a world sample with their own factor-of-2 scatter, and tuning two coefficients to one synthetic geometry would give false precision. The result says the solver's runouts are in the right range, not that they are calibrated. Any real calibration needs mapped deposits from the owner.
 
+## 22.3 Why the friction was not tuned further
+
+Because the simulated debris-flow runouts sit about 1.5 times longer than the Corominas median for the same drop (a median ratio of 0.71, which is a runout about 1.5 times the median relation's for the same drop) and the shallow-slide ones about half as long, a tuning of mu to the median was started. One evaluation of the debris-flow friction moved the median ratio only from 0.71 to 0.74 when mu rose from 0.12 to 0.13, so matching the median would need a friction near that of the shallow slide, which would erase the difference between the two flow types on the strength of one synthetic channel. It was stopped and the shipped values kept. The large flow depths and impacted areas seen in early runs came from the strength preset, not from the friction (Ch. 27.6), and are handled there.
+
 
 # 30. Scoring a Run Against an Observed Extent
 
@@ -980,7 +1000,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 
 | Claim | Evidence | Status |
 |---|---|---|
-| The code solves its equations | 123 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
+| The code solves its equations | 126 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
 | Rainfall separates landslide days from ordinary days | AUC 0.73 (0.71 to 0.76) for 24 h intensity, leave-one-year-out | **Validated, modest** |
 | Published Guzzetti threshold is usable as a watch | TSS 0.32 on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics 0.56, with soil texture 0.65; mean slope 0.59 | **Weak** |
@@ -993,7 +1013,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 | Dam screening classes and formulas | Formula and synthetic-valley tests; no observed Pakistani dam used | **Verified; not validated** |
 | Annual average loss is realistic | Integration verified (identical method to SAILAB); stable when a return period is left out (within 2% for T of 10 years or more, +23% if the 2 year point is dropped) and 8% lower with log-log interpolation; assumes loss frequency equals rainfall frequency; no observed loss record | **Verified arithmetic and stable; the level is not validated** |
 | Access and isolation analysis is right | Synthetic network tests; no observed closures | **Verified logic; not validated** |
-| Building damage and loss are realistic | No damage records for any Pakistani landslide on the server; valuation follows SAILAB (JRC maximum damage value, storeys, contents) and the fragility is assumed | **Not validated, assumed** |
+| Building damage and loss are realistic | No damage records for any Pakistani landslide on the server; valuation follows SAILAB (JRC maximum damage value, storeys, contents); the fragility is assumed, now by district construction class (census); the population raster agrees with the census within a median of 5% over the districts it covers (Ch. 3.5) | **Not validated, assumed** |
 | Failure depth and volume are right | Modelled patch volumes against the area-volume scaling of Larsen et al. 2010: median ratio of modelled to implied depth 0.95 over 2,028 failing patches; 2,000 to 20,000 m2 patches 1.00, over 20,000 m2 0.49. No mapped deposits for flow depth or extent | **Failure volume plausible for mid-size patches; flow depth and deposit extent not validated** |
 
 ## 23.2 Checks added in the last round
@@ -1001,6 +1021,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 - **Design-storm back-test.** At 75 random points in the north, a Gumbel fitted to the first 31 years of ERA5-Land 24 hour annual maxima is compared with the last 15 years. The 10 and 25 year levels are exceeded about as often as they should be; the 2 and 5 year levels are exceeded a little less often than expected (42% against 50%, 16% against 20%), consistent with a short fitting record or slightly drier recent years. The points are spatially correlated, so this is one realisation, not an independent sample.
 - **Failure volume.** The soil depth fitted by the calibration (2.4 m) gives patch volumes that match the Larsen et al. (2010) soil-landslide scaling for patches of 2,000 to 20,000 m2 (the cohort holding most of the patches), and are about half the scaling for patches over 20,000 m2. Those larger patches are contiguous failing hillside made of many neighbouring slides, which the one-slide relation does not describe, so the total volume (130 million m3) is a third of what the relation would give if each patch were one slide. The relation's own scatter is a factor of 2 to 3. I could not re-read the paper in this session, so the coefficients are as recalled and cited.
 - **AAL stability.** See the table row above: the figure is insensitive to the rare end of the loss curve and moderately sensitive to the 2 year point and the frequent tail (88% of the total without the frequent tail).
+- **Failure volume and deposit from a DEM difference (attempted, not possible).** The idea was to difference a before-event and an after-event DEM at a large known landslide and compare scar, deposit and volume with the model. The test event was the Attabad rock avalanche (Hunza, 4 January 2010). The server's `Pak_srtm.tif` (documented as SRTM, February 2000) was differenced against Copernicus GLO-30 (TanDEM-X data of 2011 to 2015, downloaded from the open AWS bucket) over a 70 km window. After smoothing out sensor striping, **no coherent change beyond 12 m exists anywhere in the window** (smoothed differences stay within -11 to +10 m, against an avalanche tens of metres thick over about a square kilometre and a lake surface raised by about 100 m). The most likely reason is that the server's SRTM file already contains the post-2010 surface or is derived from a later product, so it cannot serve as the "before" DEM; a first attempt with the server's FABDEM looked like a result (a scar and deposit of 17 million m3 each) but was the diagonal striping of the SRTM instrument, and was discarded. This test needs a genuine pre-event DEM (an original SRTM tile, or a 2000s optical stereo DEM) and was not obtainable here (`scripts/validate_dem_change.py`, `docs/validation/dem_change_attabad.json`).
 - **What cannot be checked here.** Building damage and loss, flow depth, deposit extent, runout against local events, closure and isolation, and the dam classes need observed Pakistani records (damage surveys, mapped deposits, road closures, dam inventories). None exist on the server, and I found none public. Each stays "not validated" until such records are supplied.
 
 ## 23.1 What the accuracy depends on
@@ -1047,6 +1068,8 @@ Interface checks (after the mitigation tab and run tools were added): the page a
 ## Run report
 
 The report (`/runs/<id>/report.html` and `.pdf`) follows SAILAB's report format: a masthead with the model name and run meta, a summary tile grid (failing area, peak PGA for earthquakes, released volume, impacted area, maximum depth, runout, damaged buildings, direct loss, blocked roads, people, isolated buildings), map plates over a hillshade with captions and a legend row (flow depth, deposit, failure time, factor of safety, PGA), hover charts of the storm and of the failed area against time, a run-configuration table, an assumptions and warnings list, and a footer, with SAILAB's light and dark theme (`app/report.py`).
+
+The compare-runs panel links to a **comparison report** (`/compare-runs/<a>/<b>/report.html` and `.pdf`) and the batch list to a **batch summary** (`/batch-report.html` and `.pdf`), both in SAILAB's report format: the teal band header with the model name and tagline, tables with uppercase headers and zebra rows, a legend, and the difference map (only run A, only run B, both, neither, over a hillshade) or the per-run trend chart.
 
 
 # 34. Access Control, Run Management and Operations Additions
@@ -1175,7 +1198,7 @@ Each entry was found by checking a result against something known, not by inspec
 7. **Runout friction is a scenario value by flow type;** the single-phase depth-averaged model does not separate solid and fluid phases.
 8. **Impacts** use assumed fragility medians and a single unit cost; no indirect loss, no lives.
 9. **Building heights** are assumed 6 m (display only); footprints come from a satellite-derived dataset with its own errors.
-10. **ML susceptibility** covers the north only.
+10. **ML susceptibility** covers the north only (about 31 N and up), because the landslide inventory used to train it has almost no records in the south. The physics screening (Tier 1 national physics product, Tier 3) covers all of Pakistan; the south is mostly flat, so little of it can fail.
 11. **Terrain** is SRTM at 29 m: gullies, small scarps and road cuts are not resolved.
 12. **Spatial misregistration** of the 3D canvas (lon/lat rectangle over a UTM grid) is small for tens of kilometres and grows with area.
 13. **Design storms** are point depths from 46 years of ERA5-Land annual maxima: 100- and 200-year values are extrapolations, short durations are lower bounds, and storms are limited to 24 h.
@@ -1202,7 +1225,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 
 ## 30.2 Tests
 
-`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 123 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
+`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 126 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
 
 ## 30.3 Files
 

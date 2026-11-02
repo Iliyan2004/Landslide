@@ -10,3 +10,5 @@ Interface checks (after the mitigation tab and run tools were added): the page a
 ## Run report
 
 The report (`/runs/<id>/report.html` and `.pdf`) follows SAILAB's report format: a masthead with the model name and run meta, a summary tile grid (failing area, peak PGA for earthquakes, released volume, impacted area, maximum depth, runout, damaged buildings, direct loss, blocked roads, people, isolated buildings), map plates over a hillshade with captions and a legend row (flow depth, deposit, failure time, factor of safety, PGA), hover charts of the storm and of the failed area against time, a run-configuration table, an assumptions and warnings list, and a footer, with SAILAB's light and dark theme (`app/report.py`).
+
+The compare-runs panel links to a **comparison report** (`/compare-runs/<a>/<b>/report.html` and `.pdf`) and the batch list to a **batch summary** (`/batch-report.html` and `.pdf`), both in SAILAB's report format: the teal band header with the model name and tagline, tables with uppercase headers and zebra rows, a legend, and the difference map (only run A, only run B, both, neither, over a hillshade) or the per-run trend chart.

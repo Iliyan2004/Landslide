@@ -20,7 +20,7 @@ Tested on a synthetic valley with a toy objective: the corridor follows the down
 
 ## First run on a real area
 
-The same 57 km2 Gilgit area, 60 mm/h triangular storm for 12 h, 2 barriers, a budget of 16 simulations (`area_demo.json`, 37 minutes). The first attempt returned barriers of zero length: cells outside the area had been filled with a high elevation, so the pit-filling step flooded the whole area flat and no flow path existed. That bug is fixed (`flow_corridor` now leaves outside cells empty so they act as outlets; the corridor is 7 cells, 210 m). The result:
+The same 57 km2 Gilgit area and extreme storm (60 mm/h triangular for 12 h), the "weak_clayey" scenario at quantile 0.3, 2 barriers, a budget of 16 simulations (`area_demo.json`, 80 minutes). The first attempt returned barriers of zero length: cells outside the area had been filled with a high elevation, so the pit-filling step flooded the whole area flat and no flow path existed. That bug is fixed (`flow_corridor` now leaves outside cells empty so they act as outlets; the corridor is 7 cells, 210 m). The result:
 
 | | Baseline | With the best 2 barriers |
 |---|---|---|
@@ -28,4 +28,4 @@ The same 57 km2 Gilgit area, 60 mm/h triangular storm for 12 h, 2 barriers, a bu
 | Buildings with damage state 3 or worse | {{area_demo.json:optimise_barriers.result.baseline.buildings_ds3|0}} | {{area_demo.json:optimise_barriers.result.optimised.buildings_ds3|0}} |
 | Impacted area (km2) | {{area_demo.json:optimise_barriers.result.baseline.impacted_km2|1}} | {{area_demo.json:optimise_barriers.result.optimised.impacted_km2|1}} |
 
-Two barriers (one 11 m high and about 400 m long, one 3 m high) cut the loss by about 2.7%. That is small because the slide here is 8.6 km2 of failing hillside sending 21 million m3 across a 26 km2 area: the failure is spread over thousands of release cells, so a barrier on one flow path intercepts only a share of it. The optimiser works as a tool, but this storm scenario is too large for barriers to matter; it is meant for one gully-sized failure, and the scenario is useful mainly as a limit on what barriers can do. With a 16 simulation budget the result is "a better option", not an optimum.
+Two barriers (5 m and 10 m high) cut the loss by 0.5%, the damaged buildings by 2 of 3,706 and the impacted area not at all. That is small because the failure is spread over thousands of release cells across the area (4.3 km2 of failing hillside sending debris over about 14 km2), so a barrier on one flow path intercepts only a small share. The optimiser works as a tool, but this storm scenario is too large for barriers to matter; it is meant for one gully-sized failure, and the scenario is useful mainly as a limit on what barriers can do. With a 16 simulation budget the result is "a better option", not an optimum.

@@ -220,20 +220,8 @@ def run_validate_observed(rid):
 
 
 def _batch_html(ids):
-    rows = ""
-    for rid in ids:
-        f = RUNS / rid / "summary.json"
-        if not f.exists():
-            continue
-        d = json.loads(f.read_text()); s = d["summary"]; ex = s.get("exposure") or {}; fl = s.get("flow") or {}; tr = s.get("trigger") or {}
-        rows += (f"<tr><td>{rid[:8]}</td><td>{s.get('mode')}</td><td>{(s.get('rain') or {}).get('total_mm', 0):,.0f}</td><td>{tr.get('failing_area_km2', 0):,.2f}</td>"
-                 f"<td>{fl.get('released_volume_m3', 0):,.0f}</td><td>{fl.get('impacted_area_km2', 0):,.2f}</td><td>{fl.get('max_depth_m', 0):,.1f}</td>"
-                 f"<td>{ex.get('buildings_ds_ge3', 0):,}</td><td>{(ex.get('direct_loss_pkr') or 0) / 1e6:,.0f}</td></tr>")
-    return ("<html><head><meta charset='utf-8'><style>body{font-family:sans-serif;margin:28px;color:#1f2326}table{border-collapse:collapse;font-size:12px}"
-            "td,th{padding:4px 9px;border-bottom:1px solid #ddd;text-align:right}th{background:#7a4a12;color:#fff}.n{font-size:11px;color:#a33}</style></head><body>"
-            "<h1 style='font-size:18px'>LANDLAB batch summary</h1><p class='n'>Screening grade; scenario strengths and friction; losses use assumed unit costs.</p>"
-            "<table><tr><th>Run</th><th>Mode</th><th>Rain mm</th><th>Failing km2</th><th>Released m3</th><th>Impacted km2</th><th>Max depth m</th><th>Buildings DS3+</th><th>Loss M PKR</th></tr>"
-            + rows + "</table></body></html>")
+    from . import report as REP
+    return REP.batch_html(ids, RUNS)
 
 
 @app.get("/batch-report.html")
