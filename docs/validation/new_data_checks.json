@@ -1,0 +1,59 @@
+{
+ "A_wosis_vs_soilgrids": {
+  "profiles_in_pakistan": 80,
+  "north_of_31_5N": 48,
+  "clay": {
+   "profiles": 69,
+   "bias_pct_points": 2.0218702553485173,
+   "mae_pct_points": 4.480420979986198,
+   "corr": 0.8818555588234002
+  },
+  "sand": {
+   "profiles": 69,
+   "bias_pct_points": -1.2561904761904759,
+   "mae_pct_points": 3.2983160800552107,
+   "corr": 0.9767472459206785
+  }
+ },
+ "B_borelogs_vs_bedrock_map": {
+  "holes": 1497,
+  "lat_range": [
+   24.162956,
+   32.915782
+  ],
+  "median_hole_depth_m": 177.3936,
+  "max_hole_depth_m": 519.684,
+  "median_mapped_depth_to_bedrock_m": 55.1,
+  "share_holes_deeper_than_mapped_bedrock": 0.9182853315472204,
+  "holes_north_of_33N": 0
+ },
+ "C_groundwater": {
+  "stations_in_pakistan": 4027,
+  "readings": 58600,
+  "months_present": [
+   10
+  ],
+  "north_of_33N_stations": 2,
+  "depth_to_water_m_quantiles_since_1990": {
+   "p10": 1.4066512,
+   "p50": 3.90144,
+   "p90": 12.33
+  },
+  "share_between_2_and_10m": 0.6661947504034884,
+  "note": "every reading is the annual 1 October (post-monsoon) value: no pre-monsoon readings exist, so the seasonal water-table rise cannot be measured"
+ },
+ "D_wosis_profile_depth": {
+  "profiles_north_of_31_5N": 48,
+  "median_described_depth_cm": 190.5,
+  "p90_described_depth_cm": 210.10000000000002,
+  "profiles_with_a_rock_or_Cr_contact": 5,
+  "contact_depths_cm": [
+   127.0,
+   170.0,
+   170.0,
+   175.0,
+   175.0
+  ],
+  "note": "profiles are described to the sampling depth (1-2 m), not to bedrock; only the few with a lithic contact bound the soil depth"
+ }
+}

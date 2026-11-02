@@ -106,6 +106,21 @@ After cleaning, the inventory has 381 unique events. Positions are reports: the 
 - ERA5-Land ends on 20 May 2026.
 
 
+## 3.4 Borehole, soil and groundwater data added later (`Datadownload/`)
+
+Five collections were supplied to find slip-surface depth, regolith and soil strength. `scripts/check_new_data.py` (`docs/validation/new_data_checks.json`) tested what each can do:
+
+| Collection | Content | Where | Use for landslides |
+|---|---|---|---|
+| CSIRO Indus borelog database | 1,497 lithological logs, median depth 177 m | Indus plain only: latitude 24.2 to 32.9, 0 holes north of 33 degrees | None: alluvium, no slopes. It does show that the SoilGrids depth-to-bedrock map is wrong on the plain: 92% of the holes are deeper than the bedrock the map gives (median hole 177 m against a mapped 55 m), because the holes rarely reach rock. The map is used only as a cap on slope soil depth (off by default), where the plain is irrelevant. |
+| BGS groundwater levels | 58,600 readings from 4,027 stations, 1884 to 2020 | Punjab and Sindh plains; 2 stations north of 33 degrees | Depth to the water table on the plain: median 3.9 m, 10th to 90th percentile 1.4 to 12.3 m since 1990, and 67% of readings between 2 and 10 m, the water-table prior range of the model. That supports the order of magnitude of the prior, for flat ground. Every reading is the 1 October value, so the seasonal rise (and therefore the antecedent water-table response) cannot be measured. |
+| WoSIS soil profiles | 80 profiles, 48 north of 31.5 degrees | Sparse, mostly 1984 US survey and old FAO/ISRIC profiles | Measured clay and sand agree with the SoilGrids values the ground model reads: clay bias 2.0 percentage points, mean error 4.5; sand bias -1.3, mean error 3.3 (69 profiles). **This is not an independent test**: SoilGrids is trained on WoSIS. No shear strength, cohesion or friction is in the collection. |
+| WoSIS profile depths | described depth of the northern profiles | 48 profiles | They are described to the sampling depth (median 190 cm), not to bedrock. Five reach a rock or Cr contact, at 127 to 175 cm: weak support for a soil depth of 1.3 to 1.8 m on the Potwar and Hazara foothills, against the fitted 2.4 m. |
+| USGS Indus borehole logs, depth-to-bedrock raster | 16 deep holes in the eastern Indus plain; the raster is the same SoilGrids 250 m map already used | Plain / already held | Nothing new. |
+
+**Is it enough?** No, for the purpose it was gathered for. The collections are almost entirely on the flat Indus plain, where landslides do not happen. There is no borehole, geophysical profile, shear-strength test or regolith thickness on a slope in the mountains, which is what a mapped slip surface, a two-layer soil or a calibrated cohesion would need. What it does is confirm three assumptions on the plain or at sparse points (water-table depth range, SoilGrids texture, and a 1 to 2 m soil depth in the foothills) and show one input to distrust (the SoilGrids bedrock depth on the plain). No parameter of the model was changed by it. To close the gap the model needs boreholes or geophysical (seismic refraction, resistivity) lines on slopes in the Hindu Kush, Karakoram and Himalaya foothills, ideally with shear tests.
+
+
 # 4. Terrain, Soil Depth and the Parameter Model
 
 ## 4.1 Terrain
@@ -1221,7 +1236,7 @@ Each entry was found by checking a result against something known, not by inspec
 2. **One soil layer, infinite slope.** No deep-seated slides, no rock-slope kinematics, no rockfall, no snow avalanche, no glacial-lake outbursts.
 3. **Rain is spatially uniform** over the area by default and comes from a point (ERA5, CHIRPS, forecast) or a design storm; a gridded-rain option exists (Ch. 5.7) but cannot be tested on this inventory.
 4. **Pore pressure is a proxy** from a wetting front, not groundwater flow. A topographic water-table option and a suction option exist; neither improved held-out skill, so both are off.
-5. **Failure depth equals soil depth**, thinned with slope by an assumption and optionally capped by the bedrock-depth map; real slip surfaces are not mapped, and no borehole or geophysical data for Pakistan were found.
+5. **Failure depth equals soil depth**, thinned with slope by an assumption and optionally capped by the bedrock-depth map; real slip surfaces are not mapped, and the borehole, groundwater and soil data supplied later are on the Indus plain, not on slopes, so they could not constrain it (Ch. 3.4).
 6. **Earthquake ground motion** uses NGA-West2 with a Vs30 site term (and a regional intraslab model for deep events) with no directivity; it is within a factor of about 1.5 of ShakeMap, low by about a quarter for M 7 and above (Ch. 6.2).
 7. **Runout friction is a scenario value by flow type;** the single-phase depth-averaged model does not separate solid and fluid phases.
 8. **Impacts** use assumed fragility medians and a single unit cost; no indirect loss, no lives.
