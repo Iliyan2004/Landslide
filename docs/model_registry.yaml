@@ -17,7 +17,6 @@ models:
   - {id: M11, name: SINMAP-style index, status: not_implemented, tier: S, release_guard: "Screening; terrain.TWI/slope are the inputs"}
   - {id: M12, name: Bishop LEM (Janbu/Spencer not included), module: landslide.models.stability.bishop, status: implemented_tested, tier: T, release_guard: "Site-specific; real slip geometry"}
   - {id: M13, name: Pseudostatic / Newmark / Jibson2007, module: landslide.models.seismic.newmark, status: implemented_tested, tier: E, release_guard: "Needs actual/scenario ground motion"}
-  - {id: M14, name: Rockfall trajectory, module: landslide.models.runout.rockfall, status: implemented_tested, tier: R, release_guard: "Site-resolution DTM; calibrated restitution"}
   - {id: M15, name: Empirical reach envelope + Voellmy point-mass, module: landslide.models.runout.empirical, status: implemented_tested, tier: R, release_guard: "Envelope only"}
   - {id: M16, name: r.avaflow, module: landslide.models.runout.adapters.RAvaflow, status: adapter_only, tier: R, release_guard: "Validated container image + licence check"}
   - {id: M17, name: RUSLE, module: landslide.models.sediment.hillslope_channel, status: implemented_tested, tier: D, release_guard: "Annual screening; C table is a scenario"}

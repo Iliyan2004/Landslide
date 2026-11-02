@@ -74,61 +74,6 @@ def execute(geom, params, runs_root, token, progress=lambda s, f: None, force=Fa
     return d
 
 
-ROCK_VERSION = "1.0.0"
-
-
-def execute_rock(geom, params, runs_root, token, progress=lambda s, f: None, force=False):
-    """A rockfall run: the engine, the 3D scene and the saved artefacts (separate hazard from the debris-flow runs)."""
-    import gzip
-    from ..engine import rock_run as RR
-    rid = hashlib.sha256(json.dumps({"g": geom, "p": params, "v": ROCK_VERSION, "k": "rock"}, sort_keys=True, default=str).encode()).hexdigest()[:20]
-    rdir = Path(runs_root) / rid
-    if (rdir / "summary.json").exists() and not force:
-        d = json.loads((rdir / "summary.json").read_text()); d["cached"] = True; d["run_id"] = rid
-        return d
-    t0 = time.time()
-    out = RR.execute(geom, params, rdir, progress)
-    summary = out["summary"]
-    det = out["detail"]
-    with gzip.open(rdir / "impacts_rock.json.gz", "wt") as f:
-        json.dump({"buildings": [{"c": b["coords_lonlat"], "h": b["height_m"], "reach": b.get("reach"), "emax": b.get("emax_kj"), "cls": b.get("cls"), "cx": b["cx"], "cy": b["cy"], "a": b["area_m2"]} for b in det["buildings"]],
-                   "roads": [{"c": r["coords_lonlat"], "cls": r.get("cls", -1)} for r in det["roads"]]}, f)
-    gg = {k: v for k, v in out["grid"].items() if k != "affine"}
-    man = M.build_manifest("landslide_rockfall_run", ROCK_VERSION, [{"id": "DEM_SRTM_Pak", "path": paths.get("DEM")}, {"id": "LULC", "path": paths.get("LULC")}],
-                           hashlib.sha256(json.dumps(geom, sort_keys=True).encode()).hexdigest(), gg, parameter_mode="scenario_ensemble",
-                           warnings=out["warnings"] + ["Screening-grade decision support. Not for engineering design or evacuation orders.",
-                                                       "Restitution, friction and sub-grid roughness are scenario values, not calibrated; energy is translational only."],
-                           results=["summary.json", "arrays.npz", "rocks.npz", "mapbox_3d.html"], params={k: v for k, v in params.items()}, run_id=rid)
-    M.write_manifest(rdir, man)
-    summary["scene"] = build_rock_scene(rdir, token)
-    summary["elapsed_total_s"] = round(time.time() - t0, 1)
-    summary["params"] = params
-    d = {"run_id": rid, "outcome": "rockfall", "summary": summary, "warnings": man["warnings"], "has_scene": True, "layers": ["reach_frac", "emax_kj", "hmax_m", "slope"], "bbox": out["bbox"]}
-    (rdir / "summary.json").write_text(json.dumps(d, indent=1, default=str))
-    return d
-
-
-ROCK_LEGEND = ("<b>Rockfall run</b><br>Rocks are released at rest on steep rock faces (red dots) and simulated as discrete bodies: flight, bounce, rolling. "
-               "Rock colour = its energy; dark grey = stopped. Buildings and roads are coloured by the worst energy class of rocks that reach them (yellow &lt;10 kJ, orange 10-50, red 50-300, dark red 300-1000, purple &gt;1000). "
-               "Restitution, friction and roughness are scenario values (not calibrated); energy is translational. <i>Screening-grade, not for design.</i>")
-
-
-def build_rock_scene(rdir, token):
-    import gzip
-    from affine import Affine
-    from . import viewer_rock
-    rdir = Path(rdir)
-    man = json.loads((rdir / "manifest.json").read_text()); g = man["grid"]; t = g["transform"]; affine = Affine(t[1], 0, t[0], 0, t[5], t[3])
-    z = np.load(rdir / "arrays.npz"); rk = np.load(rdir / "rocks.npz"); sm = json.loads((rdir / "summary.json").read_text())["summary"] if (rdir / "summary.json").exists() else None
-    imp = json.load(gzip.open(rdir / "impacts_rock.json.gz", "rt"))
-    bld = [{"coords_lonlat": b["c"], "height_m": b["h"], "reach": b["reach"], "emax_kj": b["emax"], "cls": b["cls"], "cx": b["cx"], "cy": b["cy"], "area_m2": b["a"]} for b in imp["buildings"] if b["reach"] is not None]
-    rds = [{"coords_lonlat": r["c"], "cls": r["cls"]} for r in imp["roads"]]
-    geo = json.loads((rdir / "geom_rock.json").read_text())
-    stats = {"rocks": geo["rocks"], "sources": geo["sources"]}
-    srcs = np.c_[rk["src_lon"], rk["src_lat"]]
-    return viewer_rock.build(str(rdir / "mapbox_3d.html"), "Rockfall run", geo["geom"], token, geo["epsg"], affine, {k: z[k] for k in ("reach_frac", "emax_kj", "hmax_m")}, rk, srcs, bld, rds, geo.get("barriers"), stats, g["resolution_m"], ROCK_LEGEND)
-
-
 def overlay(run_id, layer, runs_root):
     from affine import Affine
     rdir = Path(runs_root) / run_id
@@ -141,8 +86,6 @@ def overlay(run_id, layer, runs_root):
     ramp = {"slope": "slope_deg", "fs_min": "min_fs_p50", "p_fail": "frac_lt1"}.get(layer, layer)
     if layer in ("hmax", "deposit", "scour", "vmax"):
         a = np.where(a > 0.05, a, np.nan)
-    if layer in ("reach_frac", "emax_kj", "hmax_m"):
-        a = np.where(a > 0, a, np.nan)
     return render.overlay_png(a, grid, ramp)
 
 

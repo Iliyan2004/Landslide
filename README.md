@@ -46,7 +46,7 @@ four tier tabs, run history, compare runs, PDF report.
 - Honest limits: soil strength, friction (mu, xi), fragility medians and unit cost are scenario values, none calibrated (`screening_only`);
   quake PGA has no site amplification; rainfall is spatially uniform over the area; nothing is validated against observed events.
 
-**Also:** rockfall (separate GPU Monte Carlo), earthquake and debris visualisation, access/isolation impacts, GIS export, `docs/USER_GUIDE.md`.
+**Also:** earthquake and debris visualisation, access/isolation impacts, GIS export, `docs/USER_GUIDE.md`.
 
 **Landslide only.** Flooding is a separate product (SAILAB) and nothing here is coupled to it.
 

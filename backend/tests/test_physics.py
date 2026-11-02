@@ -4,7 +4,7 @@ import numpy as np
 from landslide.models.stability import infinite_slope as I, bishop as B, ensemble as E
 from landslide.models.infiltration import green_ampt as GA, api_index as API
 from landslide.models.seismic import newmark as N, rock_kinematics as RK
-from landslide.models.runout import empirical as RE, rockfall as RF
+from landslide.models.runout import empirical as RE
 from landslide.models.sediment import hillslope_channel as S
 from landslide.errors import GateError
 
@@ -141,13 +141,6 @@ class TestRunout(unittest.TestCase):
         self.assertTrue(np.all(r_hi <= r_lo)); self.assertGreaterEqual(L_lo, L_hi)
         with self.assertRaises(GateError):
             RE.ensemble_envelope(dem, 30, 30, np.zeros_like(src), 1e4, (10, 20))
-
-    def test_rockfall_energy_and_rebound(self):
-        X = np.array([-100, 100.]); Z = np.zeros(2)
-        r = RF.simulate(X, Z, ["a"], {"a": (0.5, 0.9)}, 0, 10.0, v_stop=0.01, max_bounces=1)
-        self.assertAlmostEqual(r["impacts"][0][1], 1000 * 9.80665 * 10, places=3)
-        r2 = RF.simulate(X, Z, ["a"], {"a": (0.5, 0.9)}, 0, 10.0, v_stop=0.01, max_bounces=2)
-        self.assertAlmostEqual(r2["impacts"][1][1], 0.25 * r2["impacts"][0][1], places=3)   # KE after e_n=0.5 -> e^2
 
     def test_mass_balance(self):
         self.assertEqual(RE.mass_balance_residual(100, 20, 90, 30), 0)

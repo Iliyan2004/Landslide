@@ -1,7 +1,7 @@
 # Known Limitations
 
 1. **Calibrated and validated only as far as the inventory allows.** See Ch. {{ch:accuracy_record}} for exactly what has and has not been checked.
-2. **One soil layer, infinite slope.** No deep-seated slides, no rock-slope kinematics, no rockfall, no snow avalanche, no glacial-lake outbursts.
+2. **One soil layer, infinite slope.** No deep-seated slides, no rock-slope kinematics, no rockfall (not modelled: removed from the platform), no snow avalanche, no glacial-lake outbursts.
 3. **Rain is spatially uniform** over the area by default and comes from a point (ERA5, CHIRPS, forecast) or a design storm; a gridded-rain option exists (Ch. {{ch:rain_triggered_failure}}.7) but cannot be tested on this inventory.
 4. **Pore pressure is a proxy** from a wetting front, not groundwater flow. A topographic water-table option and a suction option exist; neither improved held-out skill, so both are off.
 5. **Failure depth equals soil depth**, thinned with slope by an assumption and optionally capped by the bedrock-depth map; real slip surfaces are not mapped, and the borehole, groundwater and soil data supplied later are on the Indus plain, not on slopes, so they could not constrain it (Ch. {{ch:data_sources}}.4).
@@ -16,7 +16,6 @@
 14. **Mitigation effects** (root cohesion, regrading, drainage, barrier height) are the user's scenario inputs; regrading changes stability only, not the terrain the flow crosses; barriers are not drawn in the 3D scene.
 15. **Average annual loss** assumes a T-year storm gives the T-year loss.
 16. **Dam screening** uses a drainage area truncated at the analysed edge and an embankment breach formula for the peak; there is no downstream routing.
-17. **Rockfall** uses scenario restitution, friction and roughness; the first run gave reach angles steeper than literature shadow angles, so it is probably too dissipative; energy is translational only; no damage or loss is estimated.
 18. **Geology** strength multipliers are neutral (1.0) because the geology raster's lithology is only guessed from colours.
 19. **Earthquake animation** wavefronts are time-scaled; the shaking field has no site amplification.
 20. **Access analysis** sees only roads inside the area and ignores speeds.

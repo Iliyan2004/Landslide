@@ -7,8 +7,6 @@
 - Funk, C. et al. (2015). The climate hazards infrared precipitation with stations (CHIRPS). *Scientific Data* 2, 150066.
 - Green, W. H., Ampt, G. A. (1911). Studies on soil physics. *Journal of Agricultural Science* 4, 1-24.
 - Guzzetti, F., Peruccacci, S., Rossi, M., Stark, C. P. (2008). The rainfall intensity-duration control of shallow landslides and debris flows: an update. *Landslides* 5, 3-17.
-- Dorren, L. K. A. (2003). A review of rockfall mechanics and modelling approaches. *Progress in Physical Geography* 27, 69-87.
-- Volkwein, A. et al. (2011). Rockfall characterisation and structural protection: a review. *Natural Hazards and Earth System Sciences* 11, 2617-2651.
 - Ermini, L., Casagli, N. (2003). Prediction of the behaviour of landslide dams using a geomorphological dimensionless index. *Earth Surface Processes and Landforms* 28, 31-47.
 - Froehlich, D. C. (1995). Peak outflow from breached embankment dam. *Journal of Water Resources Planning and Management* 121, 90-97.
 - Hosking, J. R. M. (1990). L-moments: analysis and estimation of distributions using linear combinations of order statistics. *Journal of the Royal Statistical Society B* 52, 105-124.

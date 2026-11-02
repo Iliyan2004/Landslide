@@ -1,7 +1,7 @@
 <!-- part: Part IX - Visualization, Interface and Operations -->
 # 3D Visualization
 
-Three scenes share SAILAB's viewer stylesheet, controls, timeline, probe and export, but each draws its own hazard. The scene files are built from saved arrays (`frames.npz`, `impacts.json.gz`, `rocks.npz`), so the look can change and every run be re-rendered without re-simulating (`rebuild_scene`).
+Two scenes share SAILAB's viewer stylesheet, controls, timeline, probe and export, but each draws its own hazard. The scene files are built from saved arrays (`frames.npz`, `impacts.json.gz`, `rocks.npz`), so the look can change and every run be re-rendered without re-simulating (`rebuild_scene`).
 
 ## Debris flow and landslide
 
@@ -17,13 +17,9 @@ Other changes: the flow-speed mode uses a blue-to-dark-red ramp; contact shadows
 
 For earthquake runs the scene adds the epicentre (red marker), the rupture trace along the fault (glowing line), expanding wavefront rings, a **Ground shaking** map of PGA, and a brief damped shake of the camera as the wave passes. Failures begin at the quake time with the same flash and scar. **The wavefront speed is not physical:** the real S wave crosses a 5 km area in about a second, far shorter than any animation window, so the rings run at a time-scaled speed for visibility. The shaking map is the Joyner-Boore field of Ch. {{ch:earthquake_failure}}, without site amplification.
 
-## Rockfall
-
-Individual rocks are drawn as faceted instanced meshes coloured by their current energy (dark grey once stopped), with fading trails from their recent positions, dust puffs at fast impacts and a chart of rocks moving and stopped. Release cells are small grey dots; map modes show the reach probability, peak energy and bounce height; clicking the map reports all three. Buildings and roads are coloured by energy class. The camera looks up the slope from where the rocks stop.
-
 ## Checking the renders
 
-Scenes were rendered in headless Chromium through the DevTools protocol (`scripts/shot.py`), which waits for the scene to settle and reports JavaScript errors, and judged by eye at several moments of the event. This found real faults: the animation controls were blank because of a script error that only the page's own error hook revealed; rocks were invisible because three.js's lit instanced material did not accept a hand-made colour buffer; the rocks were too small to see at the default zoom. A software GL renderer is used, so real-GPU frame rate is not measured.
+Scenes were rendered in headless Chromium through the DevTools protocol (`scripts/shot.py`), which waits for the scene to settle and reports JavaScript errors, and judged by eye at several moments of the event. This found real faults: the animation controls were blank because of a script error that only the page's own error hook revealed. A software GL renderer is used, so real-GPU frame rate is not measured.
 
 ## Export
 

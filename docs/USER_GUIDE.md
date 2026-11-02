@@ -1,6 +1,6 @@
 # LANDLAB user guide
 
-Landslide modelling for Pakistan: screening, physics runs, earthquakes, rockfall, mitigation. **Screening grade: soil strength and friction are scenarios, nothing is calibrated, not for engineering design or evacuation.** Details and limits are in `LANDLAB_Technical_Reference.pdf`.
+Landslide modelling for Pakistan: screening, physics runs, earthquakes, mitigation. **Screening grade: soil strength and friction are scenarios, nothing is calibrated, not for engineering design or evacuation.** Details and limits are in `LANDLAB_Technical_Reference.pdf`.
 
 ## Start
 `~/flood/venv/bin/python landslide_app.py` then open `http://<server>:5070`. Optional: `LANDLAB_TOKEN=secret` makes runs require that token.
@@ -16,10 +16,9 @@ Draw a polygon (map tool, top-left), upload a zipped shapefile or GeoJSON, or us
 | 3 Physics | load a rainfall series (design storm, return-period storm, forecast, ERA5, IMERG, CHIRPS, CSV), run, watch the 3D event |
 | 4 Quake | set magnitude and epicentre; see shaking, failures, runout |
 | 5 Mitigate | nature-based levers, barriers, rank combinations, average annual loss |
-| Rockfall | release rocks from steep faces; see paths, energy, buildings and roads reached |
 
 ## Reading a 3D scene
-Debris scene: dark wet mud moving, pale cracked mud at rest; red flash then pale scar where a slope failed; "Terrain change" shows lost (blue) and gained (brown) ground; buildings turn yellow to red with the damage expected from the depth reached. Earthquake: epicentre, rupture line, rings (time-scaled), "Ground shaking" map. Rockfall: rocks coloured by energy, trails, dust, reach / energy / bounce maps (click the map for values). Right-drag rotates.
+Debris scene: dark wet mud moving, pale cracked mud at rest; red flash then pale scar where a slope failed; "Terrain change" shows lost (blue) and gained (brown) ground; buildings turn yellow to red with the damage expected from the depth reached. Earthquake: epicentre, rupture line, rings (time-scaled), "Ground shaking" map. Right-drag rotates.
 
 ## After a run
 PDF report, GIS export (GeoTIFF, GeoJSON, CSV), landslide-dam screening, scoring against an observed extent you upload, compare two runs, batch PDF. Runs live in `runs/<id>`; `POST /runs/cleanup` (dry run by default) frees disk.

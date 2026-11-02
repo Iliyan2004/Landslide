@@ -249,21 +249,6 @@ def batch_pdf():
     return Response(weasyprint.HTML(string=_batch_html(ids)).write_pdf(), mimetype="application/pdf", headers={"Content-Disposition": "inline; filename=landlab_batch.pdf"})
 
 
-# ------------------------------------------------------------------ rockfall (separate hazard)
-@app.post("/run-rock")
-def run_rock():
-    b = request.get_json(force=True); g = _geom(); p = dict(b.get("params", {}))
-    if p.get("source_mode") == "quake" and not p.get("quake"):
-        return jsonify({"error": "set an earthquake scenario first"}), 400
-    def fn(prog):
-        r = RUNS_MOD.execute_rock(g, p, str(RUNS), _env_token(), prog)
-        s = r["summary"]
-        _history_add({"run_id": r["run_id"], "outcome": "rockfall", "summary": {"mode": "rockfall", "area_km2": s.get("area_km2"), "flow": {"impacted_area_km2": s.get("reached_area_km2")},
-                                                                       "exposure": {}}}, g)
-        return r
-    return jsonify({"job": _job(fn)})
-
-
 # ------------------------------------------------------------------ GIS export, run management
 @app.get("/runs/<rid>/export.zip")
 def run_export(rid):

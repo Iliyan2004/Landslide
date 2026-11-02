@@ -17,18 +17,17 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 
 | Feature | Status |
 |---|---|
-| Tiers 1 to 4, national product, districts, basins | Implemented and tested (129 unit tests) |
+| Tiers 1 to 4, national product, districts, basins | Implemented and tested (123 unit tests) |
 | Rainfall sources: design storm, forecast, recent, ERA5, CHIRPS, CSV | Implemented |
-| Impacts: buildings, roads, hospitals and schools, direct loss | Implemented (all thresholds assumed, Ch. 18) |
+| Impacts: buildings, roads, hospitals and schools, direct loss | Implemented (all thresholds assumed, Ch. 17) |
 | Live monitoring with webhook, compare runs, PDF report, MP4 export | Implemented |
-| Rainfall-threshold validation against the inventory | **Done** (Ch. 26) |
-| Spatial validation, physics and ground calibration, runout check, ShakeMap comparison, quake-landslide check | **Run** (Ch. 27 to 30, 6.2, 32) |
-| Design storms from observed IDF, climate multiplier, average annual loss | Implemented and **run once on a 57 km2 Gilgit area** (Ch. 21); the climate signal is within model spread, and the loss is an order of magnitude |
-| Nature-based levers, barriers, ranking, automatic barrier placement | Implemented and **run once on the same area** (Ch. 23, 24); this exposed a counting artefact for planting and a placement bug, both fixed |
+| Rainfall-threshold validation against the inventory | **Done** (Ch. 25) |
+| Spatial validation, physics and ground calibration, runout check, ShakeMap comparison, quake-landslide check | **Run** (Ch. 26 to 29, 6.2, 31) |
+| Design storms from observed IDF, climate multiplier, average annual loss | Implemented and **run once on a 57 km2 Gilgit area** (Ch. 20); the climate signal is within model spread, and the loss is an order of magnitude |
+| Nature-based levers, barriers, ranking, automatic barrier placement | Implemented and **run once on the same area** (Ch. 22, 23); this exposed a counting artefact for planting and a placement bug, both fixed |
 | Landslide-dam screening, rainfall hotspots, scoring against an observed extent | Implemented (dam screening and hotspots run on real data; observed scoring needs a supplied extent) |
-| Rockfall simulation (GPU Monte Carlo, barriers, impacts) | Implemented and run on a Hunza area; friction set against published shadow angles, **not calibrated to Pakistani deposits** (none exist on the server; Ch. 14) |
-| Autonomous monitoring agents: feed fallback, job recovery, health, forecast audit and bias correction | Implemented, rule-based (Ch. 36); forecast back-test run |
-| Debris, earthquake and rockfall visualisation | Rebuilt and checked by rendering (Ch. 33) |
+| Autonomous monitoring agents: feed fallback, job recovery, health, forecast audit and bias correction | Implemented, rule-based (Ch. 35); forecast back-test run |
+| Debris and earthquake visualisation | Rebuilt and checked by rendering (Ch. 32) |
 | Spatially varying ground, access and isolation impacts, GIS export, token and rate limit, run clean-up, IMERG rainfall | Implemented |
 | Physics, ground, runout and PGA calibration and validation | **Run** on the real inventory, ShakeMaps and synthetic slopes; results and their weak points in Ch. 27 to 32 |
 
@@ -97,7 +96,7 @@ All paths are in `backend/landslide/app/paths.py` (one place, checked at `/api/d
 
 ## 3.1 What the inventory is, and is not
 
-After cleaning, the inventory has 381 unique events. Positions are reports: the stated accuracy ranges from 0.5 km to 50 km, and for many records it is 25 km or worse. Dates are kept at the precision they were given: a bare year is never turned into 1 January. There are no deposit polygons, no measured volumes (one record), no soil measurements and no depth of failure. This caps what any validation can show (Ch. 25).
+After cleaning, the inventory has 381 unique events. Positions are reports: the stated accuracy ranges from 0.5 km to 50 km, and for many records it is 25 km or worse. Dates are kept at the precision they were given: a bare year is never turned into 1 January. There are no deposit polygons, no measured volumes (one record), no soil measurements and no depth of failure. This caps what any validation can show (Ch. 24).
 
 ## 3.2 Known coverage gaps
 
@@ -160,7 +159,7 @@ z(slope) = z_max - (z_max - z_min) * clip(slope / 50 deg, 0, 1)
 
 ## 4.5 Who can fail: the mobilisation rule
 
-A rain or earthquake event can only mobilise a cell that (a) carries soil, meaning slope at most 45 degrees (steeper ground is treated as bare rock, a separate rockfall problem), and (b) was **stable before the event**, meaning FS at least 1 at the baseline water table. Cells that fail the second test would already have failed under ordinary conditions. Without this rule the model labels bare rock and perennially unstable cells as storm failures: with the weakest strength preset, 48% of the Gilgit test area was "unstable" with zero rain. The run reports the counts it excluded (`trigger.mobilisable`).
+A rain or earthquake event can only mobilise a cell that (a) carries soil, meaning slope at most 45 degrees (steeper ground is treated as bare rock and is not modelled), and (b) was **stable before the event**, meaning FS at least 1 at the baseline water table. Cells that fail the second test would already have failed under ordinary conditions. Without this rule the model labels bare rock and perennially unstable cells as storm failures: with the weakest strength preset, 48% of the Gilgit test area was "unstable" with zero rain. The run reports the counts it excluded (`trigger.mobilisable`).
 
 
 # 5. Rainfall-Triggered Failure
@@ -214,7 +213,7 @@ theta_i     = theta_r + (theta_s - theta_r) ( S_dry + (S_wet - S_dry) w )       
 water table = water table_0 ( 1 - f_wt w )                f_wt = 0.5
 ```
 
-The 30 days come from ERA5-Land (server zarr) for the same point, whichever source drives the storm (ERA5, IMERG or CHIRPS). Design storms and forecasts carry no antecedent unless the user supplies one. The constants are scenario values (`engine/antecedent.py`); `scripts/calibrate_physics.py` fits them against the event inventory with matched control days, and the fit is reported in Ch. 28 (a calibrated set is adopted only if it beats the defaults on held-out data). The main run and the mitigation evaluation build their scenario in one function (`run._scenario`) so that a paired run with a barrier or a planting always starts from the same soil as the unmitigated run.
+The 30 days come from ERA5-Land (server zarr) for the same point, whichever source drives the storm (ERA5, IMERG or CHIRPS). Design storms and forecasts carry no antecedent unless the user supplies one. The constants are scenario values (`engine/antecedent.py`); `scripts/calibrate_physics.py` fits them against the event inventory with matched control days, and the fit is reported in Ch. 27 (a calibrated set is adopted only if it beats the defaults on held-out data). The main run and the mitigation evaluation build their scenario in one function (`run._scenario`) so that a paired run with a barrier or a planting always starts from the same soil as the unmitigated run.
 
 ## 5.6 Parameter-uncertainty ensemble
 
@@ -230,15 +229,15 @@ Three additions address limits that earlier versions listed. All are **off by de
 | No lateral flow or perched water | Topographic water table | `wetness_beta` | The depth to the starting water table varies with the topographic wetness index, `water_table x exp(-beta x (TWI - mean)/sd)` (`engine/wetness.py`): hollows and valley floors start wetter than spurs. Upslope area is counted only inside the analysis area. |
 | No unsaturated suction strength | Suction cohesion | `suction_kpa` | Adds `suction x (1 - m)` of apparent cohesion, lost as the layer saturates (`trigger.suction_cohesion`). |
 
-The depth limit is handled by the bedrock-depth cap (Ch. 29); the slip surface is still the soil depth, because a mapped slip surface needs boreholes or geophysics, and none exist for Pakistan in any source I could reach (public repositories hold none; the global soil-thickness map of Pelletier et al. needs an Earthdata login).
+The depth limit is handled by the bedrock-depth cap (Ch. 28); the slip surface is still the soil depth, because a mapped slip surface needs boreholes or geophysics, and none exist for Pakistan in any source I could reach (public repositories hold none; the global soil-thickness map of Pelletier et al. needs an Earthdata login).
 
-**Test.** The temporal calibration (Ch. 28) was re-run with the wetness exponent (0 to 2) and the suction (0 to 10 kPa) as two more fitted parameters, the wetness index taken from the national 90 m layer sampled in each report's accuracy disc. Held-out AUC: 0.685 with them, against 0.683 without. That is no gain. The fitted values also differ wildly between folds (wetness exponent 0.2 to 1.7, suction 1.5 to 10 kPa), so the data cannot identify them. **They stay at zero by default.** They are available for sensitivity runs, not as calibrated physics.
+**Test.** The temporal calibration (Ch. 27) was re-run with the wetness exponent (0 to 2) and the suction (0 to 10 kPa) as two more fitted parameters, the wetness index taken from the national 90 m layer sampled in each report's accuracy disc. Held-out AUC: 0.685 with them, against 0.683 without. That is no gain. The fitted values also differ wildly between folds (wetness exponent 0.2 to 1.7, suction 1.5 to 10 kPa), so the data cannot identify them. **They stay at zero by default.** They are available for sensitivity runs, not as calibrated physics.
 
 Rain is not scale-tested against the inventory: a report's accuracy disc and the 9 km ERA5 cell are the same scale, so the gridded rain cannot show a difference on this data. It matters only for areas several ERA5 cells wide.
 
 ## 5.8 Limits
 
-Uniform rain over the area unless the gridded option is on; lateral flow only through the optional topographic water table; suction strength only as an uncalibrated option; one soil layer; depth of failure is the soil depth, not a mapped slip surface; no rock slopes (Ch. 41).
+Uniform rain over the area unless the gridded option is on; lateral flow only through the optional topographic water table; suction strength only as an uncalibrated option; one soil layer; depth of failure is the soil depth, not a mapped slip surface; no rock slopes (Ch. 40).
 
 
 # 6. Earthquake-Triggered Failure
@@ -328,7 +327,7 @@ Velocity is the average of face velocities (faces deeper than 5 cm), capped at 3
 
 ## 7.3 Flow types
 
-The friction parameters are **scenario values by flow type, not calibrated to any event** (calibration is planned, Ch. 30):
+The friction parameters are **scenario values by flow type, not calibrated to any event** (calibration is planned, Ch. 29):
 
 | Type | mu | xi (m/s2) |
 |---|---|---|
@@ -351,7 +350,7 @@ The step is the smaller of the CFL step and 0.2 s. The cap matters: the semi-imp
 | Entrainment | bed loss plus flow gain sums to 0 |
 | GPU against CPU | agree to 1e-15 (float64) and 2e-6 m (float32) |
 
-These show the code solves its equations. They do not show it predicts real runout; see Ch. 30.
+These show the code solves its equations. They do not show it predicts real runout; see Ch. 29.
 
 
 # 8. GPU Implementation and Numerical Findings
@@ -400,7 +399,7 @@ The page follows SAILAB's pattern: an area is chosen once (drawn, uploaded as a 
 | 3 Physics | up to about 700,000 cells (at most 120 m) | failure times, flow over time, impacts, loss | yes |
 | 4 Earthquake | same as Tier 3 | PGA, failures, flow over time, impacts | optional |
 
-A sixth tab, **Rockfall**, runs the separate rock simulation (Ch. 14). A fifth tab, **Mitigate**, holds nature-based levers, barriers (drawn on the map, optionally auto-placed) and average annual loss (Ch. 23, 24, 21). The right-hand column also holds area discovery (district ranking by national metrics, basins), a rainfall context panel, live monitoring, layer pickers for the finished run, run history, comparison and the PDF report.
+A fifth tab, **Mitigate**, holds nature-based levers, barriers (drawn on the map, optionally auto-placed) and average annual loss (Ch. 22, 23, 20). The right-hand column also holds area discovery (district ranking by national metrics, basins), a rainfall context panel, live monitoring, layer pickers for the finished run, run history, comparison and the PDF report.
 
 
 # 10. Tier 1: Screening and the National Layers
@@ -415,7 +414,7 @@ The map offers four national layers as XYZ tiles read straight from the rasters 
 
 ## 10.3 Area screening
 
-For a drawn area, Tier 1 reads the DEM at 30 m (or coarser), the ML layer, runs the stability ensemble for the chosen rain, optionally Newmark with a scenario PGA, and a reach-angle run-out envelope (Corominas-style H/L, not a simulated depth), then reports population in the area and in unstable and reached cells. Population is people per 90 m cell and is rescaled by cell area when resampled; reading it bilinearly onto a 30 m grid had counted each person nine times (Ch. 39).
+For a drawn area, Tier 1 reads the DEM at 30 m (or coarser), the ML layer, runs the stability ensemble for the chosen rain, optionally Newmark with a scenario PGA, and a reach-angle run-out envelope (Corominas-style H/L, not a simulated depth), then reports population in the area and in unstable and reached cells. Population is people per 90 m cell and is rescaled by cell area when resampled; reading it bilinearly onto a 30 m grid had counted each person nine times (Ch. 38).
 
 > The ML layer is an external product trained on these reports with a random split and flat-ground negatives. It ranks slope proneness; it does not describe a specific storm.
 
@@ -447,7 +446,7 @@ Failures are grouped by failure time. The loop alternates between the next relea
 
 ## 12.3 What a run returns
 
-Failing area and soil depth; released, entrained and final volume with a mass check; impacted area, maximum depth, maximum speed and runout from the source; counts of failed cells against time; maximum depth, speed, deposit, scar, failure-time, minimum-FS and slope rasters; impacts (Ch. 18 and 17); the 3D scene.
+Failing area and soil depth; released, entrained and final volume with a mass check; impacted area, maximum depth, maximum speed and runout from the source; counts of failed cells against time; maximum depth, speed, deposit, scar, failure-time, minimum-FS and slope rasters; impacts (Ch. 17 and 17); the 3D scene.
 
 ## 12.4 Reference run (a stress test, not a design storm)
 
@@ -461,71 +460,7 @@ The tab takes a magnitude, a focal depth, an epicentre (clicked on the map or th
 The shaking now carries a site term (Vs30 from the USGS global grid) and a separate intermediate-depth model for the Hindu Kush and Pamir earthquakes (a focal depth over 40 km switches to it). Both were compared with 398 USGS ShakeMaps (Ch. 6.2): the scatter against ShakeMap is 0.40 ln units over all events. There is still no calibration to a recorded landslide inventory of a specific earthquake, so the result is a scenario of pattern and order of magnitude, not a forecast for a specific earthquake.
 
 
-# 14. Rockfall Simulation
-
-Rockfall is a separate hazard from debris flow: the mass is a set of discrete rocks that fly, bounce and roll, not a continuum. LANDLAB simulates it with a three-dimensional Monte Carlo on the DEM, on the GPU first (`engine/rockfall.py`, `rock_run.py`).
-
-## Release
-
-Rocks start at rest on **steep rock faces**: cells at least 50 degrees (adjustable), the same slopes the soil model excludes as bare rock (Ch. 4). Up to 150 release cells are chosen, weighted toward the steepest; each releases 40 rocks (adjustable, 60,000 rocks at most). Alternatives: user-drawn source polygons, or an earthquake, where cells with PGA of at least 0.10 g are weighted by shaking and slope. Diameter is lognormal (median 0.8 m, sigma 0.35 in ln units, clamped 0.2 to 6 m); density 2,600 kg/m3, so the median rock weighs about one tonne. Release times are staggered over 20 s for the animation only; the physics of each rock is independent.
-
-## Motion
-
-Time step 0.04 s. Each rock is a sphere with position and velocity:
-
-```
-flight:     vz -= g dt                                    (no air drag)
-contact:    the centre reaches ground + radius -> the rock is put back on the surface and an impulse is applied
-  fast (normal speed > 1.5 m/s):  tilt the normal by a random sub-grid roughness angle, then
-                                  v_n' = -Rn v_n,   v_t' = Rt v_t
-  slow (sliding or rolling):      v_n' = 0,   |v_t| -= mu |v_n|        (Coulomb / rolling resistance per step)
-stop:       |v| < 0.2 m/s for 1 s;  also stop if it leaves the area or t > 100 s
-```
-
-Surface properties come from the land-cover raster and are **scenario values**, with friction scaled by 0.45 after a check against published runout statistics (Ch. 14.9):
-
-| Surface | Rn | Rt | mu |
-|---|---|---|---|
-| Bedrock | 0.46 | 0.86 | 0.30 |
-| Talus | 0.32 | 0.76 | 0.45 |
-| Soil | 0.22 | 0.60 | 0.60 |
-| Forest | 0.17 | 0.52 | 0.66 |
-| Snow / ice | 0.15 | 0.50 | 0.22 |
-
-Each is multiplied by shape factors (round 1, angular 0.8/0.9/1.25, platy 0.6/0.8/1.5, assumed) and jittered by 15% (Rn) and 10% (Rt) per impact. The **sub-grid roughness angle** (default 9 degrees) stands in for terrain detail that a 30 m DEM does not carry; it is the most sensitive parameter and is not yet calibrated.
-
-## Barriers (rockfall fences)
-
-A fence is a line of cells with a height and an energy capacity. A rock reaching it below the fence height with energy under the capacity **stops there**; above the capacity it passes with the capacity removed from its energy; above the fence height it passes unchanged. Nothing else is assumed.
-
-## Outputs
-
-Per cell: the share of released rocks that passed (reach probability), the maximum translational energy (0.5 m v2), the maximum bounce height above ground. Per rock: stop point and **reach (travel) angle**, the angle of the line from release to stop, which can be compared with the shadow angles of 22 to 32 degrees in the literature. A set of 250 tracked rocks is recorded every 0.12 s for the animation. Translational energy omits rotation, which can add up to 40% for a rolling sphere.
-
-## Impacts
-
-A building or road is reached if at least 1% of released rocks pass its cell (3 x 3 neighbourhood). Buildings and road lengths are classified by the worst energy class reaching them: below 10 kJ, 10 to 50, 50 to 300, 300 to 1000 and above 1000 kJ (the classes used to specify fences). Facilities and population in reached cells are reported. **No damage ratio or loss is computed for rockfall, because no rockfall fragility is available here.**
-
-## Tests
-
-Five synthetic-terrain tests: rocks start on the cliff, run down and stop on the flat with a reach angle below the slope angle; translational energy never exceeds the released potential energy (energy is dissipated, never created); a soft surface shortens the runout; a strong high fence stops everything above it and the stops are counted at the fence; the same seed gives the same result.
-
-## Reference run
-
-Hunza (Karimabad), 6 x 5.5 km, about 8% of cells at 50 degrees or steeper: 120 release cells, 4,800 rocks (median 1.0 t), 68 s end to end on the GPU. 95% of rocks stop, 5% leave the area, the median reach angle is 46 degrees and the 10th percentile 39 degrees. Only 0.5% of rocks have a reach angle below 27.5 degrees, so these rocks are **stopping much sooner than the literature shadow angle suggests**: with the uncalibrated surface and roughness values the model is probably too dissipative on this terrain. The peak translational energy is 38 MJ, the 95th percentile bounce height 4.7 m, and 1.8 km of road is reached, mostly above 1,000 kJ. These numbers are an uncalibrated first look, not a hazard assessment.
-
-
-## 14.9 Check against published shadow angles
-
-No Pakistani rockfall deposits are on the server, so the dissipation was checked on a synthetic profile (250 m cliff at 60 degrees, 700 m talus at 36 degrees, flat floor, 30 m cells). With the original friction the first percentile of the reach angle was 36 degrees; the literature shadow angle (the angle to the farthest 1% of rocks) is 27 to 32 degrees, and the median reach angle of rocks that stop on a 36 degree talus is 33 to 42. A sweep of roughness (5 to 13 degrees), restitution (0.8 to 1.25 times) and friction (0.15 to 1 times) showed that only friction moves the result materially: a factor of 0.4 to 0.5 gives a first percentile of 29 to 31 degrees and a median of 34 to 35 (`docs/validation/rockfall_shadow.json`). A factor of 0.45 is applied. This sets the order of magnitude of the dissipation from the literature; it is not a field calibration, and the Hunza reference numbers above predate it.
-
-
-## 14.10 Hunza rerun with the scaled friction
-
-The same Hunza area rerun after the friction change (120 release cells, 4,800 rocks, 15 s on the GPU): median reach angle 39 degrees (46 before), 10th percentile 30 (39 before), and 5% of rocks below 27.5 degrees (0.5% before). About 20% of rocks now leave the analysis area, up from 5%, because they travel further than the 5.4 km window; the area would need to be larger to capture their stopping points. The peak translational energy is 55,529 kJ and the longest runout 1,862 m. The numbers are consistent with published shadow angles but, again, no Pakistani rock path exists to test them against. The polygon is approximate (the earlier run's outline was not stored), so this is a comparison of kind, not of identical cells.
-
-
-# 15. Rainfall Sources
+# 14. Rainfall Sources
 
 | Source | Resolution | Notes |
 |---|---|---|
@@ -539,10 +474,10 @@ The same Hunza area rerun after the friction change (120 release cells, 4,800 ro
 
 Rain is applied uniformly over the area. Every series is resampled to 15-minute steps with mass preserved (`to_step_depths`), and carries its source, start time, total, peak and duration into the run manifest. A series longer than 14 days is refused.
 
-> ERA5-Land is a model reanalysis on a 0.1 degree grid: it smooths convective cloudbursts, which dominate Pakistani landslide triggers. Hindcasts with ERA5 therefore understate peak intensities at a point. This affects the validation in Ch. 26 equally for events and controls, but it lowers the achievable skill.
+> ERA5-Land is a model reanalysis on a 0.1 degree grid: it smooths convective cloudbursts, which dominate Pakistani landslide triggers. Hindcasts with ERA5 therefore understate peak intensities at a point. This affects the validation in Ch. 25 equally for events and controls, but it lowers the achievable skill.
 
 
-# 16. Design Storms and Climate Scaling
+# 15. Design Storms and Climate Scaling
 
 ## Source data
 
@@ -570,11 +505,11 @@ An alternating-block hyetograph: the incremental depths of the cumulative curve 
 The delta-change method with the NASA NEX-GDDP-CMIP6 daily precipitation archive on the server: for up to eight models, the Gumbel T-year daily value is fitted to 1985 to 2014 (historical) and to the chosen future window (2036 to 2065 or 2071 to 2100, SSP2-4.5 or SSP5-8.5); the ratio of the two is taken per model and the **median ratio** is used as a multiplier on the design storm. Taking the ratio cancels each model's own bias against observation. Reading the yearly files (about 30 MB each, up to 480 files) takes minutes, so it runs only when asked and is cached by location, scenario, period and return period. Only daily data exist, so the multiplier is applied uniformly to all durations; sub-daily intensification is probably stronger than daily and is not represented. **Not yet run on real data.**
 
 
-# 17. Intensity-Duration Thresholds and Live Monitoring
+# 16. Intensity-Duration Thresholds and Live Monitoring
 
 ## 15.1 Global thresholds
 
-For the watch tier the platform uses published global curves, not a Pakistan-specific fit (Ch. 26 shows a fit does no better on the available data):
+For the watch tier the platform uses published global curves, not a Pakistan-specific fit (Ch. 25 shows a fit does no better on the available data):
 
 ```
 Caine (1980):             I = 14.82 D^-0.39    (mm/h, D in hours, 0.167 to 500 h)
@@ -590,7 +525,7 @@ A watch stores an area, a forecast-intensity threshold (default 10 mm/h), a chec
 > Monitoring uses a point forecast and uniform rain, and the Tier 3 physics is screening grade; an automatic run is an early look, not a warning.
 
 
-# 18. Exposure and Damage
+# 17. Exposure and Damage
 
 ## 16.1 Exposure layers
 
@@ -619,9 +554,9 @@ The expected damage ratio is the probability-weighted ratio. Buildings in cells 
 The 3D viewer colours buildings by the expected damage from the depth reached so far (a curve of 0, 0.05, 0.20, 0.55 and 1.00 at 0, 0.3, 1, 2 and 4 m), so a building changes colour as the flow arrives. Roads turn when blocked.
 
 
-# 19. Estimated Direct Loss
+# 18. Estimated Direct Loss
 
-Loss is valued the way SAILAB values flood loss (`loss_utils.py` there, `engine/loss.py` here), so a landslide loss and a flood loss are on the same footing and the same average-annual-loss method (Ch. 21) applies to both.
+Loss is valued the way SAILAB values flood loss (`loss_utils.py` there, `engine/loss.py` here), so a landslide loss and a flood loss are on the same footing and the same average-annual-loss method (Ch. 20) applies to both.
 
 ## 19.1 Valuation
 
@@ -645,7 +580,7 @@ What differs from the flood method, and why:
 The unit value is a regional (Asia) average: Pakistan has no figure of its own in the source table. The exchange rate is a current-date conversion applied to a 2010-price figure, not inflation-adjusted. Footprint area times two storeys overstates single-storey kacha houses and understates multi-storey urban blocks, which is why housing type from the census (a planned addition) matters. Indirect losses (road closure days, business interruption, lives) are **not** estimated. The result is an order-of-magnitude figure for comparing scenarios, not an insured value.
 
 
-# 20. Access and Isolation Impacts, and GIS Export
+# 19. Access and Isolation Impacts, and GIS Export
 
 ## Access
 
@@ -659,16 +594,16 @@ Gilgit reference (3.6 km2 flow, 14,458 points): 39% of buildings were cut off; t
 
 ## Spatially varying ground
 
-By default one strength set applies to the whole area. With **spatially varying ground** (off by default) the platform reads land cover and geology rasters. Root cohesion comes from land cover (trees 6 kPa, crops 1.5, rangeland 0.5, flooded vegetation 2, bare, built, snow and water 0; mid-range assumptions) and replaces the scenario root cohesion where the land cover is known. **Geology multipliers on cohesion and friction are all 1.0:** the national geology raster has 16 colour-coded units whose lithology is only guessed from map colours, so strength values for them would be invented. The mechanism exists so calibration can fit multipliers on held-out data (Ch. 28). In the Gilgit reference storm, switching it on raised the failing area from 1.2 to 4.4 km2, because land-cover root cohesion is mostly zero on the steep slopes (the default scenario assumed 0 to 5 kPa everywhere). Land cover is a strong lever, and it is an assumption.
+By default one strength set applies to the whole area. With **spatially varying ground** (off by default) the platform reads land cover and geology rasters. Root cohesion comes from land cover (trees 6 kPa, crops 1.5, rangeland 0.5, flooded vegetation 2, bare, built, snow and water 0; mid-range assumptions) and replaces the scenario root cohesion where the land cover is known. **Geology multipliers on cohesion and friction are all 1.0:** the national geology raster has 16 colour-coded units whose lithology is only guessed from map colours, so strength values for them would be invented. The mechanism exists so calibration can fit multipliers on held-out data (Ch. 27). In the Gilgit reference storm, switching it on raised the failing area from 1.2 to 4.4 km2, because land-cover root cohesion is mostly zero on the steep slopes (the default scenario assumed 0 to 5 kPa everywhere). Land cover is a strong lever, and it is an assumption.
 
 ## GIS export
 
-`/runs/<id>/export.zip` gives: GeoTIFF rasters in the analysis CRS (DEM, slope, maximum depth and speed, deposit, scour, failure time, minimum FS, PGA, rock reach, energy and bounce height as available); GeoJSON polygons of the failure zones and the debris or rock-reach extent; GeoJSON and CSV of buildings with damage state, loss and rock energy class; affected roads; the manifest with all parameters and warnings; the summary. Nodata is -9999.
+`/runs/<id>/export.zip` gives: GeoTIFF rasters in the analysis CRS (DEM, slope, maximum depth and speed, deposit, scour, failure time, minimum FS, PGA as available); GeoJSON polygons of the failure zones and the debris; GeoJSON and CSV of buildings with damage state, loss; affected roads; the manifest with all parameters and warnings; the summary. Nodata is -9999.
 
 
-# 21. Average Annual Loss
+# 20. Average Annual Loss
 
-Average annual loss (AAL) is the expected loss per year from landslides triggered by storms. The platform runs design storms of the chosen return periods (Ch. 16), each a full Tier 3 simulation with the same ground and strength settings, and takes the direct loss of each (Ch. 19).
+Average annual loss (AAL) is the expected loss per year from landslides triggered by storms. The platform runs design storms of the chosen return periods (Ch. 15), each a full Tier 3 simulation with the same ground and strength settings, and takes the direct loss of each (Ch. 18).
 
 ```
 p = 1 / T                                       annual exceedance probability
@@ -680,13 +615,13 @@ AAL = integral of loss over p
 
 A test checks the trapezoid against an analytic integral, and that zero loss gives zero AAL and more loss gives more.
 
-> **The assumption that carries the number:** a T-year storm gives the T-year loss. That ignores antecedent wetness, the spatial pattern of rain, and the fact that most storms of a given depth cause no landslide at all; it also depends on the strength scenario, which is uncalibrated (Ch. 28). Treat AAL as an order of magnitude for comparing places or options, not as an insurance figure. It also inherits every assumption in the damage and cost model.
+> **The assumption that carries the number:** a T-year storm gives the T-year loss. That ignores antecedent wetness, the spatial pattern of rain, and the fact that most storms of a given depth cause no landslide at all; it also depends on the strength scenario, which is uncalibrated (Ch. 27). Treat AAL as an order of magnitude for comparing places or options, not as an insurance figure. It also inherits every assumption in the damage and cost model.
 
 Each return period is an expensive simulation, so the page asks for confirmation.
 
 ## First run on a real area
 
-Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports_weak", losses valued as in Ch. 19 (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
+Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports_weak", losses valued as in Ch. 18 (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
 
 | Return period (y) | Storm depth (mm) | Failing area (km2) | Direct loss today (PKR) | Direct loss, SSP5-8.5 (PKR) |
 |---|---|---|---|---|
@@ -707,7 +642,7 @@ Cautions that apply to these numbers:
 - Every caveat above in this chapter applies: loss frequency is taken equal to rainfall frequency, with no antecedent wetness. Read the figure as an order of magnitude for this area, not a budget.
 
 
-# 22. Landslide-Dam Screening
+# 21. Landslide-Dam Screening
 
 Where a runout deposit blocks a drainage line, a lake can form. The screening answers three questions about each blocking deposit: how big is the dam, how big a lake would it hold, and is it likely to be stable. It does **not** route a breach flood downstream: that is flood modelling, which is outside this product (the breach peak is given as a single number).
 
@@ -726,7 +661,7 @@ likely stable if DBI < 2.75,  likely unstable if DBI > 3.08,  uncertain between
 A synthetic valley test checks that a deposit across the channel is found, that DBI equals the formula and the lake is positive, that a deposit up the valley wall is not a dam, and that the Froehlich value reproduces the earlier prototype's 9,014 m3/s test case. Lake fill time needs an inflow, which is not known here, so it is not estimated.
 
 
-# 23. Nature-Based Solutions
+# 22. Nature-Based Solutions
 
 Three levers act on the stability inputs inside the whole area (an optional zone polygon is supported by the model; the page applies the whole area). They are **scenario levers: the size of each effect is the user's input, with plausible defaults, not a measured performance.** The platform reports the change against the unmitigated run under the same storm and strength scenario.
 
@@ -763,7 +698,7 @@ The ranking now uses the **unstable area at the end of the storm, including slop
 How to read it: planting is the strongest single lever here (the fitted soil is weak, 0.9 kPa cohesion, so added root cohesion matters most), and planting with regrading removes all instability. Regrading to the default 25 degree cap on its own does nothing for the saturated storm: a soil of friction angle 30 degrees with a fully saturated slip layer has a factor of safety below 1 even at 25 degrees, so a lower slope alone is not enough. These effect sizes (6 kPa root cohesion, 25 degree cap, drainage lowering saturation) are user inputs, not measurements, and the ranking is a stability-only comparison; the runout benefit needs a full mitigated run.
 
 
-# 24. Barriers and Automatic Placement
+# 23. Barriers and Automatic Placement
 
 ## The barrier model
 
@@ -796,17 +731,17 @@ The same 57 km2 Gilgit area, 60 mm/h triangular storm for 12 h, 2 barriers, a bu
 Two barriers (one 11 m high and about 400 m long, one 3 m high) cut the loss by about 2.7%. That is small because the slide here is 8.6 km2 of failing hillside sending 21 million m3 across a 26 km2 area: the failure is spread over thousands of release cells, so a barrier on one flow path intercepts only a share of it. The optimiser works as a tool, but this storm scenario is too large for barriers to matter; it is meant for one gully-sized failure, and the scenario is useful mainly as a limit on what barriers can do. With a 16 simulation budget the result is "a better option", not an optimum.
 
 
-# 25. Calibration and Validation Protocol
+# 24. Calibration and Validation Protocol
 
 ## 18.1 What can and cannot be validated
 
 | Question | Can it be checked here? | How |
 |---|---|---|
 | Does the code solve its own equations? | Yes | Unit tests and analytic checks (verification, Ch. 7.5) |
-| When does rain trigger landslides in Pakistan? | Partly | Dated rain-triggered reports against matched control days (Ch. 26) |
-| Where are slopes prone? | Partly | Reports against random places, scored over each report's accuracy disc (Ch. 27) |
-| Are soil strength parameters right? | Only through their effect on the two items above | Calibration against reports with block cross-validation (Ch. 28) |
-| Is simulated runout and depth right? | Only against published empirical relations | No mapped deposits exist locally (Ch. 30) |
+| When does rain trigger landslides in Pakistan? | Partly | Dated rain-triggered reports against matched control days (Ch. 25) |
+| Where are slopes prone? | Partly | Reports against random places, scored over each report's accuracy disc (Ch. 26) |
+| Are soil strength parameters right? | Only through their effect on the two items above | Calibration against reports with block cross-validation (Ch. 27) |
+| Is simulated runout and depth right? | Only against published empirical relations | No mapped deposits exist locally (Ch. 29) |
 | Is building damage or loss right? | **No** | No damage records exist locally |
 
 ## 18.2 Rules that apply to every experiment
@@ -832,7 +767,7 @@ Duplicates (same place within 5 km and the same day, or the same stated year for
 | Accurate to 5 km or better | 166 |
 
 
-# 26. Validation 1: Rainfall Skill (completed)
+# 25. Validation 1: Rainfall Skill (completed)
 
 ## 19.1 Design
 
@@ -883,7 +818,7 @@ The fitted curve (1.417 D^-0.275) is close to Guzzetti's and does **not** genera
 > Rain discriminates event days from ordinary days with modest skill. The ceiling is set by the data, not by the physics: ERA5-Land at 0.1 degree smooths convective bursts, report locations are uncertain by kilometres (so the grid cell may be wrong), and only 269 of the 381 cleaned reports carry a day-resolved date (the rest cannot be used here). Satellite rainfall at sub-daily resolution (IMERG is on the server) might raise this; that has not been tested.
 
 
-# 27. Validation 2: Spatial Skill
+# 26. Validation 2: Spatial Skill
 
 ## 20.1 Design
 
@@ -920,7 +855,7 @@ What this says:
 
 - The infinite-slope physics ranks reported landslide places only a little better than slope itself (0.60 against 0.57; the intervals overlap). On this inventory the physical model, with its generic parameters, is not a strong locator.
 - Statistical models using terrain, hydrology and land cover do clearly better (0.71 to 0.75). Physics adds nothing to them (0.752 against 0.753).
-- The new ground layers did **not** help; they lowered the score (0.733) because the extra inputs over-fit the 600 events. This agrees with Ch. 29.
+- The new ground layers did **not** help; they lowered the score (0.733) because the extra inputs over-fit the 600 events. This agrees with Ch. 28.
 - Adding road and city distance gives 0.763: reporting bias is small compared with the terrain signal, but not zero.
 - Skill falls with location uncertainty: AUC 0.82 for reports located within 1 km, 0.83 for 1 to 5 km, 0.73 beyond 5 km, as expected when a report's position is only known to its accuracy radius.
 
@@ -929,7 +864,7 @@ What this says:
 The physics model's job in the platform is runout, impacts and scenario testing, where the statistical models cannot help; for *where* landslides are likely, the national ML susceptibility layer (Tier 1) is the better guide, and the physics run should be read as "if this slope fails".
 
 
-# 28. Calibration of the Physical Parameters
+# 27. Calibration of the Physical Parameters
 
 ## 21.1 Idea
 
@@ -971,7 +906,7 @@ The same fit repeated with two more parameters (wetness exponent, suction; Ch. 5
 The fitted point values are stored as the strength preset `calibrated_reports_weak` (cohesion 0.9 kPa, friction 29.9 degrees, depth 2.5 m). They make the model rank *reported landslide days* above ordinary days, which is a ranking task; they are not a description of how much failure a storm causes. On the Gilgit area they leave about a quarter of the soil-bearing slopes unstable even when dry, and they fail 0.2% of the area for a 15 mm shower and 6% for a 120 mm storm. A magnitude 7.2 earthquake fails 8% of a 190 km2 area and releases 41 million m3, with debris 71 m deep at the deepest cell: a worst case, not a forecast. The preset was briefly the first in the list, which made it the page's default and made every run look catastrophic; it is now last, the page defaults to `colluvium_shallow`, and any run that fails more than 5% of its area carries a warning. The shipped presets differ sharply: for the same M 6.8 earthquake `colluvium_shallow` fails nothing (at a 5 cm criterion), `residual_soil` 7.7 km2, `weak_clayey` 17.8 km2 and `calibrated_reports_weak` 14.7 km2. Which one describes a real hillside is a question for soil data that do not exist for the mountains (Ch. 3.4); until then the preset is the dominant uncertainty of every absolute number in the platform.
 
 
-# 29. Calibration of the Spatial Ground
+# 28. Calibration of the Spatial Ground
 
 ## 22.1 Data
 
@@ -1006,13 +941,13 @@ Soil texture is the only layer that clearly helps (0.65 against 0.56 for the bas
 Lithology (0.59) and the bedrock-depth cap (0.59) each add about 0.03 over the base fit, with folds that disagree (lithology 0.50 to 0.71), which is within the noise of 600 events. Neither is adopted. The inventory has no records on several lithology groups, so their weights cannot be estimated.
 
 
-# 30. Check of the Runout Parameters
+# 29. Check of the Runout Parameters
 
 ## 22.1 What data exists
 
 The inventory has almost no volumes (one record) and no runout lengths or deposit areas, so the friction coefficients mu and xi cannot be fitted to Pakistani events. What can be done:
 
-1. **Match published empirical relations.** The Corominas (1996) fits of height drop H against runout length L, H = a L^b, with debris flows 1.109 L^0.857, landslides 2.606 L^0.669, rock avalanches 1.758 L^0.859 and rockfalls 1.999 L^0.803, give an expected travel angle for a given volume class. mu and xi per flow type are tuned so simulated reach angles over synthetic and real slopes fall inside the scatter of these relations.
+1. **Match published empirical relations.** The Corominas (1996) fits of height drop H against runout length L, H = a L^b, with debris flows 1.109 L^0.857, landslides 2.606 L^0.669, and rock avalanches 1.758 L^0.859, give an expected travel angle for a given volume class. mu and xi per flow type are tuned so simulated reach angles over synthetic and real slopes fall inside the scatter of these relations.
 2. **Earthquake ground motion** can be checked against USGS ShakeMaps of past Pakistani earthquakes (done, Ch. 6.2).
 3. **Deposit shape** can be scored (IoU, depth error) only if the owner supplies mapped deposits, for example from field surveys or high-resolution imagery.
 
@@ -1027,10 +962,8 @@ Synthetic channelised slopes (V-shaped valley, concave profile, heights 500, 800
 
 Both medians and all nine cases of each type lie inside a factor of 2.3 of the relation, but the two types sit on opposite sides: the debris flow is somewhat too long for its drop in the wettest sense (ratio below 1) and the shallow slide too short, and the shallow-slide ratio grows with volume (1.0 at 10^4 m3, about 2.1 at 10^6). So **mu and xi were left unchanged**: the synthetic valley is not a Pakistani valley, the Corominas relations are for a world sample with their own factor-of-2 scatter, and tuning two coefficients to one synthetic geometry would give false precision. The result says the solver's runouts are in the right range, not that they are calibrated. Any real calibration needs mapped deposits from the owner.
 
-Rockfall is the same: no recorded Pakistani rock paths exist on the server, so its dissipation was only set against published shadow angles (Ch. 14.9).
 
-
-# 31. Scoring a Run Against an Observed Extent
+# 30. Scoring a Run Against an Observed Extent
 
 Any finished run can be scored against an observed deposit or affected area supplied by the user (GeoJSON or zipped shapefile polygons, or a 0/1 GeoTIFF), for the same event. The model extent is the cells where the flow reached at least a chosen depth (default 0.3 m). On the run's own grid, inside the analysed area:
 
@@ -1040,26 +973,25 @@ CSI = hits / (hits + false alarms + misses)        POD = hits / (hits + misses)
 FAR = false alarms / (hits + false alarms)         F1 = 2 hits / (2 hits + false alarms + misses)        bias = (hits + false alarms)/(hits + misses)
 ```
 
-A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the only route to validating runout extent. No mapped Pakistani deposit is on the server, so **no real score exists yet**; one supplied event, with a rainfall record, would allow calibrating the friction parameters against it (Ch. 30).
+A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the only route to validating runout extent. No mapped Pakistani deposit is on the server, so **no real score exists yet**; one supplied event, with a rainfall record, would allow calibrating the friction parameters against it (Ch. 29).
 
 
-# 32. Accuracy Record
+# 31. Accuracy Record
 
 | Claim | Evidence | Status |
 |---|---|---|
-| The code solves its equations | 129 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
+| The code solves its equations | 123 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
 | Rainfall separates landslide days from ordinary days | AUC 0.73 (0.71 to 0.76) for 24 h intensity, leave-one-year-out | **Validated, modest** |
 | Published Guzzetti threshold is usable as a watch | TSS 0.32 on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics 0.56, with soil texture 0.65; mean slope 0.59 | **Weak** |
 | Calibrated parameters are better than the defaults | Held-out AUC 0.59 to 0.68 (144 events) | **Improved, wide interval** |
-| Runout lengths are realistic | Corominas relations on synthetic slopes (Ch. 30) | **Right order of magnitude, within a factor of about 2** |
+| Runout lengths are realistic | Corominas relations on synthetic slopes (Ch. 29) | **Right order of magnitude, within a factor of about 2** |
 | Earthquake PGA is realistic | 398 ShakeMaps: scatter 0.40 ln units (Ch. 6.2) | **Agrees with ShakeMap, which is itself a model** |
 | Shaking locates earthquake-triggered landslide reports | 31 reports, 7 earthquakes: PGA AUC 0.61, Newmark 0.57, slope 0.63 | **Not shown (n too small, reports cluster at roads)** |
 | Observed design storms are right | Back-test: Gumbel fitted to the first 30 years, the last 15 years of 75 points exceed the fitted level at 10 years 10% of the time (expected 10%), at 25 years 5% (expected 4%), at 2 years 42% (expected 50%); ERA5-Land smooths bursts | **Validated against held-out years; depths are lower bounds** |
 | Mitigation levers and barriers behave sensibly | Directional and mass tests on synthetic cases | **Verified; effect sizes are user inputs, not validated** |
 | Dam screening classes and formulas | Formula and synthetic-valley tests; no observed Pakistani dam used | **Verified; not validated** |
 | Annual average loss is realistic | Integration verified (identical method to SAILAB); stable when a return period is left out (within 2% for T of 10 years or more, +23% if the 2 year point is dropped) and 8% lower with log-log interpolation; assumes loss frequency equals rainfall frequency; no observed loss record | **Verified arithmetic and stable; the level is not validated** |
-| Rockfall reach and energy are realistic | Synthetic cliff-talus profile reproduces the literature shadow angle after friction is scaled by 0.45 (Ch. 14.9); Hunza rerun: reach angle median 39 degrees, 10th percentile 30; no Pakistani deposit data | **Consistent with published runout statistics; not validated against local events** |
 | Access and isolation analysis is right | Synthetic network tests; no observed closures | **Verified logic; not validated** |
 | Building damage and loss are realistic | No damage records for any Pakistani landslide on the server; valuation follows SAILAB (JRC maximum damage value, storeys, contents) and the fragility is assumed | **Not validated, assumed** |
 | Failure depth and volume are right | Modelled patch volumes against the area-volume scaling of Larsen et al. 2010: median ratio of modelled to implied depth 0.95 over 2,028 failing patches; 2,000 to 20,000 m2 patches 1.00, over 20,000 m2 0.49. No mapped deposits for flow depth or extent | **Failure volume plausible for mid-size patches; flow depth and deposit extent not validated** |
@@ -1076,9 +1008,9 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 The largest controllable limits are data: report locations good to 5 to 50 km, no deposit maps, no soil measurements, no damage records, and rainfall reanalysis that smooths bursts. What would raise accuracy most is, in order, mapped deposits and scars for a handful of Pakistani events (to calibrate friction and the failure depth), field strength and soil-depth measurements in a few catchments, a landslide inventory with surveyed positions and times, and a damage survey after one event. If you can provide any of these, the calibration chapters can use them directly.
 
 
-# 33. 3D Visualization
+# 32. 3D Visualization
 
-Three scenes share SAILAB's viewer stylesheet, controls, timeline, probe and export, but each draws its own hazard. The scene files are built from saved arrays (`frames.npz`, `impacts.json.gz`, `rocks.npz`), so the look can change and every run be re-rendered without re-simulating (`rebuild_scene`).
+Two scenes share SAILAB's viewer stylesheet, controls, timeline, probe and export, but each draws its own hazard. The scene files are built from saved arrays (`frames.npz`, `impacts.json.gz`, `rocks.npz`), so the look can change and every run be re-rendered without re-simulating (`rebuild_scene`).
 
 ## Debris flow and landslide
 
@@ -1088,47 +1020,43 @@ SAILAB's water surface (blue, glossy) is gone. Three things replace it:
 2. **A scar layer.** Each cell remembers when it failed. It flashes red-orange at that moment and then stays as pale exposed earth with a ragged darker rim (the failed mask is blurred and thresholded with noise, so the outline is not a blocky grid).
 3. **A terrain-change mode.** Net bed change from the solver: blue where soil was lost (scar and scour), brown where it was gained (deposit), lit as relief.
 
-Other changes: the flow-speed mode uses a blue-to-dark-red ramp; contact shadows fall beside the flow; buildings change colour with the depth reached so far (damage curve of Ch. 18); the loop is 24 s instead of 9 so events can be followed; the camera is placed below the deposit looking up the slope toward the source.
+Other changes: the flow-speed mode uses a blue-to-dark-red ramp; contact shadows fall beside the flow; buildings change colour with the depth reached so far (damage curve of Ch. 17); the loop is 24 s instead of 9 so events can be followed; the camera is placed below the deposit looking up the slope toward the source.
 
 ## Earthquake
 
 For earthquake runs the scene adds the epicentre (red marker), the rupture trace along the fault (glowing line), expanding wavefront rings, a **Ground shaking** map of PGA, and a brief damped shake of the camera as the wave passes. Failures begin at the quake time with the same flash and scar. **The wavefront speed is not physical:** the real S wave crosses a 5 km area in about a second, far shorter than any animation window, so the rings run at a time-scaled speed for visibility. The shaking map is the Joyner-Boore field of Ch. 6, without site amplification.
 
-## Rockfall
-
-Individual rocks are drawn as faceted instanced meshes coloured by their current energy (dark grey once stopped), with fading trails from their recent positions, dust puffs at fast impacts and a chart of rocks moving and stopped. Release cells are small grey dots; map modes show the reach probability, peak energy and bounce height; clicking the map reports all three. Buildings and roads are coloured by energy class. The camera looks up the slope from where the rocks stop.
-
 ## Checking the renders
 
-Scenes were rendered in headless Chromium through the DevTools protocol (`scripts/shot.py`), which waits for the scene to settle and reports JavaScript errors, and judged by eye at several moments of the event. This found real faults: the animation controls were blank because of a script error that only the page's own error hook revealed; rocks were invisible because three.js's lit instanced material did not accept a hand-made colour buffer; the rocks were too small to see at the default zoom. A software GL renderer is used, so real-GPU frame rate is not measured.
+Scenes were rendered in headless Chromium through the DevTools protocol (`scripts/shot.py`), which waits for the scene to settle and reports JavaScript errors, and judged by eye at several moments of the event. This found real faults: the animation controls were blank because of a script error that only the page's own error hook revealed. A software GL renderer is used, so real-GPU frame rate is not measured.
 
 ## Export
 
 PNG of the current view and an MP4 recorded from the canvas, transcoded on the server (`/export-video`).
 
 
-# 34. User Interface
+# 33. User Interface
 
 The page follows SAILAB's design system (colours, Barlow Condensed headings, Public Sans text, IBM Plex Mono numbers, glass panels), re-tinted amber so the two products are not confused. Layout: header with the hardware line, a 2D Mapbox map with layer buttons (national susceptibility, national physics, risk index, districts, faults, PNG export), a draggable divider, the 3D pane, a draggable column divider, and the right column.
 
-Right-column panels, top to bottom: draw or upload an area; district discovery (ranked by a national metric); river basins; rainfall and triggers (Open-Meteo, antecedent index, ERA5 wettest 72 h, threshold check); live monitoring; six tabs (screening, instant, physics, earthquake, mitigate, rockfall); layers of the current run with the PDF report link, landslide-dam screening, scoring against an observed extent and a batch PDF; GIS export, run history and comparison. Discovery also offers national rainfall hotspots. Barrier lines are drawn with the same drawing tool as the area polygon (the polygon is the area, lines are barriers). Every panel states what it is and is not, and the footer repeats that results are screening grade.
+Right-column panels, top to bottom: draw or upload an area; district discovery (ranked by a national metric); river basins; rainfall and triggers (Open-Meteo, antecedent index, ERA5 wettest 72 h, threshold check); live monitoring; five tabs (screening, instant, physics, earthquake, mitigate); layers of the current run with the PDF report link, landslide-dam screening, scoring against an observed extent and a batch PDF; GIS export, run history and comparison. Discovery also offers national rainfall hotspots. Barrier lines are drawn with the same drawing tool as the area polygon (the polygon is the area, lines are barriers). Every panel states what it is and is not, and the footer repeats that results are screening grade.
 
 Interface checks (after the mitigation tab and run tools were added): the page and the 3D scene load in headless Chromium without JavaScript errors, and the inline script passes `node --check`. Individual controls have been exercised through the API, not clicked through in a real browser.
 
 
 ## Run report
 
-The report (`/runs/<id>/report.html` and `.pdf`) follows SAILAB's report format: a masthead with the model name and run meta, a summary tile grid (failing area, peak PGA for earthquakes, released volume, impacted area, maximum depth, runout, damaged buildings, direct loss, blocked roads, people, isolated buildings; for rockfall the rocks, reach angle, energy and reach), map plates over a hillshade with captions and a legend row (flow depth, deposit, failure time, factor of safety, PGA; rockfall reach, energy, bounce), hover charts of the storm and of the failed area against time, a run-configuration table, an assumptions and warnings list, and a footer, with SAILAB's light and dark theme (`app/report.py`).
+The report (`/runs/<id>/report.html` and `.pdf`) follows SAILAB's report format: a masthead with the model name and run meta, a summary tile grid (failing area, peak PGA for earthquakes, released volume, impacted area, maximum depth, runout, damaged buildings, direct loss, blocked roads, people, isolated buildings), map plates over a hillshade with captions and a legend row (flow depth, deposit, failure time, factor of safety, PGA), hover charts of the storm and of the failed area against time, a run-configuration table, an assumptions and warnings list, and a footer, with SAILAB's light and dark theme (`app/report.py`).
 
 
-# 35. Access Control, Run Management and Operations Additions
+# 34. Access Control, Run Management and Operations Additions
 
 - **Token and rate limit.** If `LANDLAB_TOKEN` is set, every write (POST, DELETE) needs it as `Authorization: Bearer`, `X-Token` or `?token=`; reads stay open on the network, as in SAILAB. A per-address limit of 40 POST requests per minute applies (`LANDLAB_RATE`). This is a guard against accidents and casual abuse on a shared network, not real authentication: the token travels in clear text over HTTP. Set it before exposing the port beyond the lab.
 - **Run management.** `DELETE /runs/<id>` removes a run; `POST /runs/cleanup` lists (dry run by default) or deletes runs older than N days that are not among the 30 most recent; `GET /api/queue` lists running and queued jobs. One heavy job runs at a time.
 - **API tests.** Flask test-client tests cover the page, area validation, design-storm validation, refusal of runs with missing inputs, the token and the rate limit, unknown runs returning 404, and the dry-run default of cleanup. They run no simulations.
 
 
-# 36. Autonomous Monitoring Agents
+# 35. Autonomous Monitoring Agents
 
 The brief for this section asked for agents that manage continuous data streams, preprocess and diagnose workflows, detect interruptions, activate fallbacks, and keep validating and correcting forecasts. Part of that applies to LANDLAB and part does not, and the agents here are **rule-based programs, not language models**: each is a small deterministic procedure with a log, so it can be tested and explained (`app/agents.py`, 6 unit tests).
 
@@ -1140,7 +1068,7 @@ The brief for this section asked for agents that manage continuous data streams,
 | Detect data interruptions, activate fallbacks | Yes | Open-Meteo calls retry three times with back-off, then fall back to the last good response for the same 0.1 degree point if it is under 6 hours old, marked `stale_cache` with its age so the page and the watch say so. Outages and recoveries are logged. |
 | Preprocessing and workflow diagnostics | Partly. Preprocessing is a fixed pipeline, not a stream. | A health snapshot checks the required data files, the age of the ERA5 archive, the GPU and its free memory, disk space and the live feeds. Failed physics jobs are classified (user input, GPU, network, other): GPU and network failures are retried once (CPU solver, or a pause) and the recovery is written onto the result; user-input and unknown errors are not retried because a repeat would fail the same way. |
 | Evaluate and optimise models through forecast validation and error correction | Yes, for the rain forecast that drives the watches | Each monitored forecast is stored and later scored against what Open-Meteo reports as observed for the same hours; a bias factor per lead day, shrunk toward 1, scales the forecast before the watch threshold is tested. |
-| Continuous learning of the landslide model itself | No | The physics and thresholds are calibrated offline against the inventory (Ch. 28); there is no stream of confirmed landslides or damage to learn from, so nothing is adjusted automatically. |
+| Continuous learning of the landslide model itself | No | The physics and thresholds are calibrated offline against the inventory (Ch. 27); there is no stream of confirmed landslides or damage to learn from, so nothing is adjusted automatically. |
 
 ## 36.2 The forecast back-test
 
@@ -1162,7 +1090,7 @@ The watches store every forecast they issue. Every 30 minutes the audit agent sc
 The interruption agent can only keep a watch running on a feed that returns at all: when Open-Meteo is down for more than 6 hours, the watch reports the error rather than guessing, and there is no second forecast provider to switch to. Recovery from a GPU failure repeats the whole run on the CPU, which is slower, and a run that fails for a reason not in the list is reported, not repaired. The agents do not fix the model: they keep it fed, running and honestly scored.
 
 
-# 37. Discovery Tools
+# 36. Discovery Tools
 
 Three aids for choosing where to look, all independent of any run:
 
@@ -1173,17 +1101,17 @@ Three aids for choosing where to look, all independent of any run:
 > Values are those of the source dataset. The largest RX1day values (several hundred millimetres in a day in places such as Balochistan) come from ERA5-Land and were not independently checked here; the source's own README documents that ERA5-Land misses localised convective extremes in other places, so the dataset can both overstate and understate at a point.
 
 
-# 38. Reports, Comparison and Exports
+# 37. Reports, Comparison and Exports
 
 - **PDF report** (`/runs/<id>/report.pdf`): trigger, runout and exposure tables, the loss note and every warning and assumption, rendered with WeasyPrint.
 - **Compare two runs** (same polygon and grid): impacted area in A only, B only and both, maximum depth, mean depth change, direct loss. Example: a 70 mm/h storm against an M 7.2 earthquake on the Gilgit test area impacts 3.9 and 12.4 km2, with 3.0 and 11.1 billion PKR direct loss.
 - **Run manifest**: model and version, sources, grid, parameters, rainfall provenance, warnings, calibration and validation status.
 - **Summary JSON**, **map layers** (maximum depth and speed, deposit, scour, failure time, minimum FS, PGA, slope) as georeferenced PNG overlays, **MP4 and PNG** from the 3D scene.
 - **Batch PDF** (`/batch-report.pdf?ids=...`): a table of selected runs with rain, failing area, released volume, impacted area, depth, buildings at DS3 or above and direct loss.
-- **Mitigation comparison**: unmitigated against mitigated run, with the change in failing area, impacted area, loss, blocked road length and buildings at DS3 or above (Ch. 23, 24).
+- **Mitigation comparison**: unmitigated against mitigated run, with the change in failing area, impacted area, loss, blocked road length and buildings at DS3 or above (Ch. 22, 23).
 
 
-# 39. Chronicle of Findings and Bugs
+# 38. Chronicle of Findings and Bugs
 
 Each entry was found by checking a result against something known, not by inspection of the code.
 
@@ -1204,45 +1132,42 @@ Each entry was found by checking a result against something known, not by inspec
 | 13 | `pgrep -f` and `pkill -f` with a plain pattern killed the tool's own shell | Shell exited with code 144 | Anchored patterns |
 | 14 | Chart of an animation window began at "0:00" although it started hours into the storm | Reading a screenshot | Legend states the window start; calendar time is shown when a start date exists |
 | 15 | The earthquake run's numbers had been quoted for a storm run in a draft of this document | Checking the figures against the stored comparison | Corrected in Ch. 12.4 |
-| 16 | A "6 m barrier" on a steep slope let 90% of a flow through | The new barrier test | A wall's height is measured above the ground upslope: the wall cell is raised by height plus the ground drop across a cell (Ch. 24) |
-| 17 | IMERG sub-hourly values were intensities, not depths, so a 1 h design storm summed to 9.1 mm instead of 8.0 mm | Mass check of the hyetograph against the IDF depth | Convert intensity to depth by multiplying by duration before taking the shape (Ch. 16) |
+| 16 | A "6 m barrier" on a steep slope let 90% of a flow through | The new barrier test | A wall's height is measured above the ground upslope: the wall cell is raised by height plus the ground drop across a cell (Ch. 23) |
+| 17 | IMERG sub-hourly values were intensities, not depths, so a 1 h design storm summed to 9.1 mm instead of 8.0 mm | Mass check of the hyetograph against the IDF depth | Convert intensity to depth by multiplying by duration before taking the shape (Ch. 15) |
 | 18 | `np.interp` rejected an array `left` argument in the sub-hourly branch | First hyetograph call | Handle the shortest-window extrapolation explicitly |
 | 19 | The reference storm (360 mm) is five times the observed 100-year 24 h depth at Gilgit | Compared with the new IDF table | Described as a stress test; use the observed design storms for realistic runs |
-| 20 | The first debris viewer drew stacked depth contours: stepped pillars, then smooth blobs | Rendering and looking at it | Replaced by a displaced surface mesh with a rubble material (Ch. 33) |
+| 20 | The first debris viewer drew stacked depth contours: stepped pillars, then smooth blobs | Rendering and looking at it | Replaced by a displaced surface mesh with a rubble material (Ch. 32) |
 | 21 | The new viewer's controls were blank | A render showed an empty timeline; no console message | An in-page error hook exposed a `const` used before its definition; the block was moved earlier |
-| 22 | Rocks were invisible | Render showed only release markers | The lit instanced material rejected a hand-made colour buffer; colours are now set through three.js and rocks are drawn larger |
-| 23 | A rockfall fence counted nothing as stopped | The barrier test | Stops at a fence were not added to the stop map |
 | 24 | The deposit rebuild failed when the geometry helper arrays were cropped twice | Rebuilding a scene from saved frames | `viewer.build` takes already-cropped arrays; the crop only locates them |
 | 25 | A patch list for the viewer applied in the wrong order and failed loudly (three times) | The build raised "patch target missing" | Patches that touch the same text were merged; the failing check is kept on purpose so a changed SAILAB viewer cannot silently break the scene |
 | 26 | My own document builder deleted the new visualisation chapter | Two chapter files shared a slug | Rewritten; chapter slugs must be unique |
-| 27 | With land-cover root cohesion the Gilgit failing area rose from 1.2 to 4.4 km2 | Comparing runs | Reported as a sensitivity, not hidden (Ch. 20) |
+| 27 | With land-cover root cohesion the Gilgit failing area rose from 1.2 to 4.4 km2 | Comparing runs | Reported as a sensitivity, not hidden (Ch. 19) |
 
 
-# 40. Considered and Declined
+# 39. Considered and Declined
 
 - **Coupling with flood modelling.** Declined by the owner: LANDLAB and SAILAB stay separate products. Debris flows are not run through a water solver.
 - **Using the national ML susceptibility as a predictor in the validation models.** It was trained on the inventory; using it would leak the answer. It is shown as a labelled optimistic reference only.
-- **Bilinear resampling of population.** Counts are not intensities; see Ch. 39 (#1).
+- **Bilinear resampling of population.** Counts are not intensities; see Ch. 38 (#1).
 - **Promoting year-only dates to a day.** Invents precision that would corrupt the rainfall validation.
-- **A Pakistan-specific I-D threshold.** Fitted, but no better out of sample than the published Guzzetti curve (Ch. 26.4), so not adopted.
+- **A Pakistan-specific I-D threshold.** Fitted, but no better out of sample than the published Guzzetti curve (Ch. 25.4), so not adopted.
 - **Absolute landslide probabilities.** Not identifiable from a report inventory.
 - **A temperature guard on GPU jobs.** Dropped by the owner's decision (Ch. 2.3).
 - **Interactive whole-country physics.** Meaningless at the needed cell size (Ch. 4.1); replaced by the tiled national product.
 - **External multiphase runout engines (r.avaflow and similar).** Not available on the server; the in-house solver is verified but uncalibrated, and this is stated wherever it is used.
 - **Raising the inventory with downloaded catalogues.** No further catalogue was found on the server, and none was downloaded without the owner's say-so.
-- **Routing a landslide-dam breach flood downstream.** That is flood modelling; the dam screening stops at formation, stability, lake volume and a breach peak (Ch. 22).
+- **Routing a landslide-dam breach flood downstream.** That is flood modelling; the dam screening stops at formation, stability, lake volume and a breach peak (Ch. 21).
 - **An areal reduction factor on design storms.** The constants are not available from a source on the server; point rainfall is used and is conservative for the areas run.
 - **A surrogate model for barrier placement.** Not trusted at this sample size; every candidate is a real simulation under a hard budget.
 - **Default wall costs.** No cost data exist here; the optimiser takes the cost from the user and says what happens at zero.
 - **Filling in geology strength values from intuition.** The 16 geology units are colour classes with guessed lithology; invented values would look like data. Multipliers stay 1.0 until calibration.
-- **Rockfall damage and loss.** No fragility for rock impact is available; only energy classes are reported.
 - **Real-time seismic wave speed in the animation.** Physically correct and invisible; the rings are time-scaled and say so.
 
 
-# 41. Known Limitations
+# 40. Known Limitations
 
-1. **Calibrated and validated only as far as the inventory allows.** See Ch. 32 for exactly what has and has not been checked.
-2. **One soil layer, infinite slope.** No deep-seated slides, no rock-slope kinematics, no rockfall, no snow avalanche, no glacial-lake outbursts.
+1. **Calibrated and validated only as far as the inventory allows.** See Ch. 31 for exactly what has and has not been checked.
+2. **One soil layer, infinite slope.** No deep-seated slides, no rock-slope kinematics, no rockfall (not modelled: removed from the platform), no snow avalanche, no glacial-lake outbursts.
 3. **Rain is spatially uniform** over the area by default and comes from a point (ERA5, CHIRPS, forecast) or a design storm; a gridded-rain option exists (Ch. 5.7) but cannot be tested on this inventory.
 4. **Pore pressure is a proxy** from a wetting front, not groundwater flow. A topographic water-table option and a suction option exist; neither improved held-out skill, so both are off.
 5. **Failure depth equals soil depth**, thinned with slope by an assumption and optionally capped by the bedrock-depth map; real slip surfaces are not mapped, and the borehole, groundwater and soil data supplied later are on the Indus plain, not on slopes, so they could not constrain it (Ch. 3.4).
@@ -1257,13 +1182,12 @@ Each entry was found by checking a result against something known, not by inspec
 14. **Mitigation effects** (root cohesion, regrading, drainage, barrier height) are the user's scenario inputs; regrading changes stability only, not the terrain the flow crosses; barriers are not drawn in the 3D scene.
 15. **Average annual loss** assumes a T-year storm gives the T-year loss.
 16. **Dam screening** uses a drainage area truncated at the analysed edge and an embankment breach formula for the peak; there is no downstream routing.
-17. **Rockfall** uses scenario restitution, friction and roughness; the first run gave reach angles steeper than literature shadow angles, so it is probably too dissipative; energy is translational only; no damage or loss is estimated.
 18. **Geology** strength multipliers are neutral (1.0) because the geology raster's lithology is only guessed from colours.
 19. **Earthquake animation** wavefronts are time-scaled; the shaking field has no site amplification.
 20. **Access analysis** sees only roads inside the area and ignores speeds.
 
 
-# 42. Operations and Testing
+# 41. Operations and Testing
 
 ## 30.1 Running
 
@@ -1278,7 +1202,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 
 ## 30.2 Tests
 
-`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 129 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
+`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 123 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
 
 ## 30.3 Files
 
@@ -1295,7 +1219,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 One heavy job at a time; the GPU is shared, so it is released after every job; any GPU failure falls back to the CPU; all data paths are read-only; the application never writes into SAILAB or the shared data folders.
 
 
-# 43. References
+# 42. References
 
 - Azarafza, M. et al. (2021). Deep learning-based landslide susceptibility mapping. *Scientific Reports* 11, 24112 (the national ML method).
 - Bates, P. D., Horritt, M. S., Fewtrell, T. J. (2010). A simple inertial formulation of the shallow water equations. *Journal of Hydrology* 387, 33-45.
@@ -1304,8 +1228,6 @@ One heavy job at a time; the GPU is shared, so it is released after every job; a
 - Funk, C. et al. (2015). The climate hazards infrared precipitation with stations (CHIRPS). *Scientific Data* 2, 150066.
 - Green, W. H., Ampt, G. A. (1911). Studies on soil physics. *Journal of Agricultural Science* 4, 1-24.
 - Guzzetti, F., Peruccacci, S., Rossi, M., Stark, C. P. (2008). The rainfall intensity-duration control of shallow landslides and debris flows: an update. *Landslides* 5, 3-17.
-- Dorren, L. K. A. (2003). A review of rockfall mechanics and modelling approaches. *Progress in Physical Geography* 27, 69-87.
-- Volkwein, A. et al. (2011). Rockfall characterisation and structural protection: a review. *Natural Hazards and Earth System Sciences* 11, 2617-2651.
 - Ermini, L., Casagli, N. (2003). Prediction of the behaviour of landslide dams using a geomorphological dimensionless index. *Earth Surface Processes and Landforms* 28, 31-47.
 - Froehlich, D. C. (1995). Peak outflow from breached embankment dam. *Journal of Water Resources Planning and Management* 121, 90-97.
 - Hosking, J. R. M. (1990). L-moments: analysis and estimation of distributions using linear combinations of order statistics. *Journal of the Royal Statistical Society B* 52, 105-124.

@@ -16,4 +16,4 @@ By default one strength set applies to the whole area. With **spatially varying 
 
 ## GIS export
 
-`/runs/<id>/export.zip` gives: GeoTIFF rasters in the analysis CRS (DEM, slope, maximum depth and speed, deposit, scour, failure time, minimum FS, PGA, rock reach, energy and bounce height as available); GeoJSON polygons of the failure zones and the debris or rock-reach extent; GeoJSON and CSV of buildings with damage state, loss and rock energy class; affected roads; the manifest with all parameters and warnings; the summary. Nodata is -9999.
+`/runs/<id>/export.zip` gives: GeoTIFF rasters in the analysis CRS (DEM, slope, maximum depth and speed, deposit, scour, failure time, minimum FS, PGA as available); GeoJSON polygons of the failure zones and the debris; GeoJSON and CSV of buildings with damage state, loss; affected roads; the manifest with all parameters and warnings; the summary. Nodata is -9999.

@@ -4,7 +4,7 @@
 
 The inventory has almost no volumes (one record) and no runout lengths or deposit areas, so the friction coefficients mu and xi cannot be fitted to Pakistani events. What can be done:
 
-1. **Match published empirical relations.** The Corominas (1996) fits of height drop H against runout length L, H = a L^b, with debris flows 1.109 L^0.857, landslides 2.606 L^0.669, rock avalanches 1.758 L^0.859 and rockfalls 1.999 L^0.803, give an expected travel angle for a given volume class. mu and xi per flow type are tuned so simulated reach angles over synthetic and real slopes fall inside the scatter of these relations.
+1. **Match published empirical relations.** The Corominas (1996) fits of height drop H against runout length L, H = a L^b, with debris flows 1.109 L^0.857, landslides 2.606 L^0.669, and rock avalanches 1.758 L^0.859, give an expected travel angle for a given volume class. mu and xi per flow type are tuned so simulated reach angles over synthetic and real slopes fall inside the scatter of these relations.
 2. **Earthquake ground motion** can be checked against USGS ShakeMaps of past Pakistani earthquakes (done, Ch. {{ch:earthquake_failure}}.2).
 3. **Deposit shape** can be scored (IoU, depth error) only if the owner supplies mapped deposits, for example from field surveys or high-resolution imagery.
 
@@ -18,5 +18,3 @@ Synthetic channelised slopes (V-shaped valley, concave profile, heights 500, 800
 | Landslide (shallow slide) | 0.30, 300 | {{runout_calibration.json:types.landslide.median_ratio|2}} | 1.03 to 2.22 |
 
 Both medians and all nine cases of each type lie inside a factor of 2.3 of the relation, but the two types sit on opposite sides: the debris flow is somewhat too long for its drop in the wettest sense (ratio below 1) and the shallow slide too short, and the shallow-slide ratio grows with volume (1.0 at 10^4 m3, about 2.1 at 10^6). So **mu and xi were left unchanged**: the synthetic valley is not a Pakistani valley, the Corominas relations are for a world sample with their own factor-of-2 scatter, and tuning two coefficients to one synthetic geometry would give false precision. The result says the solver's runouts are in the right range, not that they are calibrated. Any real calibration needs mapped deposits from the owner.
-
-Rockfall is the same: no recorded Pakistani rock paths exist on the server, so its dissipation was only set against published shadow angles (Ch. {{ch:rockfall}}.9).

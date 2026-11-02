@@ -15,5 +15,4 @@
 - **A surrogate model for barrier placement.** Not trusted at this sample size; every candidate is a real simulation under a hard budget.
 - **Default wall costs.** No cost data exist here; the optimiser takes the cost from the user and says what happens at zero.
 - **Filling in geology strength values from intuition.** The 16 geology units are colour classes with guessed lithology; invented values would look like data. Multipliers stay 1.0 until calibration.
-- **Rockfall damage and loss.** No fragility for rock impact is available; only energy classes are reported.
 - **Real-time seismic wave speed in the animation.** Physically correct and invisible; the rings are time-scaled and say so.

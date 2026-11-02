@@ -25,8 +25,6 @@ Each entry was found by checking a result against something known, not by inspec
 | 19 | The reference storm (360 mm) is five times the observed 100-year 24 h depth at Gilgit | Compared with the new IDF table | Described as a stress test; use the observed design storms for realistic runs |
 | 20 | The first debris viewer drew stacked depth contours: stepped pillars, then smooth blobs | Rendering and looking at it | Replaced by a displaced surface mesh with a rubble material (Ch. {{ch:visualization}}) |
 | 21 | The new viewer's controls were blank | A render showed an empty timeline; no console message | An in-page error hook exposed a `const` used before its definition; the block was moved earlier |
-| 22 | Rocks were invisible | Render showed only release markers | The lit instanced material rejected a hand-made colour buffer; colours are now set through three.js and rocks are drawn larger |
-| 23 | A rockfall fence counted nothing as stopped | The barrier test | Stops at a fence were not added to the stop map |
 | 24 | The deposit rebuild failed when the geometry helper arrays were cropped twice | Rebuilding a scene from saved frames | `viewer.build` takes already-cropped arrays; the crop only locates them |
 | 25 | A patch list for the viewer applied in the wrong order and failed loudly (three times) | The build raised "patch target missing" | Patches that touch the same text were merged; the failing check is kept on purpose so a changed SAILAB viewer cannot silently break the scene |
 | 26 | My own document builder deleted the new visualisation chapter | Two chapter files shared a slug | Rewritten; chapter slugs must be unique |

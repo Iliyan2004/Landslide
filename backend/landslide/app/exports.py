@@ -10,7 +10,7 @@ from pyproj import Transformer
 from shapely.geometry import shape, mapping
 from shapely.ops import transform as shp_t, unary_union
 
-RASTERS = ("dem", "slope", "hmax", "vmax", "deposit", "scour", "t_fail_h", "fs_min", "pga_g", "reach_frac", "emax_kj", "hmax_m", "z")
+RASTERS = ("dem", "slope", "hmax", "vmax", "deposit", "scour", "t_fail_h", "fs_min", "pga_g", "z")
 
 
 def _tif(arr, g, t):
@@ -32,7 +32,7 @@ def build_zip(rdir):
         zf.writestr("README.txt", "LANDLAB export. Rasters are in the analysis CRS %s (cell %.0f m), nodata -9999. Screening-grade; see manifest.json for parameters and warnings.\n" % (g["crs"], g["resolution_m"]))
         tr = Transformer.from_crs(g["crs"], 4326, always_xy=True)
         # failure / impact extent polygons
-        for key, thr, nm in (("hmax", 0.3, "debris_extent"), ("reach_frac", 0.01, "rock_reach")):
+        for key, thr, nm in (("hmax", 0.3, "debris_extent"),):
             if key in z.files:
                 m = (np.nan_to_num(z[key]) >= thr).astype("uint8")
                 polys = [shape(s) for s, v in shapes(m, mask=m.astype(bool), transform=t) if v == 1]
@@ -45,7 +45,7 @@ def build_zip(rdir):
             if polys:
                 u = shp_t(tr.transform, unary_union(polys).simplify(g["resolution_m"] * 0.4))
                 zf.writestr("vector/failure_zones.geojson", json.dumps({"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {}, "geometry": mapping(u)}]}))
-        for fn, kind in (("impacts.json.gz", "debris"), ("impacts_rock.json.gz", "rock")):
+        for fn, kind in (("impacts.json.gz", "debris"),):
             p = rdir / fn
             if not p.exists():
                 continue
@@ -53,14 +53,13 @@ def build_zip(rdir):
             for b in d["buildings"]:
                 coords = b.get("c")
                 dmg, ds, loss = b.get("dmg"), b.get("ds"), b.get("loss")
-                cls = b.get("cls"); em = b.get("emax")
-                props = {"area_m2": b.get("a"), "damage_ratio": dmg, "damage_state": ds, "loss_pkr": loss, "rock_energy_class": cls, "rock_emax_kj": em}
+                props = {"area_m2": b.get("a"), "damage_ratio": dmg, "damage_state": ds, "loss_pkr": loss}
                 feats.append({"type": "Feature", "properties": props, "geometry": {"type": "Polygon", "coordinates": [coords]}})
                 rows.append({**props, "lon": b.get("cx"), "lat": b.get("cy")})
             zf.writestr(f"vector/buildings_{kind}.geojson", json.dumps({"type": "FeatureCollection", "features": feats}))
             sio = io.StringIO(); w = csv.DictWriter(sio, fieldnames=list(rows[0].keys()) if rows else ["lon", "lat"]); w.writeheader(); [w.writerow(r) for r in rows]
             zf.writestr(f"tables/buildings_{kind}.csv", sio.getvalue())
-            rf = [{"type": "Feature", "properties": {"blocked": r.get("blocked"), "rock_class": r.get("cls")}, "geometry": {"type": "LineString", "coordinates": r["c"]}} for r in d["roads"] if r.get("blocked") or (r.get("cls") is not None and r.get("cls") >= 0)]
+            rf = [{"type": "Feature", "properties": {"blocked": r.get("blocked")}, "geometry": {"type": "LineString", "coordinates": r["c"]}} for r in d["roads"] if r.get("blocked") or (r.get("cls") is not None and r.get("cls") >= 0)]
             zf.writestr(f"vector/roads_affected_{kind}.geojson", json.dumps({"type": "FeatureCollection", "features": rf}))
         s = (rdir / "summary.json").read_text()
         zf.writestr("summary.json", s)

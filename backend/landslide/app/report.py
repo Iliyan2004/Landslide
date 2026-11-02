@@ -136,33 +136,22 @@ def build_html(rid, runs_root):
     fl, ex, tr, qk = s.get("flow") or {}, s.get("exposure") or {}, s.get("trigger") or {}, s.get("quake") or {}
     mode = s.get("mode", "rain"); res = float(s.get("resolution_m") or 30.0); tiles, plates, legend, charts = [], [], [], []
     dem = z["dem"] if z is not None and "dem" in z.files else None
-    if mode == "rockfall":
-        oc, ta = s.get("outcome_rocks") or {}, s.get("travel_angle_deg") or {}
-        tiles = [_tile("Rocks released", _fmt((s.get("release") or {}).get("rocks"), 0), f"{_fmt((s.get('release') or {}).get('source_cells'), 0)} release cells"),
-                 _tile("Rocks stopped", _fmt(100 * oc.get("stopped", 0), 0) + " %", f"{_fmt(100 * oc.get('left_area', 0), 0)} % left the area"),
-                 _tile("Median reach angle", _fmt(ta.get("p50"), 0) + "°", f"10th percentile {_fmt(ta.get('p10'), 0)}°"),
-                 _tile("Longest runout", _fmt(s.get("max_runout_m"), 0) + " m", ""), _tile("Peak energy", _fmt(s.get("peak_energy_kj"), 0) + " kJ", f"99th percentile {_fmt(s.get('p99_energy_kj'), 0)}"),
-                 _tile("Bounce height (95th)", _fmt(s.get("p95_bounce_height_m"), 1) + " m", ""), _tile("Area reached", _fmt(s.get("reached_area_km2"), 3) + " km²", ""),
-                 _tile("Buildings reached", _fmt(ex.get("buildings_reached"), 0), f"of {_fmt(ex.get('buildings_in_aoi'), 0)}"), _tile("Road reached", _fmt(ex.get("road_reached_km"), 2) + " km", f"of {_fmt(ex.get('road_length_km'), 1)} km")]
-        layers = [("reach_frac", "reach_frac", "Reach probability", "Share of released rocks that passed each cell.", None), ("emax_kj", "emax_kj", "Maximum energy", "Peak translational energy (0.5 m v²) of any rock in the cell, kJ.", None),
-                  ("hmax_m", "hmax_m", "Bounce height", "Maximum height of a rock above the ground in the cell, m.", None)]
-    else:
-        tiles = [_tile("Failing area", _fmt(tr.get("failing_area_km2"), 3) + " km²", f"{_fmt(100 * (tr.get('failing_frac_of_area') or 0), 1)} % of the area"),
-                 _tile("Released volume", _fmt((fl.get("released_volume_m3") or 0) / 1e6, 2) + " Mm³", f"{_fmt(fl.get('entrained_volume_m3'), 0)} m³ entrained"),
-                 _tile("Impacted area", _fmt(fl.get("impacted_area_km2"), 3) + " km²", "flow depth over 0.3 m"),
-                 _tile("Max depth", _fmt(fl.get("max_depth_m"), 1) + " m", f"max speed {_fmt(fl.get('max_speed_ms'), 1)} m/s"),
-                 _tile("Max runout", _fmt(fl.get("max_runout_m"), 0) + " m", "from the source cells"),
-                 _tile("Buildings DS ≥ 3", _fmt(ex.get("buildings_ds_ge3"), 0), f"{_fmt(ex.get('buildings_damaged_ds_ge1'), 0)} damaged of {_fmt(ex.get('buildings_in_aoi'), 0)}"),
-                 _tile("Direct loss", _money(ex.get("direct_loss_pkr")), "structure + contents + crops"),
-                 _tile("Roads blocked", _fmt(ex.get("road_blocked_km"), 2) + " km", f"of {_fmt(ex.get('road_length_km'), 1)} km"),
-                 _tile("People in impacted cells", _fmt(ex.get("population_in_impacted_cells"), 0), "population raster")]
-        if qk:
-            tiles.insert(1, _tile("Peak PGA", _fmt(qk.get("pga_g_max"), 2) + " g", f"M {qk.get('magnitude')} · rupture {_fmt(qk.get('rupture_km'), 0)} km"))
-        if (ex.get("access") or {}).get("points"):
-            a = ex["access"]; tiles.append(_tile("Cut off from roads", _fmt(a.get("cut_off"), 0), f"of {_fmt(a.get('points'), 0)} buildings and facilities"))
-        layers = [("hmax", "hmax", "Maximum flow depth", "Peak debris depth per cell over the run, m.", 0.05), ("deposit", "deposit", "Net deposit", "Thickness left on the ground after the flow stopped, m.", 0.05),
-                  ("t_fail_h", "t_fail_h", "Failure time", "Hours from the start of the storm to the first failure of each cell.", None), ("fs_min", "min_fs_p50", "Minimum factor of safety", "Lowest FS reached; below 1 the slope fails.", None),
-                  ("pga_g", "pga_g", "Peak ground acceleration", "Mean horizontal PGA from the ground-motion model, g.", None)]
+    tiles = [_tile("Failing area", _fmt(tr.get("failing_area_km2"), 3) + " km²", f"{_fmt(100 * (tr.get('failing_frac_of_area') or 0), 1)} % of the area"),
+             _tile("Released volume", _fmt((fl.get("released_volume_m3") or 0) / 1e6, 2) + " Mm³", f"{_fmt(fl.get('entrained_volume_m3'), 0)} m³ entrained"),
+             _tile("Impacted area", _fmt(fl.get("impacted_area_km2"), 3) + " km²", "flow depth over 0.3 m"),
+             _tile("Max depth", _fmt(fl.get("max_depth_m"), 1) + " m", f"max speed {_fmt(fl.get('max_speed_ms'), 1)} m/s"),
+             _tile("Max runout", _fmt(fl.get("max_runout_m"), 0) + " m", "from the source cells"),
+             _tile("Buildings DS ≥ 3", _fmt(ex.get("buildings_ds_ge3"), 0), f"{_fmt(ex.get('buildings_damaged_ds_ge1'), 0)} damaged of {_fmt(ex.get('buildings_in_aoi'), 0)}"),
+             _tile("Direct loss", _money(ex.get("direct_loss_pkr")), "structure + contents + crops"),
+             _tile("Roads blocked", _fmt(ex.get("road_blocked_km"), 2) + " km", f"of {_fmt(ex.get('road_length_km'), 1)} km"),
+             _tile("People in impacted cells", _fmt(ex.get("population_in_impacted_cells"), 0), "population raster")]
+    if qk:
+        tiles.insert(1, _tile("Peak PGA", _fmt(qk.get("pga_g_max"), 2) + " g", f"M {qk.get('magnitude')} · rupture {_fmt(qk.get('rupture_km'), 0)} km"))
+    if (ex.get("access") or {}).get("points"):
+        a = ex["access"]; tiles.append(_tile("Cut off from roads", _fmt(a.get("cut_off"), 0), f"of {_fmt(a.get('points'), 0)} buildings and facilities"))
+    layers = [("hmax", "hmax", "Maximum flow depth", "Peak debris depth per cell over the run, m.", 0.05), ("deposit", "deposit", "Net deposit", "Thickness left on the ground after the flow stopped, m.", 0.05),
+              ("t_fail_h", "t_fail_h", "Failure time", "Hours from the start of the storm to the first failure of each cell.", None), ("fs_min", "min_fs_p50", "Minimum factor of safety", "Lowest FS reached; below 1 the slope fails.", None),
+              ("pga_g", "pga_g", "Peak ground acceleration", "Mean horizontal PGA from the ground-motion model, g.", None)]
     if z is not None and dem is not None:
         for key, ramp, title, cap, thr in layers:
             if key in z.files and np.isfinite(z[key]).any():
@@ -181,16 +170,13 @@ def build_html(rid, runs_root):
         charts.append(_chart("c-fail", "Failed area", "km²", fct["t_h"], np.array(fct["cells"]) * res * res / 1e6, ACCENT_LIGHT, "h", yd=3))
     prm = tr.get("params") or {}
     cfg = [("Run", rid), ("Mode", mode), ("Model version", f"{MODEL_NAME} {man.get('model_version', '')}"), ("Area", f"{_fmt(s.get('area_km2'), 2)} km²"), ("Grid", f"{s.get('grid')} @ {res:.0f} m"), ("Solver backend", s.get("backend") or "—")]
-    if mode != "rockfall":
-        cfg += [("Strength preset / quantile", f"{params.get('strength_preset', '—')} / {params.get('strength_quantile', '—')}"), ("Soil texture", params.get("texture", "—")),
-                ("Cohesion · friction · depth", f"{prm.get('effective_cohesion', '—')} Pa · {prm.get('friction_angle', '—')}° · {_fmt(tr.get('soil_depth_mean_m'), 2)} m mean"),
-                ("Failure type (mu, xi)", f"{fl.get('failure_type', '—')} ({fl.get('mu', '—')}, {fl.get('xi', '—')})"), ("Antecedent wetness", json.dumps(tr.get("antecedent")) if tr.get("antecedent") else "off"),
-                ("Spatial ground", json.dumps(tr.get("spatial_ground")) if tr.get("spatial_ground") else "off"), ("Ensemble", (f"{(s.get('ensemble') or {}).get('members')} members" if s.get("ensemble") else "off")),
-                ("Mass check", f"{_fmt(fl.get('mass_check_m3'), 1)} m³ (should be ≈ 0)")]
-        if qk:
-            cfg.append(("Ground motion", qk.get("model", "—")))
-    else:
-        cfg += [("Release", json.dumps(s.get("release"))), ("Rock shape · roughness", f"{(s.get('release') or {}).get('shape')} · {(s.get('release') or {}).get('rough_deg')}°")]
+    cfg += [("Strength preset / quantile", f"{params.get('strength_preset', '—')} / {params.get('strength_quantile', '—')}"), ("Soil texture", params.get("texture", "—")),
+            ("Cohesion · friction · depth", f"{prm.get('effective_cohesion', '—')} Pa · {prm.get('friction_angle', '—')}° · {_fmt(tr.get('soil_depth_mean_m'), 2)} m mean"),
+            ("Failure type (mu, xi)", f"{fl.get('failure_type', '—')} ({fl.get('mu', '—')}, {fl.get('xi', '—')})"), ("Antecedent wetness", json.dumps(tr.get("antecedent")) if tr.get("antecedent") else "off"),
+            ("Spatial ground", json.dumps(tr.get("spatial_ground")) if tr.get("spatial_ground") else "off"), ("Ensemble", (f"{(s.get('ensemble') or {}).get('members')} members" if s.get("ensemble") else "off")),
+            ("Mass check", f"{_fmt(fl.get('mass_check_m3'), 1)} m³ (should be ≈ 0)")]
+    if qk:
+        cfg.append(("Ground motion", qk.get("model", "—")))
     cfg.append(("Elapsed", f"{_fmt(s.get('elapsed_total_s') or s.get('elapsed_s'), 1)} s"))
     cfg_rows = "".join(f"<tr><td>{escape(str(k))}</td><td>{escape(str(v))}</td></tr>" for k, v in cfg)
     notes = "".join(f"<li>{escape(w)}</li>" for w in d.get("warnings", []))
@@ -203,7 +189,7 @@ def build_html(rid, runs_root):
 <div class="masthead"><div class="brand"><span class="brand-mark">{MODEL_NAME}</span><span class="brand-tag">{MODEL_TAGLINE}</span></div><div class="run-meta">{meta}</div></div>
 <div class="banner">Screening-grade decision support. Not for engineering design or evacuation orders.</div>
 {sec("Summary", f'<div class="tiles">{"".join(tiles)}</div>')}
-{sec("Failure, runout &amp; hazard maps" if mode != "rockfall" else "Rockfall hazard maps", f'<div class="maps-grid">{"".join(plates)}</div><div class="legend-row">{"".join(legend)}</div>' if plates else "")}
+{sec("Failure, runout &amp; hazard maps", f'<div class="maps-grid">{"".join(plates)}</div><div class="legend-row">{"".join(legend)}</div>' if plates else "")}
 {sec("Storm &amp; failure evolution", f'<div class="charts-grid">{"".join(charts)}</div>' if charts else "")}
 {sec("Run configuration", f'<table class="appendix">{cfg_rows}</table>')}
 {sec("Assumptions &amp; warnings", f'<ul class="notes">{notes}</ul>' if notes else "")}

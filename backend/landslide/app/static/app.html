@@ -108,8 +108,7 @@ details{border:1px solid var(--line-soft);border-radius:var(--radius-sm);padding
 <button class="tier-btn" data-tier="2" onclick="showTier(2)">&#9889; Tier 2 Instant</button>
 <button class="tier-btn" data-tier="3" onclick="showTier(3)">&#127956;&#65039; Tier 3 Physics</button>
 <button class="tier-btn" data-tier="4" onclick="showTier(4)">&#127755; Tier 4 Quake</button>
-<button class="tier-btn" data-tier="5" onclick="showTier(5)">&#128737;&#65039; Tier 5 Mitigate</button>
-<button class="tier-btn" data-tier="6" onclick="showTier(6)">&#129704; Rockfall</button></div>
+<button class="tier-btn" data-tier="5" onclick="showTier(5)">&#128737;&#65039; Tier 5 Mitigate</button></div>
 
 <div class="tier-content" data-tier="1"><div class="panel-section"><h3>Tier 1 &middot; Susceptibility screening</h3>
 <p class="note">National CNN/DNN ensemble susceptibility (northern Pakistan; elsewhere NODATA, never "low"), terrain, and the physical stability ensemble for a rain scenario, plus population exposure. Instant and ML-based: a ranking of where slopes are prone, not a model of a specific event.</p>
@@ -163,14 +162,6 @@ details{border:1px solid var(--line-soft);border-radius:var(--radius-sm);padding
 <div class="row2"><div><label>Soil texture</label><select id="t4tex" class="texsel"></select></div><div><label>Strength scenario <span id="t4qv">0.30</span></label><input type="range" id="t4q" min="0" max="1" step="0.05" value="0.3" oninput="$('t4qv').textContent=this.value"></div></div>
 <div id="qPrev" class="note"></div><button class="action" id="qRunBtn" disabled onclick="runPhysics('quake')">Run earthquake scenario</button><div id="prog4" style="display:none"><div class="progress-track"><div class="progress-fill" id="progFill4"></div></div><p class="note" id="progTxt4"></p></div><div id="runOut4"></div></div></div>
 
-<div class="tier-content" data-tier="6" style="display:none"><div class="panel-section"><h3>Rockfall</h3>
-<p class="note">A separate hazard from debris flows: individual rocks are released on steep rock faces and simulated through flight, bounce and rolling (GPU Monte Carlo). Restitution, friction and sub-grid roughness are scenario values; energy is translational only. Draw barrier lines with the line tool (Tier 5) and give them a capacity here.</p>
-<label>Release</label><select id="kSrc"><option value="auto">Steep rock faces (automatic)</option><option value="quake">Faces shaken by an earthquake (Tier 4 settings)</option></select>
-<div class="row2"><div><label>Min source slope (&deg;)</label><input type="number" id="kSl" value="50" min="30" max="80"></div><div><label>Max release cells</label><input type="number" id="kMs" value="150" min="5" max="400"></div></div>
-<div class="row2"><div><label>Rocks per cell</label><input type="number" id="kN" value="40" min="5" max="200"></div><div><label>Median diameter (m)</label><input type="number" id="kD" value="0.8" step="0.1" min="0.2" max="4"></div></div>
-<div class="row2"><div><label>Shape</label><select id="kSh"><option value="round">Round</option><option value="angular">Angular</option><option value="platy">Platy</option></select></div><div><label>Surface</label><select id="kSu"><option value="">From land cover</option><option value="rock">Bedrock</option><option value="talus">Talus</option><option value="soil">Soil</option><option value="forest">Forest</option><option value="snow_ice">Snow / ice</option></select></div></div>
-<div class="row2"><div><label>Roughness (&deg;)</label><input type="number" id="kRg" value="9" step="1" min="0" max="25"></div><div><label>Barrier capacity (kJ)</label><input type="number" id="kCap" value="500" min="50" step="50"></div></div>
-<button class="action" id="kBtn" disabled onclick="runRock()">Run rockfall simulation</button><div id="kProg" style="display:none"><div class="progress-track"><div class="progress-fill" id="kFill"></div></div><p class="note" id="kTxt"></p></div><div id="kOut"></div></div></div>
 <div class="tier-content" data-tier="5" style="display:none">
 <div class="panel-section"><h3>Nature-based solutions</h3>
 <p class="note">Scenario levers that act on slope stability in the whole area. The effect sizes are yours to set; nothing here is a measured performance. Uses the storm and ground settings of Tier 3 (load a rainfall series first).</p>
@@ -226,7 +217,7 @@ map.on("draw.create",e=>{const f=e.features[0];if(f.geometry.type==="Polygon"){p
 map.on("draw.update",e=>{const f=e.features[0];if(f.geometry.type==="Polygon")setAoi(f.geometry);else renderBarriers()});
 map.on("draw.delete",()=>{if(!polys().length)setAoi(null);renderBarriers()});
 function setAoiExternal(g){polys().forEach(p=>draw.delete(p.id));draw.add({type:"Feature",geometry:g});setAoi(g);const xs=g.coordinates[0].map(p=>p[0]),ys=g.coordinates[0].map(p=>p[1]);map.fitBounds([[Math.min(...xs),Math.min(...ys)],[Math.max(...xs),Math.max(...ys)]],{padding:60})}
-async function setAoi(g){aoi=g;for(const id of["rBtn","runBtn","s1Btn","t2Btn","wBtn","qRunBtn","mitBtn","recBtn","aalBtn","optBtn","kBtn"])$(id).disabled=!g;if(!g){$("areaInfo").style.display="none";$("ctxBox").innerHTML='<p class="note">Draw or choose an area first.</p>';return}
+async function setAoi(g){aoi=g;for(const id of["rBtn","runBtn","s1Btn","t2Btn","wBtn","qRunBtn","mitBtn","recBtn","aalBtn","optBtn"])$(id).disabled=!g;if(!g){$("areaInfo").style.display="none";$("ctxBox").innerHTML='<p class="note">Draw or choose an area first.</p>';return}
   const {ok,j}=await post("/area/polygon",{geometry:g});if(!ok){$("areaInfo").style.display="block";$("aKm2").textContent="invalid";$("aDist").textContent=j.error||"";return}
   $("areaInfo").style.display="block";$("aKm2").textContent=fmt(j.area_km2,1)+" km²";$("aDist").textContent=j.district?`${j.district.name}, ${j.district.province}`:"–";
   $("aPhys").innerHTML=j.physics_possible?"yes":'<span class="err">too large: use Tiers 1–2</span>';$("runBtn").disabled=!j.physics_possible;$("qRunBtn").disabled=!j.physics_possible;
@@ -268,7 +259,7 @@ let distLoaded=false;$("tDist").onclick=async()=>{if(!distLoaded){const g=await 
 let faultsOn=false;$("tFault").onclick=async()=>{faultsOn=!faultsOn;$("tFault").classList.toggle("on",faultsOn);if(!map.getSource("faults")){const g=await (await fetch("/faults")).json();map.addSource("faults",{type:"geojson",data:g});map.addLayer({id:"faults",type:"line",source:"faults",paint:{"line-color":"#ff5a5a","line-width":1.2}})}map.setLayoutProperty("faults","visibility",faultsOn?"visible":"none")};
 $("tPng").onclick=()=>{map.once("idle",()=>{const a=document.createElement("a");a.href=map.getCanvas().toDataURL("image/png");a.download="map.png";a.click()});map.triggerRepaint()};
 fetch("/api/layers").then(r=>r.json()).then(j=>ramps=j.ramps);
-function layerPick(rid,layers){curRun=rid;const names={hmax:["Max flow depth","hmax"],vmax:["Max flow speed","vmax"],deposit:["Deposit","deposit"],scour:["Scar / scour","scour"],t_fail_h:["Failure time","t_fail_h"],fs_min:["Min factor of safety","min_fs_p50"],pga_g:["PGA","pga_g"],slope:["Slope","slope_deg"],reach_frac:["Rocks passing","reach_frac"],emax_kj:["Peak rock energy","emax_kj"],hmax_m:["Bounce height","hmax_m"]};
+function layerPick(rid,layers){curRun=rid;const names={hmax:["Max flow depth","hmax"],vmax:["Max flow speed","vmax"],deposit:["Deposit","deposit"],scour:["Scar / scour","scour"],t_fail_h:["Failure time","t_fail_h"],fs_min:["Min factor of safety","min_fs_p50"],pga_g:["PGA","pga_g"],slope:["Slope","slope_deg"]};
   $("layerPick").innerHTML=layers.map(l=>`<button class="secondary" data-l="${l}">${(names[l]||[l])[0]}</button>`).join("");
   $("layerPick").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("layerPick").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");showRunLayer(rid,b.dataset.l,(names[b.dataset.l]||[])[1])});
   $("repLink").style.display=$("sumLink").style.display=$("expLink").style.display="";$("expLink").href=`/runs/${rid}/export.zip`;$("repLink").href=`/runs/${rid}/report.pdf`;$("sumLink").href=`/runs/${rid}/summary.json`}
@@ -388,16 +379,7 @@ async function scoreObserved(){const f=$("obsFile").files[0];if(!f||!curRun)retu
 async function loadHot(){const j=await (await fetch(`/rainfall-hotspots?metric=${$("hMetric").value}&season=${$("hSeason").value}&n=12`)).json();$("hotBox").innerHTML=j.error?`<p class="err">${j.error}</p>`:j.results.map(r=>`<div class="item"><div><b>${fmt(r.value,0)}</b> <small>${j.label}</small><br><small>${r.district||"–"}, ${r.province||""} · ${r.lat.toFixed(2)}, ${r.lon.toFixed(2)}</small></div><button class="secondary" onclick="map.flyTo({center:[${r.lon},${r.lat}],zoom:9})">Go</button></div>`).join("")+`<p class="note">${j.note}</p>`}
 
 
-async function runRock(){const p={source_mode:$("kSrc").value,min_source_slope_deg:+$("kSl").value,max_sources:+$("kMs").value,rocks_per_source:+$("kN").value,d50_m:+$("kD").value,shape:$("kSh").value,rough_deg:+$("kRg").value,surface_override:$("kSu").value||null,
-    barriers:barriers().map(b=>({...b,capacity_kj:+$("kCap").value}))};
-  if(p.source_mode==="quake")p.quake={magnitude:+$("qM").value,depth_km:+$("qDep").value,lon:+$("qLon").value,lat:+$("qLat").value,time_h:0,snap_to_fault:$("qSnap").checked};
-  $("kOut").innerHTML="";$("kProg").style.display="block";const {ok,j}=await post("/run-rock",{geometry:aoi,params:p});if(!ok){$("kProg").style.display="none";return $("kOut").innerHTML=`<p class="err">${j.error}</p>`}
-  pollJob(j.job,q=>{$("kFill").style.width=Math.max(2,q.frac*100)+"%";$("kTxt").textContent=`${q.stage} · ${fmt(q.elapsed_s,0)} s`},q=>{$("kProg").style.display="none";if(q.state!=="done")return $("kOut").innerHTML=jobError(q);
-    const r=q.result,s=r.summary,e=s.exposure||{};$("kOut").innerHTML=`<span class="pill">${s.backend}</span><div class="cards"><div class="card"><div class="k">Rocks</div><div class="v">${fmt(s.release.rocks,0)}</div></div><div class="card"><div class="k">Peak energy</div><div class="v">${fmt(s.peak_energy_kj,0)} kJ</div></div><div class="card"><div class="k">Max runout</div><div class="v">${fmt(s.max_runout_m,0)} m</div></div><div class="card"><div class="k">P95 bounce</div><div class="v">${fmt(s.p95_bounce_height_m,1)} m</div></div></div>
-     <div class="stat-row"><span>Reach angle P10 / P50 / P90</span><span>${fmt(s.travel_angle_deg.p10,0)} / ${fmt(s.travel_angle_deg.p50,0)} / ${fmt(s.travel_angle_deg.p90,0)}°</span></div><div class="stat-row"><span>Rocks left the area</span><span>${fmt(s.outcome_rocks.left_area*100,1)}%</span></div>
-     <div class="stat-row"><span>Buildings reached</span><span>${fmt(e.buildings_reached,0)} of ${fmt(e.buildings_in_aoi,0)}</span></div><div class="stat-row"><span>Road reached</span><span>${fmt(e.road_reached_km,2)} of ${fmt(e.road_length_km,1)} km</span></div>`+(s.barriers_stopped_rocks!=null?`<div class="stat-row"><span>Stopped by barriers</span><span>${fmt(s.barriers_stopped_rocks*100,1)}%</span></div>`:"")+(e.facilities_reached&&e.facilities_reached.length?`<div class="warn">Facilities reached: ${e.facilities_reached.map(f=>f.kind+" "+f.name).join(", ")}</div>`:"")+`<p class="note">${s.travel_angle_deg.note}. ${s.energy_note}.</p>`+r.warnings.slice(0,3).map(w=>`<div class="warn">⚠ ${w}</div>`).join("");
-    $("empty3d").style.display="none";const f=$("view3dFrame");f.style.display="block";f.src=`/runs/${r.run_id}/mapbox3d`;$("v3dFull").style.display="";$("v3dFull").href=`/runs/${r.run_id}/mapbox3d`;
-    layerPick(r.run_id,r.layers);loadHistory()})}
+
 
 // ---------- layout: resizers
 function dragger(el,vert){let on=false;el.addEventListener("mousedown",e=>{on=true;el.classList.add("active");e.preventDefault()});window.addEventListener("mouseup",()=>{on=false;el.classList.remove("active")});
