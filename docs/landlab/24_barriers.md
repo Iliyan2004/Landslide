@@ -24,7 +24,7 @@ The same 57 km2 Gilgit area, 60 mm/h triangular storm for 12 h, 2 barriers, a bu
 
 | | Baseline | With the best 2 barriers |
 |---|---|---|
-| Direct loss (PKR M) | {{area_demo.json:optimise_barriers.result.baseline.loss_pkr|0}} | {{area_demo.json:optimise_barriers.result.optimised.loss_pkr|0}} |
+| Direct loss (PKR) | {{area_demo.json:optimise_barriers.result.baseline.loss_pkr|0}} | {{area_demo.json:optimise_barriers.result.optimised.loss_pkr|0}} |
 | Buildings with damage state 3 or worse | {{area_demo.json:optimise_barriers.result.baseline.buildings_ds3|0}} | {{area_demo.json:optimise_barriers.result.optimised.buildings_ds3|0}} |
 | Impacted area (km2) | {{area_demo.json:optimise_barriers.result.baseline.impacted_km2|1}} | {{area_demo.json:optimise_barriers.result.optimised.impacted_km2|1}} |
 

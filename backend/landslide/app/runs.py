@@ -7,7 +7,7 @@ from .. import manifest as M
 from ..engine import run as ENG
 from . import pipeline as P, render, viewer, paths
 
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 LAYER_INFO = {
     "hmax": "Maximum flow depth", "vmax": "Maximum flow speed", "deposit": "Net deposit thickness", "scour": "Scar / scour depth",
     "t_fail_h": "Failure time", "fs_min": "Minimum factor of safety", "pga_g": "Peak ground acceleration", "slope": "Slope", "p_fail": "Failure probability (ensemble)",

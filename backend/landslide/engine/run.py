@@ -12,7 +12,7 @@ from scipy import ndimage
 from ..app import paths, rasters, pipeline as P, rainfall as RF, layers as LY
 from ..data.preprocessing import aoi as AOI, terrain
 from ..errors import GateError, InsufficientData
-from . import flow as FL, trigger as TR, interventions as IV, ground as GR, access as AC, site as SITE, antecedent as ANT, ensemble as ENSM, wetness as WET
+from . import loss as LS, flow as FL, trigger as TR, interventions as IV, ground as GR, access as AC, site as SITE, antecedent as ANT, ensemble as ENSM, wetness as WET
 from .thermal import Governor
 
 MAX_PHYS_CELLS = 700_000
@@ -21,7 +21,8 @@ MAX_STEPS = 600_000
 import os
 _DBG = bool(os.environ.get('LS_DEBUG'))
 FRAMES = 120
-IMP = {"rho": 1800.0, "cost_m2": 35000.0, "dr": [0, .05, .2, .55, 1.0], "med_kpa": [5, 15, 40, 100], "beta": 0.6,
+IMP = {"rho": 1800.0, "cost_m2": 35000.0,   # cost_m2/floors: the old flat valuation, now unused (engine/loss.py values loss as SAILAB does)
+        "dr": [0, .05, .2, .55, 1.0], "med_kpa": [5, 15, 40, 100], "beta": 0.6,
        "burial_m": [0.3, 1.0, 2.0, 4.0], "floors": 1, "persons_per_building_note": "population raster used instead"}
 
 
@@ -40,7 +41,7 @@ def building_damage(hmax, vmax, area_m2):
     if floor_ds > 0:
         pr2 = np.zeros(5); pr2[floor_ds:] = pr[floor_ds:]; pr2[floor_ds] += pr[:floor_ds].sum(); pr = pr2
     dr = float(np.dot(pr, IMP["dr"]))
-    return dr, int(np.argmax(pr)), dr * area_m2 * IMP["floors"] * IMP["cost_m2"]
+    return dr, int(np.argmax(pr)), dr * area_m2 * IMP["floors"] * IMP["cost_m2"]        # third value: old flat valuation, kept for callers; _exposure now uses engine/loss.py
 
 
 def execute(geom, params, run_dir, progress=lambda s, f: None):
@@ -386,19 +387,27 @@ def _exposure(geom, bbox, grid, epsg, hmax, vmax, H, pop, dx, frame_t, warns):
     def cell(lon, lat):
         x, y = tr.transform(lon, lat); c, rr = inv * (x, y)
         return int(rr), int(c)
-    cost = 0.0; ds_count = [0] * 5; b_out = []
+    cost = 0.0; struct = 0.0; ds_count = [0] * 5; b_out = []
     for bd in b:
         rr, cc = cell(bd["cx"], bd["cy"])
         if not (0 <= rr < ny and 0 <= cc < nx):
             continue
         h, v = float(hm3[rr, cc]), float(vm3[rr, cc])
-        dr, ds, c = building_damage(h, v, bd["area_m2"])
-        ds_count[ds] += 1; cost += c
+        dr, ds, _ = building_damage(h, v, bd["area_m2"])
+        c = LS.building_structure_loss(dr, bd["area_m2"], bd.get("height_m", 6.0))
+        ds_count[ds] += 1; cost += c; struct += c
         bd["rr"], bd["cc"], bd["dmg"] = rr, cc, dr
     nb = len([x for x in b if "rr" in x])
+    content = struct * LS.CONTENT_TO_STRUCTURE_RATIO
+    agri_pkr, agri_cells = 0.0, 0
+    lc = rasters.read(paths.get("LULC"), grid, Resampling.nearest)
+    if lc is not None:
+        crop = np.isfinite(lc) & (np.rint(np.nan_to_num(lc)) == 5)                      # ESRI land cover class 5 = crops
+        agri_pkr, agri_cells = LS.agricultural_loss(np.where(crop, hmax, 0.0), dx * dx)
     ex.update({"buildings_in_aoi": nb, "buildings_damaged_ds_ge1": int(sum(ds_count[1:])), "buildings_ds_ge3": int(sum(ds_count[3:])),
-               "damage_states_count": ds_count, "direct_loss_pkr": cost,
-               "loss_note": "ASSUMED: flat 35,000 PKR/m2 rebuild cost, 1 floor, fragility medians 5/15/40/100 kPa (not calibrated)"})
+               "damage_states_count": ds_count, "direct_loss_pkr": struct + content + agri_pkr,
+               "loss_parts_pkr": {"structure": struct, "contents": content, "agriculture": agri_pkr}, "cropland_cells_damaged": agri_cells,
+               "loss_note": LS.method_note()})
     # roads blocked
     blocked_m, total_m = 0.0, 0.0
     road_out = []; seg_xy, seg_bl = [], []

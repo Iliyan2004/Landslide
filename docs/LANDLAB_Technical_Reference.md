@@ -17,7 +17,7 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 
 | Feature | Status |
 |---|---|
-| Tiers 1 to 4, national product, districts, basins | Implemented and tested (122 unit tests) |
+| Tiers 1 to 4, national product, districts, basins | Implemented and tested (123 unit tests) |
 | Rainfall sources: design storm, forecast, recent, ERA5, CHIRPS, CSV | Implemented |
 | Impacts: buildings, roads, hospitals and schools, direct loss | Implemented (all thresholds assumed, Ch. 18) |
 | Live monitoring with webhook, compare runs, PDF report, MP4 export | Implemented |
@@ -600,9 +600,28 @@ The 3D viewer colours buildings by the expected damage from the depth reached so
 
 # 19. Estimated Direct Loss
 
-Direct loss is, for each building, expected damage ratio x footprint area x 35,000 PKR per square metre x 1 floor, summed. This is an order-of-magnitude figure for comparing scenarios: the unit cost, the single floor and the use of footprint area are assumptions, and indirect losses (road closure days, business interruption, crops, lives) are **not** estimated. The Gilgit reference run (Ch. 12.4) gives a direct loss of about PKR 2.4 billion for 14,400 buildings in the area, with 2,469 buildings damaged at DS1 or above and 648 at DS3 or above.
+Loss is valued the way SAILAB values flood loss (`loss_utils.py` there, `engine/loss.py` here), so a landslide loss and a flood loss are on the same footing and the same average-annual-loss method (Ch. 21) applies to both.
 
-> Average annual loss, which needs a defensible event-frequency model, is planned (Ch. 1.2). Rainfall return period would be the frequency proxy, and that assumption (storm frequency equals landslide frequency) will be stated where it is used.
+## 19.1 Valuation
+
+```
+structure loss = damage ratio x footprint area x storeys x maximum damage value
+  storeys               = max(1, building height / 3 m)
+  maximum damage value  = 111 EUR/m2 x 322.5 PKR/EUR = 35,798 PKR/m2      (Huizinga et al. 2017, JRC EUR 28552, Table 3-21, Asia residential, 2010 prices)
+content loss    = 50% of structure loss                                   (FEMA HAZUS residential content ratio)
+agricultural    = cropland cell area x damage fraction x 0.03 EUR/m2 x 322.5   (JRC Asia agriculture)
+direct loss     = structure + content + agriculture
+```
+
+What differs from the flood method, and why:
+
+- The **damage ratio** is the landslide's own, not a flood depth-damage curve. A flood curve describes slow inundation; debris destroys by dynamic pressure and burial. Each building takes the maximum flow depth and speed of the surrounding cells, the dynamic pressure `rho v2 / 2` (rho = 1,800 kg/m3) is mapped to damage states with lognormal fragility medians of 5, 15, 40 and 100 kPa (dispersion 0.6), a burial depth sets a minimum state (0.3, 1, 2 and 4 m), and the expected ratio uses 0, 0.05, 0.20, 0.55 and 1.0 for the five states. **All of these are assumed; none is calibrated** to a Pakistani event.
+- The **damage fraction on cropland** is `min(1, debris depth / 0.5 m)`: half a metre of burial is taken as a total loss of the crop. JRC's agriculture value (0.03 EUR/m2, about 10 PKR/m2) is tiny against buildings, so crops rarely matter in the total.
+- **Building height** is not in the footprint dataset; 6 m (two storeys) is assumed for every building, which, with the 50% contents, makes the same damage cost about 3 times what the earlier flat valuation (35,000 PKR/m2, one floor, no contents) gave. Loss figures from before this change are not comparable with the ones here.
+
+## 19.2 Limits
+
+The unit value is a regional (Asia) average: Pakistan has no figure of its own in the source table. The exchange rate is a current-date conversion applied to a 2010-price figure, not inflation-adjusted. Footprint area times two storeys overstates single-storey kacha houses and understates multi-storey urban blocks, which is why housing type from the census (a planned addition) matters. Indirect losses (road closure days, business interruption, lives) are **not** estimated. The result is an order-of-magnitude figure for comparing scenarios, not an insured value.
 
 
 # 20. Access and Isolation Impacts, and GIS Export
@@ -646,24 +665,24 @@ Each return period is an expensive simulation, so the page asks for confirmation
 
 ## First run on a real area
 
-Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports", six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
+Gilgit, a 57 km2 area (7.8 by 7.3 km) around the test site (`scripts/run_area_demo.py`, `docs/validation/area_demo.json`), strength preset "calibrated_reports", losses valued as in Ch. 19 (structure, contents and crops, SAILAB valuation; about 3 times the earlier flat valuation), six return periods from 2 to 100 years, 6 hour storms from the observed IDF cube:
 
-| Return period (y) | Storm depth (mm) | Failing area (km2) | Direct loss today (PKR M) | Direct loss, SSP5-8.5 (PKR M) |
+| Return period (y) | Storm depth (mm) | Failing area (km2) | Direct loss today (PKR) | Direct loss, SSP5-8.5 (PKR) |
 |---|---|---|---|---|
-| 2 | 15 | 0.09 | 160 | 296 |
-| 5 | 18 | 0.14 | 559 | 675 |
-| 10 | 21 | 0.17 | 836 | 861 |
-| 25 | 24 | 0.22 | 1,142 | 1,194 |
-| 50 | 26 | 0.27 | 1,399 | 1,406 |
-| 100 | 28 | 0.33 | 1,713 | 1,754 |
-| **Average annual loss** | | | **334,966,325 PKR** | **417,545,325 PKR** |
+| 2 | 15 | 0.09 | 489,828,402 | 909,459,452 |
+| 5 | 18 | 0.14 | 1,716,326,586 | 2,070,665,078 |
+| 10 | 21 | 0.17 | 2,565,628,556 | 2,640,197,623 |
+| 25 | 24 | 0.22 | 3,503,186,560 | 3,664,942,795 |
+| 50 | 26 | 0.27 | 4,291,303,959 | 4,314,342,098 |
+| 100 | 28 | 0.33 | 5,256,822,026 | 5,382,182,025 |
+| **Average annual loss** | | | **1,027,796,315 PKR** | **1,281,178,180 PKR** |
 
 The climate factor for the 50 year, 24 hour rainfall under SSP5-8.5, 2036 to 2065, is 1.016 (ensemble median over 8 CMIP6 models whose individual ratios range from 0.90 to 1.32). A factor that close to 1 with that spread is **no detectable change**, not a prediction of none.
 
 Cautions that apply to these numbers:
 
-- The loss rises faster than the failing area (the 2 year loss is 160 M for 0.09 km2, the 5 year 559 M for 0.14 km2): the loss depends on which buildings the flow happens to reach, so it moves in steps. The SSP5-8.5 column is higher mainly at the frequent end (296 against 160 M at 2 years) because a 1.6% deeper storm tips a few more buildings into damage; that is a threshold effect of the building layer, not a doubling of hazard.
-- The AAL adds a frequent tail (storms more frequent than the 2 year, linear to zero at p = 1) that contributes 39,909,663 PKR of the total; the result is therefore sensitive to the 2 year loss.
+- The loss rises faster than the failing area (the 2 year loss is 489,828,402 PKR for 0.09 km2, the 5 year 1,716,326,586 PKR for 0.14 km2): the loss depends on which buildings the flow happens to reach, so it moves in steps. The SSP5-8.5 column is higher mainly at the frequent end (909,459,452 against 489,828,402 PKR at 2 years) because a 1.6% deeper storm tips a few more buildings into damage; that is a threshold effect of the building layer, not a doubling of hazard.
+- The AAL adds a frequent tail (storms more frequent than the 2 year, linear to zero at p = 1) that contributes 122,457,101 PKR of the total; the result is therefore sensitive to the 2 year loss.
 - Every caveat above in this chapter applies: loss frequency is taken equal to rainfall frequency, with no antecedent wetness. Read the figure as an order of magnitude for this area, not a budget.
 
 
@@ -749,7 +768,7 @@ The same 57 km2 Gilgit area, 60 mm/h triangular storm for 12 h, 2 barriers, a bu
 
 | | Baseline | With the best 2 barriers |
 |---|---|---|
-| Direct loss (PKR M) | 21,537,329,605 | 20,964,246,479 |
+| Direct loss (PKR) | 66,084,219,132 | 64,325,795,429 |
 | Buildings with damage state 3 or worse | 6,155 | 5,965 |
 | Impacted area (km2) | 25.8 | 25.7 |
 
@@ -1003,7 +1022,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 
 | Claim | Evidence | Status |
 |---|---|---|
-| The code solves its equations | 122 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
+| The code solves its equations | 123 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
 | Rainfall separates landslide days from ordinary days | AUC 0.73 (0.71 to 0.76) for 24 h intensity, leave-one-year-out | **Validated, modest** |
 | Published Guzzetti threshold is usable as a watch | TSS 0.32 on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics 0.56, with soil texture 0.65; mean slope 0.59 | **Weak** |
@@ -1188,7 +1207,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 
 ## 30.2 Tests
 
-`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 122 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
+`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 123 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
 
 ## 30.3 Files
 

@@ -224,6 +224,16 @@ class TestCalibrationMachinery(unittest.TestCase):
         a, b = np.isfinite(tf[:, :20]).sum(), np.isfinite(tf[:, 20:]).sum()
         self.assertGreaterEqual(b, a)
 
+    def test_loss_valuation_follows_sailab(self):
+        from landslide.engine import loss as LS
+        self.assertAlmostEqual(LS.MAX_DAMAGE_PKR_PER_M2["Residential"], 111 * 322.5, 3)
+        one = LS.building_structure_loss(0.5, 100.0, 3.0); two = LS.building_structure_loss(0.5, 100.0, 6.0)
+        self.assertAlmostEqual(one, 0.5 * 100 * 111 * 322.5, 3); self.assertAlmostEqual(two, 2 * one, 3)
+        self.assertEqual(LS.building_structure_loss(0.5, 100.0, 1.0), one)             # at least one storey
+        loss, n = LS.agricultural_loss(np.array([0.0, 0.2, 0.6, 3.0]), 900.0)
+        self.assertEqual(n, 3); self.assertAlmostEqual(loss, (0.4 + 1 + 1) * 900.0 * 0.03 * 322.5, 3)
+        self.assertEqual(aal.eal([2, 100], [0.0, 0.0])["eal"], 0.0)
+
     def test_antecedent_wetness_and_ensemble(self):
         from landslide.engine import antecedent as ANT, ensemble as ENS
         self.assertEqual(ANT.api([0, 0, 0]), 0.0); self.assertGreater(ANT.api([0, 0, 50]), ANT.api([50, 0, 0]))     # recent rain counts more
