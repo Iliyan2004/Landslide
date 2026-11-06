@@ -17,7 +17,7 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 
 | Feature | Status |
 |---|---|
-| Tiers 1 to 4, national product, districts, basins | Implemented and tested (131 unit tests) |
+| Tiers 1 to 4, national product, districts, basins | Implemented and tested (132 unit tests) |
 | Rainfall sources: design storm, forecast, recent, ERA5, CHIRPS, CSV | Implemented |
 | Impacts: buildings, roads, hospitals and schools, direct loss | Implemented (all thresholds assumed, Ch. 17) |
 | Live monitoring with webhook, compare runs, PDF report, MP4 export | Implemented |
@@ -1000,7 +1000,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 
 | Claim | Evidence | Status |
 |---|---|---|
-| The code solves its equations | 131 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
+| The code solves its equations | 132 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
 | Rainfall separates landslide days from ordinary days | AUC 0.73 (0.71 to 0.76) for 24 h intensity, leave-one-year-out | **Validated, modest** |
 | Published Guzzetti threshold is usable as a watch | TSS 0.32 on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics 0.56, with soil texture 0.65; mean slope 0.59 | **Weak** |
@@ -1225,7 +1225,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 
 ## 30.2 Tests
 
-`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 131 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
+`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 132 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
 
 ## 30.3 Files
 
@@ -1271,8 +1271,10 @@ The calibration also accepts no file: with "match the national susceptibility ma
 |---|---|---|
 | OpenQuake hazardlib | `scripts/check_gmpe_oq.py`: BSSA14 (60 magnitude-distance points for each of 4 Vs30 values) and the BC Hydro intraslab model (30 points for each of 6 depth and Vs30 pairs) compared with OpenQuake's implementations. | Identical to rounding error (BC Hydro exactly, BSSA14 to 1e-13 per cent). One point to know: OpenQuake has no "unspecified mechanism", so the comparison uses strike-slip; the platform's default unspecified term is 0.0383 ln units (3.8 per cent) lower, which is the published difference between the two coefficients, not an error. OpenQuake is AGPL and is used in this validation script only, never imported by the shipped backend. |
 | Landlab `LandslideProbability` | `scripts/check_landlab_slope.py`: 300 random cells, 2,000 Monte Carlo draws each, same distributions. | Landlab and the SINMAP form of the equation on the same samples agree to Monte Carlo noise (correlation 0.9999). Against the platform's standard infinite-slope form they differ clearly: mean failure probability 0.28 against 0.21, and by up to 0.65 in single cells. The cause is that SINMAP (and so Landlab) divides cohesion by sin(b) where the standard form divides by sin(b) cos(b), and fixes the water to soil weight ratio at 0.5. The platform keeps the standard form; Landlab is therefore the more pessimistic of the two on cohesive soils. |
-| TRIGRS (Iverson 2000 solution) | `scripts/compare_iverson.py`: the published transient pressure-head solution implemented directly and compared with the Green-Ampt proxy on 675 single-column cases (slope 25 to 45 degrees, depth 1 to 3 m, conductivity 1e-6 to 1e-4 m/s, rain 5 to 100 mm/h, water table at the slip surface or 0.5 or 1 m below it). | The two agree on failure or no failure in 76 per cent of cases. The Green-Ampt proxy is the slower and less sensitive: where both fail it takes a median of 2.3 times as long (10th to 90th percentile 1.0 to 8.2), and it misses 147 cases (22 per cent) that the Iverson solution fails, because a pressure wave from a shallow water table reaches the slip surface long before a wetting front does. In 13 cases only Green-Ampt fails. This is a comparison of two simplified columns on assumed soil values, not a test against real slides. The TRIGRS program itself was not built or run, so the Fortran code, its unsaturated option and its runoff routing were not tested. |
+| USGS TRIGRS 2.1.0c (the real program) | Built from the USGS source with gfortran and run on 675 single-column cases (`scripts/compare_trigrs.py`): slope 25 to 45 degrees, depth 1 to 3 m, conductivity 1e-6 to 1e-4 m/s, rain 5 to 100 mm/h for 48 h, water table at the slip surface or 0.5 or 1 m below it; saturated infinite-depth option, 15-minute output. | The Iverson solution written in Python for this platform (`models/infiltration/iverson.py`) gives the **same failure or no-failure verdict in all 675 cases and the same failure time in all 548 failing cases**. The Green-Ampt proxy agrees with TRIGRS on the verdict in 88 per cent of cases: it misses 66 that TRIGRS fails (10 per cent) and fails 13 that TRIGRS does not, and where both fail it takes a median of 2.2 times as long (10th to 90th percentile 1.0 to 7.3). The reason is physical: a pressure wave from a shallow water table reaches the slip surface long before a wetting front does. A first version of the Python solution missed the cap on pressure head at full saturation and over-failed 81 cases; the comparison with the real program caught it. Limits: one soil layer, saturated option only (not the unsaturated option), no runoff routing, and D0 set to 100 times Ks, which TRIGRS leaves to the user. This tests the pressure model against another model, not against real slides. |
 | USGS groundfailure | Read, not run. Its landslide models (Nowicki Jessee 2018 and others) need global lithology, land cover and topographic index grids that are not on the server, and the code was not installed. | No comparison made. |
+
+The Iverson model is available as an option (`pressure_model: "iverson"`, a checkbox in Tier 3). Green-Ampt stays the default because it needs no water-table input, is much faster, and nothing yet shows the Iverson model predicts real slope failures better. On the Gilgit test area the failing area was 1.96 km2 with Green-Ampt and 2.01 km2 with Iverson (same storm and strength), at 120 s and 78 s. The option refuses areas and storms where cells times steps squared exceeds 6e10.
 
 Not done and why: r.avaflow needs GRASS GIS and a licence check; the D-Claw repositories named in the plan could not be found; MintPy needs a Sentinel-1 data account and is a separate project; Landlab's flow-routing tools were not swapped in because the existing terrain code is already tested against analytic cases.
 

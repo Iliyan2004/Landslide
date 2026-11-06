@@ -171,3 +171,18 @@ class TestSediment(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestIversonPressure(unittest.TestCase):
+    def test_matches_trigrs_reference_case(self):
+        """TRIGRS 2.1.0c (saturated, infinite depth) on slope 35 deg, z 2 m, Ks 1e-5 m/s, 25 mm/h, water table at the slip surface, c 4 kPa, phi 34, gamma 19 kN/m3
+        first gives FS <= 1 at 0.75 h (scripts/compare_trigrs.py); the Python solution must agree."""
+        import numpy as np
+        from landslide.models.infiltration.iverson import Column
+        from landslide.models.stability.infinite_slope import factor_of_safety
+        from landslide.units import GAMMA_W
+        dt = 900.0; n = 192
+        col = Column(np.full(n, 25.0 * dt / 3600.0), dt, 1e-5, np.array([35.0]), np.array([2.0]), np.array([2.0]), 100.0)
+        fs = np.array([factor_of_safety(35.0, 2.0, 4000.0, 34.0, 19000.0, m=col.m(k))[0] for k in range(n)])
+        self.assertAlmostEqual((np.where(fs <= 1)[0][0] + 1) * dt / 3600.0, 0.75)
+        self.assertTrue(np.all(col.m(n - 1) <= 1.0))

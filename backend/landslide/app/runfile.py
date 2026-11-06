@@ -8,7 +8,7 @@ from pathlib import Path
 
 FORMAT = "landlab-run-file"
 SCALARS = {"mode": str, "texture": str, "strength_preset": str, "strength_quantile": float, "failure_type": str, "entrain": bool, "entrain_depth_m": float, "depth_vs_slope": bool,
-           "spatial_ground": bool, "antecedent": bool, "ensemble": int, "min_slope_deg": float, "min_cluster_cells": int, "release_factor": float, "mu": float, "xi": float,
+           "spatial_ground": bool, "pressure_model": str, "diffusivity_ratio": float, "antecedent": bool, "ensemble": int, "min_slope_deg": float, "min_cluster_cells": int, "release_factor": float, "mu": float, "xi": float,
            "max_soil_slope_deg": float, "seed": int, "wetness_beta": float, "suction_kpa": float, "rain_field": bool, "custom_dem_id": str, "min_source_slope_deg": float}
 RAIN_KEYS = ("times_h", "rate_mm_h", "source", "start_iso", "antecedent_daily_mm", "total_mm", "peak_mm_h", "duration_h", "grid_lat", "grid_lon")
 ZONE_KEYS = ("geometry", "cohesion_kpa", "friction_deg")

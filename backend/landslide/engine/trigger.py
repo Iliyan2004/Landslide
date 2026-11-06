@@ -6,7 +6,7 @@ infinite-slope FS(t) with root cohesion. A cell fails at the first step with FS 
 from __future__ import annotations
 import numpy as np
 from scipy import ndimage
-from ..models.infiltration import green_ampt
+from ..models.infiltration import green_ampt, iverson as IVS
 from ..models.stability import infinite_slope as INF
 from ..models.seismic import newmark as NM
 
@@ -101,9 +101,14 @@ def rain_failure_times(slope, valid, rain_mm_step, dt_s, p, z, min_slope=10.0, f
     area_t = np.zeros(len(F))
     failed = np.zeros(slope.shape, bool)
     cand = valid & (slope >= min_slope)
+    col = None
+    if p.get("pressure_model") == "iverson":                  # TRIGRS-type transient pressure head instead of the Green-Ampt wetting front (opt-in, CPU-heavy on big areas)
+        if float(np.count_nonzero(cand)) * len(F) ** 2 / 2.0 > 6e10:
+            raise ValueError("the Iverson pressure model is too heavy for this area and storm length (cells x steps^2); use a smaller area, a shorter storm or the Green-Ampt model")
+        col = IVS.Column(rain_mm_step, dt_s, p["hydraulic_conductivity"], slope_e, z, wt, float(p.get("diffusivity_ratio", 100.0)))
     for t in range(len(F)):
         Ft = F[t] if F_cell is None else F_cell[0][:, t][F_cell[1]]
-        m = np.maximum(m0, np.clip(Ft / np.maximum(dth * z, 1e-9), 0.0, 1.0))
+        m = np.maximum(m0, np.clip(Ft / np.maximum(dth * z, 1e-9), 0.0, 1.0)) if col is None else col.m(t)
         if m_scale is not None:
             m = np.clip(m * m_scale, 0.0, 1.0)                       # subsurface drainage lowers the saturated fraction
         fs = INF.factor_of_safety(slope_e, z, p["effective_cohesion"], p["friction_angle"], p["unit_weight"], m=m, c_root=c_root + suction_cohesion(p, m))

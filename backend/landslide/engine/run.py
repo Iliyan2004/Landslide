@@ -99,6 +99,7 @@ def _execute(geom, params, run_dir, progress):
     q = float(params.get("strength_quantile", 0.3))
     extras, extras_rep = _extras(params, mode, grid, dem_f, valid, res)
     sp, ground_rep, ante_rep = _scenario(spec, q, params, mode, grid, slope.shape, extras)
+    sp = dict(sp); sp["pressure_model"] = params.get("pressure_model", "green_ampt"); sp["diffusivity_ratio"] = float(params.get("diffusivity_ratio", 100.0))
     z = TR.soil_depth_field(slope, sp, bool(params.get("depth_vs_slope", True)))
     min_slope = float(params.get("min_slope_deg", 12))
     iv = params.get("interventions") or {}

@@ -28,7 +28,7 @@ def run_case(slope, z, ks, rain_mm_h, d_off, hours=48, dt=300.0):
     t = np.arange(1, int(hours * 3600 / dt) + 1) * dt; cb = np.cos(np.radians(slope)); I = min(rain_mm_h / 3.6e6, ks)
     D1 = D0_FACTOR * ks / cb ** 2; d = z + d_off                                                             # initial water table depth: at the slip surface (d_off 0) or d_off m below it
     root = np.sqrt(D1 * t)
-    psi = np.maximum((z - d) * cb ** 2 + 2.0 * I * root / ks * ierfc(z / (2.0 * root)), 0.0)
+    psi = np.clip((z - d) * cb ** 2 + 2.0 * I * root / ks * ierfc(z / (2.0 * root)), 0.0, z * cb ** 2)     # TRIGRS caps the head at full saturation (water table at the ground surface)
     fs_iv = factor_of_safety(slope, z, C, PHI, GS, u=psi * GAMMA_W)
     ga = GA.run(np.full(t.size, rain_mm_h * dt / 3600.0), dt, np.array([ks]), np.array([PSIF]), np.array([THS]), np.array([THI]), np.array([z]))
     fs_ga = factor_of_safety(slope, z, C, PHI, GS, m=ga["m"][:, 0])
