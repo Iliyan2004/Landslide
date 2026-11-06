@@ -64,15 +64,40 @@ details{border:1px solid var(--line-soft);border-radius:var(--radius-sm);padding
 .maptools{position:absolute;top:10px;left:50px;z-index:5;display:flex;gap:6px;flex-wrap:wrap}.maptools button{padding:6px 10px;font-size:11.5px;background:rgba(16,24,32,.88);border:1px solid var(--line);color:var(--ink);border-radius:var(--radius-sm);cursor:pointer;backdrop-filter:blur(8px)}.maptools button.on{border-color:var(--accent);color:var(--accent)}
 #legend2d{position:absolute;right:10px;bottom:24px;z-index:5;background:rgba(16,24,32,.92);border:1px solid var(--line);padding:8px 10px;border-radius:8px;min-width:190px;font-size:11.5px;display:none}.ramp{height:10px;border-radius:2px;margin:5px 0}
 .layerpick{display:flex;flex-wrap:wrap;gap:6px}.layerpick button{padding:5px 9px;font-size:11.5px}.layerpick button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+/* header nav + place search (as SAILAB) */
+header .hdr-nav{display:flex;gap:6px;margin-left:10px;flex:0 0 auto}
+header .hdr-nav a{text-decoration:none;color:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:7px 12px;font-size:12.5px;font-weight:600;background:var(--surface-2)}
+header .hdr-nav a:hover{color:var(--accent);border-color:var(--accent)}
+.geobox{position:relative;flex:1 1 260px;max-width:340px;margin:0 14px}
+.geobox input{width:100%;padding:9px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:12.5px}
+.geobox .hits{display:none;position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.45);z-index:70;overflow:hidden}
+.geobox .hits button{display:block;width:100%;text-align:left;padding:8px 12px;background:none;border:0;border-bottom:1px solid var(--line-soft);color:var(--ink);cursor:pointer;font-size:12.5px}
+.geobox .hits button:hover{background:var(--surface-2)}.geobox .hits small{display:block;color:var(--muted);font-size:11px}
+/* welcome card */
+#welcomeOverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,10,13,.55);backdrop-filter:blur(5px)}
+#welcomeOverlay .wcard{position:relative;width:min(760px,100%);display:grid;grid-template-columns:1fr 1fr;border-radius:22px;overflow:hidden;border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.55);background:var(--surface)}
+#welcomeOverlay .wl{padding:28px;background:linear-gradient(160deg,var(--accent-soft),var(--surface) 80%)}
+#welcomeOverlay .wl h2{margin:0 0 14px;font-family:"Barlow Condensed",sans-serif;font-size:30px;text-transform:uppercase;letter-spacing:.05em}
+#welcomeOverlay .wl li{list-style:none;margin:0 0 12px;font-size:13.5px;color:var(--ink-2);line-height:1.45}#welcomeOverlay .wl li b{display:block;color:var(--ink);font-size:14.5px}#welcomeOverlay ul{margin:0;padding:0}
+#welcomeOverlay .wr{padding:28px;display:flex;flex-direction:column;gap:10px;background:var(--surface-2)}#welcomeOverlay .wr h3{margin:0 0 4px;font-size:22px;line-height:1.2}#welcomeOverlay .wr h3 em{font-style:normal;color:var(--accent)}
+#welcomeOverlay .wx{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-size:17px}
+@media (max-width:860px){#welcomeOverlay .wcard{grid-template-columns:1fr}#welcomeOverlay .wl{display:none}}
+/* 3D view: expand to the whole map area, or hide */
+body.view-main .view3d-wrap{position:fixed;top:60px;left:0;right:var(--rw,420px);bottom:0;z-index:40;background:var(--page)}
+body.view-hidden .view3d-wrap,body.view-hidden .vresizer{display:none}
+#viewShowBtn{display:none;position:absolute;left:12px;bottom:12px;z-index:5;padding:8px 12px;border-radius:10px;background:var(--surface);color:var(--accent);border:1px solid var(--accent);cursor:pointer;font-size:12px}
+body.view-hidden #viewShowBtn{display:block}
 </style></head><body><div class="app">
 <header><div class="brand"><span>LANDLAB</span> <small style="font-size:11px;color:var(--ink-2);letter-spacing:.12em;font-weight:600">LANDSLIDE MODELLING · PAKISTAN</small></div>
-<div class="tagline"><span id="agentChip" title="Data and workflow agents" style="cursor:pointer;margin-right:12px"></span><span id="hwInfo"></span><span id="demSource"><span class="dot"></span>SRTM 29 m · national ML susceptibility · ERA5/CHIRPS</span></div></header>
+<div class="geobox"><input type="text" id="geoInput" placeholder="Search a place in Pakistan" autocomplete="off" aria-label="Search a place"><div class="hits" id="geoHits"></div></div>
+<div class="tagline"><span id="agentChip" title="Data and workflow agents" style="cursor:pointer;margin-right:12px"></span><span id="hwInfo"></span><span id="demSource"><span class="dot"></span>SRTM 29 m · national ML susceptibility · ERA5/CHIRPS</span></div><div class="hdr-nav"><a href="/instant" title="Quick estimate: which slopes could fail">Instant</a><a href="/" title="Home">Home</a></div></header>
 <div class="main"><div class="left-col">
 <div id="mapWrap"><div id="map"></div>
 <div class="maptools"><button id="tNat" title="National ML susceptibility, 90 m">Susceptibility</button><button id="tFrac" title="National physics stability product">Physics (national)</button><button id="tRisk">Risk index</button><button id="tDist">Districts</button><button id="tFault">Faults</button><button id="tPng">Export PNG</button></div>
-<div id="legend2d"></div></div>
+<div id="legend2d"></div><button id="viewShowBtn" onclick="setViewMode('card')">3D view</button></div>
 <div class="vresizer" id="vResizer"></div>
-<div class="view3d-wrap"><div class="view3d-tabs"><span>Debris-flow visualization (Mapbox 3D)</span><a class="v3d-btn" id="v3dFull" style="display:none" target="_blank" href="#">Full Page &#8599;</a></div>
+<div class="view3d-wrap"><div class="view3d-tabs"><span>Debris-flow visualization (Mapbox 3D)</span><a class="v3d-btn" id="v3dFull" style="display:none" target="_blank" href="#">Full Page &#8599;</a><button class="v3d-btn" id="viewExpandBtn" onclick="toggleViewMain()" title="Show the 3D view over the whole map area">Expand</button><button class="v3d-btn" id="viewHideBtn" onclick="setViewMode('hidden')" title="Hide the 3D view">Hide</button></div>
 <div class="empty3d" id="empty3d">Run Tier 3 or Tier 4 to see the animated 3D scene here: terrain, release, flow depth over time, buildings and roads coloured by damage.</div>
 <iframe id="view3dFrame" class="frame3d" style="display:none" allowfullscreen></iframe></div></div>
 <div class="resizer" id="resizerMain"></div>
@@ -82,6 +107,13 @@ details{border:1px solid var(--line-soft);border-radius:var(--radius-sm);padding
 <p class="note">Use the polygon tool (top-left of the map), upload a shapefile (.zip) / GeoJSON, or pick a district or river basin below. Physics runs work up to about 700,000 cells at 30–120 m; larger areas use Tiers 1–2 and the national layers.</p>
 <div class="row2"><button class="secondary" id="bDraw">&#9998; Draw polygon</button><button class="secondary" id="bClr">Clear</button></div>
 <input type="file" id="uploadFile" accept=".zip,.geojson,.json"><button class="secondary" onclick="uploadShape()">Upload as area</button>
+<details><summary>My own elevation file (LiDAR, drone, other DEM)</summary>
+<p class="note">A GeoTIFF with its coordinate system. It replaces the Pakistan SRTM for runs whose area it fully covers; a finer file allows finer cells (down to 5 m).</p>
+<input type="file" id="customDemFile" accept=".tif,.tiff"><div class="row2"><button class="secondary" onclick="uploadCustomDem()">Use this file</button><button class="secondary" id="customDemClear" style="display:none" onclick="clearCustomDem()">Remove my DEM</button></div>
+<div id="customDemBox"></div></details>
+<details><summary>Load a saved run file</summary>
+<p class="note">Restores the area, storm or earthquake and settings of a run saved with "Save run file". It restores inputs only; the model runs again.</p>
+<input type="file" id="runFile" accept=".json"><button class="secondary" onclick="loadRunFile()">Load run file</button><div id="runFileBox"></div></details>
 <div id="areaInfo" style="display:none"><div class="stat-row"><span>Area</span><span id="aKm2">-</span></div><div class="stat-row"><span>District</span><span id="aDist">-</span></div><div class="stat-row"><span>Physics run</span><span id="aPhys">-</span></div></div></div>
 
 <div class="panel-section"><h3>District discovery (national)</h3>
@@ -222,6 +254,19 @@ async function setAoi(g){aoi=g;for(const id of["rBtn","runBtn","s1Btn","t2Btn","
   $("areaInfo").style.display="block";$("aKm2").textContent=fmt(j.area_km2,1)+" km²";$("aDist").textContent=j.district?`${j.district.name}, ${j.district.province}`:"–";
   $("aPhys").innerHTML=j.physics_possible?"yes":'<span class="err">too large: use Tiers 1–2</span>';$("runBtn").disabled=!j.physics_possible;$("qRunBtn").disabled=!j.physics_possible;
   if(!$("qLon").value)qFromAoi();loadContext()}
+async function uploadCustomDem(){const f=$("customDemFile").files[0],box=$("customDemBox");if(!f)return;box.innerHTML='<p class="note">Checking the elevation file...</p>';const fd=new FormData();fd.append("file",f);
+  try{const r=await fetch("/api/custom-dem",{method:"POST",body:fd}),d=await r.json();if(d.error){window.customDemId=null;$("customDemClear").style.display="none";box.innerHTML=`<p class="err">${d.error}</p>`;return}
+    window.customDemId=d.id;$("customDemClear").style.display="";box.innerHTML=`<div class="stat-row"><span>Cell size</span><span>${d.cellsize_m} m</span></div><div class="stat-row"><span>Elevation range</span><span>${d.min_m} to ${d.max_m} m</span></div><div class="stat-row"><span>Grid</span><span>${d.ncols} x ${d.nrows}</span></div>`+(d.warnings||[]).map(w=>`<p class="note" style="color:#F5A742">${w}</p>`).join("")+`<p class="note">${d.note}</p>`;
+    try{map.fitBounds([[d.bounds_lonlat[0],d.bounds_lonlat[1]],[d.bounds_lonlat[2],d.bounds_lonlat[3]]],{padding:40,duration:900})}catch(e){}}catch(e){box.innerHTML=`<p class="err">Upload failed: ${e}</p>`}}
+function clearCustomDem(){window.customDemId=null;$("customDemClear").style.display="none";$("customDemBox").innerHTML='<p class="note">Back to the Pakistan SRTM.</p>';$("customDemFile").value=""}
+async function loadRunFile(){const f=$("runFile").files[0],box=$("runFileBox");if(!f)return;const fd=new FormData();fd.append("file",f);box.innerHTML='<p class="note">Reading the file...</p>';
+  const r=await fetch("/api/runfile/load",{method:"POST",body:fd}),d=await r.json();if(d.error){box.innerHTML=`<p class="err">${d.error}</p>`;return}
+  const p=d.params;setAoiExternal(d.geometry);const set=(id,v)=>{const e=$(id);if(e!==null&&v!==undefined&&v!==null){if(e.type==="checkbox")e.checked=!!v;else e.value=v}};
+  set("t3tex",p.texture);set("t4tex",p.texture);set("t3pre",p.strength_preset);set("t3q",p.strength_quantile);set("t4q",p.strength_quantile);set("t3ft",p.failure_type);set("t3ent",p.entrain);set("t3entd",p.entrain_depth_m);set("t3dvs",p.depth_vs_slope);
+  set("t3sg",p.spatial_ground);set("t3ant",p.antecedent);set("t3ens",p.ensemble);set("t3ms",p.min_slope_deg);set("t3rf",p.release_factor);
+  if(p.quake){set("qM",p.quake.magnitude);set("qDep",p.quake.depth_km);set("qLon",p.quake.lon);set("qLat",p.quake.lat);set("qT",p.quake.time_h);set("qD",p.quake.d_crit_cm);set("qSnap",p.quake.snap_to_fault)}
+  if(p.rain){rain=p.rain;try{drawRain()}catch(e){}}if(p.custom_dem_id)window.customDemId=p.custom_dem_id;
+  box.innerHTML='<p class="note">Run file loaded: area and settings restored.</p>'+(d.warnings||[]).map(w=>`<p class="note" style="color:#F5A742">${w}</p>`).join("")}
 async function uploadShape(){const f=$("uploadFile").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);const r=await fetch("/area/upload",{method:"POST",body:fd});const j=await r.json();if(j.error)return alert(j.error);setAoiExternal(j.geometry)}
 
 // ---------- discovery
@@ -297,11 +342,12 @@ function drawRain(){const c=$("rainChart"),x=c.getContext("2d");x.clearRect(0,0,
   x.fillStyle="#9FB8C2";x.font="10px IBM Plex Mono";x.fillText(fmt(mx)+" mm/h",4,11);x.fillText("0",4,c.height-3);x.fillText(fmt(T)+" h",c.width-44,c.height-3)}
 
 // ---------- physics run
-function baseParams(tex,pre,q){return{texture:tex,strength_preset:pre,strength_quantile:+q}}
+function rainForRun(){const o={};for(const k of["times_h","rate_mm_h","source","start_iso","antecedent_daily_mm","grid_lat","grid_lon"])if(rain&&rain[k]!==undefined&&rain[k]!==null)o[k]=rain[k];return o}   /* ALL series fields, incl. the 30-day antecedent rain (an earlier copy dropped it, so antecedent wetness never reached a UI run) */
+function baseParams(tex,pre,q){const p={texture:tex,strength_preset:pre,strength_quantile:+q};if(window.customDemId)p.custom_dem_id=window.customDemId;return p}
 async function runPhysics(mode){
   const t4=mode==="quake";const params=t4?{...baseParams($("t4tex").value,$("t3pre").value,$("t4q").value),mode:(rain&&$("qRain").value==="loaded")?"both":"quake",quake:{magnitude:+$("qM").value,depth_km:+$("qDep").value,lon:+$("qLon").value,lat:+$("qLat").value,time_h:+$("qT").value,d_crit_cm:+$("qD").value,snap_to_fault:$("qSnap").checked},failure_type:$("t3ft").value}
    :{...baseParams($("t3tex").value,$("t3pre").value,$("t3q").value),mode:"rain",failure_type:$("t3ft").value};
-  if(params.mode!=="quake"){if(!rain)return alert("Load a rainfall series first (Storm / rainfall).");params.rain={times_h:rain.times_h,rate_mm_h:rain.rate_mm_h,source:rain.source,start_iso:rain.start_iso}}
+  if(params.mode!=="quake"){if(!rain)return alert("Load a rainfall series first (Storm / rainfall).");params.rain=rainForRun()}
   Object.assign(params,{entrain:$("t3ent").checked,entrain_depth_m:+$("t3entd").value,depth_vs_slope:$("t3dvs").checked,spatial_ground:$("t3sg").checked,antecedent:$("t3ant").checked,ensemble:+$("t3ens").value,min_slope_deg:+$("t3ms").value,min_cluster_cells:+$("t3mc").value,release_factor:+$("t3rf").value,backend:$("t3be").value});
   const pf=t4?"progFill4":"progFill",pt=t4?"progTxt4":"progTxt",pg=t4?"prog4":"prog",out=t4?"runOut4":"runOut";$(pg).style.display="block";$(out).innerHTML="";$("cancelBtn").style.display=t4?"none":"";$("runBtn").disabled=$("qRunBtn").disabled=true;
   const {ok,j}=await post("/run",{geometry:aoi,params});if(!ok){$(out).innerHTML=`<p class="err">${j.error}</p>`;$(pg).style.display="none";$("runBtn").disabled=$("qRunBtn").disabled=false;return}
@@ -319,6 +365,7 @@ function showResult(r,out){const s=r.summary,fl=s.flow||{},ex=s.exposure||{},tr=
    if(s.quake)h+=`<div class="stat-row"><span>Peak PGA / rupture</span><span>${fmt(s.quake.pga_g_max,2)} g · ${fmt(s.quake.rupture_km,0)} km</span></div><p class="note">${s.quake.model||""}</p>`}
   if(tr.antecedent)h+=`<div class="stat-row"><span>Antecedent wetness (API ${fmt(tr.antecedent.api_mm,0)} mm)</span><span>${fmt(tr.antecedent.wetness*100,0)} % · water table ${fmt(tr.antecedent.water_table_m,1)} m</span></div>`;
   if(s.ensemble){const e=s.ensemble.failing_area_km2;h+=`<div class="stat-row"><span>Failing area, ${s.ensemble.members}-member ensemble (p05 / p50 / p95)</span><span>${fmt(e.p05,3)} / ${fmt(e.p50,3)} / ${fmt(e.p95,3)} km²</span></div><p class="note">${s.ensemble.note}. Layer: failure probability.</p>`}
+  if(r.run_id&&r.outcome!=="no_failure")h+=`<div class="row2"><button class="secondary" onclick="location.href='/runs/${r.run_id}/runfile.json'" title="Area, storm and settings as a small file you can load later">Save run file</button><button class="secondary" onclick="window.open('/runs/${r.run_id}/report.pdf')">PDF report</button></div>`;
   h+=(r.warnings||[]).slice(0,5).map(w=>`<div class="warn">⚠ ${w}</div>`).join("");$(out).innerHTML=h;
   if(r.has_scene){$("empty3d").style.display="none";const f=$("view3dFrame");f.style.display="block";f.src=`/runs/${r.run_id}/mapbox3d`;$("v3dFull").style.display="";$("v3dFull").href=`/runs/${r.run_id}/mapbox3d`}
   layerPick(r.run_id,r.layers||[]);if(r.layers&&r.layers.includes("hmax"))showRunLayer(r.run_id,"hmax","hmax")}
@@ -345,7 +392,7 @@ function pollJob(job,prog,done){const t=setInterval(async()=>{const p=await (awa
 function mitProgress(p){$("mitProg").style.display="block";$("mitFill").style.width=Math.max(2,p.frac*100)+"%";$("mitTxt").textContent=`${p.stage} · ${fmt(p.elapsed_s,0)} s`}
 function jobError(p){return `<p class="err">${p.state}: ${p.error||""} ${(p.reasons||[]).join("; ")}</p>`}
 function currentParams(){const p={...baseParams($("t3tex").value,$("t3pre").value,$("t3q").value),mode:"rain",failure_type:$("t3ft").value,entrain:$("t3ent").checked,entrain_depth_m:+$("t3entd").value,depth_vs_slope:$("t3dvs").checked,spatial_ground:$("t3sg").checked,antecedent:$("t3ant").checked,ensemble:+$("t3ens").value,min_slope_deg:+$("t3ms").value,min_cluster_cells:+$("t3mc").value,release_factor:+$("t3rf").value,backend:$("t3be").value};
-  if(rain)p.rain={times_h:rain.times_h,rate_mm_h:rain.rate_mm_h,source:rain.source,start_iso:rain.start_iso};return p}
+  if(rain)p.rain=rainForRun();return p}
 function nbsSpec(){const s={};if($("nPlant").checked)s.planting={root_cohesion_add_pa:+$("nPlantV").value*1000};if($("nReg").checked)s.regrading={max_slope_deg:+$("nRegV").value};if($("nDrain").checked)s.drainage={m_scale:+$("nDrM").value,water_table_add_m:+$("nDrW").value};return Object.keys(s).length?s:null}
 function barriers(){return lines().map(f=>({coords:f.geometry.coordinates,height_m:+(f.properties&&f.properties.height_m||$("bH").value),width_m:+(f.properties&&f.properties.width_m||6)}))}
 function renderBarriers(){const L=lines();$("barList").innerHTML=L.length?L.map((f,i)=>`<div class="item"><div>Barrier ${i+1}<br><small>height <input type="number" value="${f.properties.height_m||$("bH").value}" min="1" max="20" style="width:60px" onchange="setBar('${f.id}','height_m',this.value)"> m</small></div><button class="secondary" onclick="draw.delete('${f.id}');renderBarriers()">✕</button></div>`).join(""):'<p class="note">No barriers drawn.</p>'}
@@ -392,4 +439,42 @@ loadWatches();loadHistory();
 async function poll(){try{const r=await (await fetch("/api/agents/status")).json(),h=r.health,col={ok:"#2e9e5b",degraded:"#d9922b",down:"#d03b3b"}[h.status]||"#888";
 chip.innerHTML=`<span style="color:${col}">&#9679;</span> agents: ${h.status}`;chip.title=h.problems.length?h.problems.join("\n"):"All data feeds, the GPU and required files are healthy.\nClick for the event log.";chip.onclick=()=>window.open("/api/agents/status","_blank")}catch(e){chip.textContent="agents: unreachable"}}
 poll();setInterval(poll,120000)})();
-</script></body></html>
+</script><div id="welcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="wTitle" style="display:none;">
+  <div class="wcard">
+    <button class="wx" onclick="closeWelcome()" aria-label="Close">&times;</button>
+    <div class="wl">
+      <h2>LANDLAB</h2>
+      <ul>
+        <li><b>Physical landslide model</b>Rain or an earthquake triggers failure; debris runs out over the terrain with depth and speed through time.</li>
+        <li><b>Impact and loss</b>Buildings, roads, people and facilities at risk, with loss in PKR.</li>
+        <li><b>Scenarios</b>Mitigation options, design storms, climate change, average annual loss and live rain monitoring.</li>
+      </ul>
+    </div>
+    <div class="wr">
+      <h3>Get landslide information<br>for <em>your area</em></h3>
+      <button class="action" onclick="closeWelcome(); document.getElementById('geoInput').focus();">Search a place</button>
+      <button class="secondary" onclick="closeWelcome(); startDrawArea();">Draw an area on the map</button>
+      <button class="secondary" onclick="closeWelcome(); document.getElementById('uploadFile').scrollIntoView({behavior:'smooth', block:'center'});">Upload an area file</button>
+      <button class="secondary" onclick="location.href='/instant'">Open LANDLAB Instant (quick estimate)</button>
+      <p class="note">Draw or choose an area, set the storm, then run the model. Results appear on the main screen.</p>
+    </div>
+  </div>
+</div>
+<script>
+function setViewMode(m){document.body.classList.toggle('view-main',m==='main');document.body.classList.toggle('view-hidden',m==='hidden');setTimeout(()=>{try{map.resize()}catch(e){}},60)}
+function toggleViewMain(){setViewMode(document.body.classList.contains('view-main')?'card':'main')}
+function startDrawArea(){try{draw.changeMode('draw_polygon')}catch(e){}}
+function closeWelcome(){document.getElementById('welcomeOverlay').style.display='none';try{sessionStorage.setItem('landlabWelcome','1')}catch(e){}}
+(function(){let seen=false;try{seen=!!sessionStorage.getItem('landlabWelcome')}catch(e){}
+  if(!seen&&!/import=/.test(location.search))document.getElementById('welcomeOverlay').style.display='flex';
+  const inp=document.getElementById('geoInput'),hits=document.getElementById('geoHits');let t=null;
+  inp.addEventListener('input',()=>{clearTimeout(t);const q=inp.value.trim();if(q.length<2){hits.style.display='none';return}
+    t=setTimeout(async()=>{const geo=await fetch('https://api.mapbox.com/geocoding/v5/mapbox.places/'+encodeURIComponent(q+', Pakistan')+'.json?access_token='+encodeURIComponent(mapboxgl.accessToken)+'&limit=6&country=pk&bbox=60.87,23.63,77.84,37.13').then(r=>r.json()).catch(()=>({}));
+      hits.innerHTML='';(geo.features||[]).forEach(f=>{const b=document.createElement('button');b.innerHTML=f.text+'<small>'+f.place_name+'</small>';
+        b.onclick=()=>{hits.style.display='none';inp.value=f.place_name;const [lo,la]=f.center,dl=3/111.32,dn=dl/Math.cos(la*Math.PI/180);
+          setAoiExternal({type:'Polygon',coordinates:[[[lo-dn,la-dl],[lo+dn,la-dl],[lo+dn,la+dl],[lo-dn,la+dl],[lo-dn,la-dl]]]})};hits.appendChild(b)});
+      if(!hits.children.length){const d=document.createElement('button');d.textContent='No match';hits.appendChild(d)}hits.style.display='block'},250)});
+  document.addEventListener('click',e=>{if(!hits.contains(e.target)&&e.target!==inp)hits.style.display='none'});
+  window.addEventListener('load',()=>{if(typeof map!=='undefined'&&map)map.resize()})})();
+</script>
+</body></html>

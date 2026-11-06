@@ -4,7 +4,7 @@ import io, json, os, threading, time, traceback, uuid
 from pathlib import Path
 import numpy as np
 import rasterio
-from flask import Flask, Response, abort, jsonify, request, send_file
+from flask import Flask, Response, abort, jsonify, redirect, request, send_file
 from rasterio.enums import Resampling
 from rasterio.transform import from_bounds
 from rasterio.vrt import WarpedVRT
@@ -198,9 +198,30 @@ def manifest(run_id):
     return send_file(f) if f.exists() else abort(404)
 
 
+def _app_version():
+    try:
+        from .runs import VERSION
+        return VERSION
+    except Exception:
+        return ""
+
+
 @app.get("/")
 def index():
+    """Landing page (as SAILAB): LANDLAB Instant or LANDLAB Physics. A SimCity-style hand-over (?import=<id>) goes straight to the app."""
+    if request.args.get("import"):
+        return redirect("/app?" + request.query_string.decode(), code=302)
+    return Response((STATIC / "landing.html").read_text(encoding="utf-8").replace("__APP_VERSION__", _app_version()), mimetype="text/html")
+
+
+@app.get("/app")
+def app_page():
     return Response((STATIC / "app.html").read_text().replace("__MAPBOX_TOKEN__", _env_token()), mimetype="text/html")
+
+
+@app.get("/instant")
+def instant_page():
+    return Response((STATIC / "instant.html").read_text(encoding="utf-8").replace("__MAPBOX_TOKEN__", _env_token()), mimetype="text/html")
 
 
 @app.get("/legacy")

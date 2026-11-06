@@ -233,6 +233,63 @@ def area_screening():
     return jsonify({"run_id": r["run_id"], "summary": r["summary"], "warnings": r["manifest"]["warnings"], "layers": [k for k in r["out"] if k in render.RAMPS]})
 
 
+@app.post("/api/custom-dem")
+def custom_dem_upload():
+    """Upload your own elevation GeoTIFF (LiDAR, drone survey, another DEM). Returns its id and description; pass custom_dem_id in the run parameters to use it."""
+    from . import custom_dem as CD
+    f = request.files.get("file")
+    if not f:
+        return jsonify({"error": "choose a GeoTIFF file"}), 400
+    try:
+        return jsonify(CD.store(f.stream))
+    except LandslideError as e:
+        return jsonify({"error": str(e)}), 422
+
+
+@app.get("/api/custom-dem/<did>")
+def custom_dem_info(did):
+    from . import custom_dem as CD
+    d = CD.info(did)
+    return (jsonify(d), 200) if d else (jsonify({"error": "not found"}), 404)
+
+
+@app.get("/runs/<rid>/runfile.json")
+def runfile_download(rid):
+    from . import runfile as RFILE
+    if not (RUNS / rid / "manifest.json").exists():
+        abort(404)
+    try:
+        doc = RFILE.build(rid, RUNS, RUNS_MOD.VERSION)
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 404
+    return Response(json.dumps(doc, indent=1), mimetype="application/json", headers={"Content-Disposition": f"attachment; filename=landlab_run_{rid[:8]}.json"})
+
+
+@app.post("/api/runfile/load")
+def runfile_load():
+    from . import runfile as RFILE
+    f = request.files.get("file")
+    try:
+        doc = json.loads(f.read().decode("utf-8")) if f else (request.get_json(force=True, silent=True) or {})
+        g, p, warn = RFILE.sanitize(doc)
+    except (ValueError, KeyError, TypeError, UnicodeDecodeError) as e:
+        return jsonify({"error": f"could not read the run file: {e}"}), 400
+    return jsonify({"geometry": g, "params": p, "warnings": warn})
+
+
+@app.post("/area/instant-scenarios")
+def instant_scenarios():
+    """Moderate (2 year) and extreme (100 year) 24 h storm depths for the area's centre, from the observed-rainfall IDF cube (as SAILAB's /area/instant-scenarios)."""
+    from . import design_storm as DS
+    g = _geom(); c = np.array(g["coordinates"][0]); lon, lat = float(c[:, 0].mean()), float(c[:, 1].mean())
+    try:
+        dur, yrs, A, cell = DS.annual_maxima(lat, lon); j = int(np.argmin(np.abs(dur - 24))); xi, al = DS.gumbel_lmom(A[:, j])
+        mod, ext = float(DS.gumbel_quantile(xi, al, 2)), float(DS.gumbel_quantile(xi, al, 100))
+        return jsonify({"moderate_mm": round(mod, 0), "extreme_mm": round(ext, 0), "duration_h": 24, "lat": lat, "lon": lon, "source": "ERA5-Land annual maxima (2 and 100 year, 24 h)"})
+    except Exception as e:
+        return jsonify({"moderate_mm": 60.0, "extreme_mm": 200.0, "duration_h": 24, "lat": lat, "lon": lon, "source": "default values (observed rainfall unavailable here: " + str(e)[:60] + ")"})
+
+
 @app.post("/area/instant-library")
 def instant_library():
     g = _geom(); body = request.get_json(force=True)

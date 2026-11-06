@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LANDLAB Instant</title>
+<meta name="description" content="LANDLAB Instant: pick a place and a rain scenario and see which slopes could fail">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100,400;100,600;100,800&family=Archivo+Narrow:wght@500;600&display=swap">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
+<link href="https://unpkg.com/@mapbox/mapbox-gl-draw@1.4.3/dist/mapbox-gl-draw.css" rel="stylesheet">
+<style>
+  :root {
+    --ink: #eaf6f5; --muted: #9bbcbe; --aqua: #55e6da; --aqua-deep: #14a8a0; --bg: #05100f;
+    --glass: rgba(6, 22, 24, .82); --line: rgba(85, 230, 218, .22); --warn: #f0b04a;
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif; --text: "Archivo Narrow", "Arial Narrow", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--text); font-size: 15px; overflow: hidden; }
+  #map { position: fixed; inset: 0; }
+  .glass { background: var(--glass); -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3); border: 1px solid var(--line); box-shadow: 0 10px 36px rgba(0, 0, 0, .45); }
+
+  /* top bar */
+  #bar { position: fixed; z-index: 10; top: 10px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 14px; }
+  .brand { font-family: var(--display); font-weight: 800; font-stretch: 110%; letter-spacing: .12em; text-decoration: none; color: var(--ink); padding: 0 6px; }
+  .pill { font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: #03161a; background: var(--aqua); border-radius: 999px; padding: 3px 10px; font-weight: 600; }
+  .searchbox { position: relative; flex: 1; min-width: 120px; max-width: 460px; }
+  input[type=text], input[type=number], select { width: 100%; background: rgba(2, 10, 11, .7); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font: inherit; }
+  input[type=range] { width: 100%; accent-color: var(--aqua); }
+  :focus-visible { outline: 2px solid var(--aqua); outline-offset: 2px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 7px 12px; font: inherit; letter-spacing: .04em; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .btn:hover { border-color: var(--aqua); color: var(--aqua); }
+  .btn.on { background: var(--aqua); color: #03161a; border-color: var(--aqua); }
+  .btn.primary { background: linear-gradient(135deg, var(--aqua), var(--aqua-deep)); color: #03161a; border: 0; font-family: var(--display); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: .82rem; }
+  .spacer { margin-left: auto; display: flex; gap: 8px; }
+  .hits { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; background: #071819; border: 1px solid var(--line); border-radius: 12px; max-height: 300px; overflow-y: auto; display: none; }
+  .hits button { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--ink); padding: 8px 12px; font: inherit; cursor: pointer; }
+  .hits button small { display: block; color: var(--muted); }
+  .hits button:hover, .hits button:focus-visible { background: rgba(85, 230, 218, .12); outline: none; }
+  .hits .grp { padding: 6px 12px 2px; font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--aqua); }
+
+  /* welcome */
+  #welcome { position: fixed; z-index: 30; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(2, 8, 9, .55); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+  #welcome .card { position: relative; width: min(860px, 100%); display: grid; grid-template-columns: 1fr 1fr; border-radius: 22px; overflow: hidden; }
+  #welcome .left { padding: 30px; background: linear-gradient(160deg, #0b3a3c 0%, #0a2a30 60%, #06161b 100%); }
+  #welcome .left h1 { margin: 0 0 18px; font-family: var(--display); font-weight: 900; font-stretch: 110%; letter-spacing: .08em; font-size: 2rem; }
+  #welcome .left li { list-style: none; margin: 0 0 14px; line-height: 1.4; color: rgba(234, 246, 245, .88); }
+  #welcome .left li b { display: block; color: var(--ink); font-size: 1.05rem; }
+  #welcome ul { padding: 0; margin: 0; }
+  #welcome .right { padding: 30px; background: #f4fbfb; color: #0a1f22; }
+  #welcome .right h2 { margin: 0 0 16px; font-family: var(--display); font-weight: 800; font-size: 1.7rem; line-height: 1.15; }
+  #welcome .right h2 em { font-style: normal; color: #0d8f88; }
+  #welcome label { display: block; font-weight: 600; margin: 10px 0 6px; }
+  #welcome input[type=text] { background: #fff; color: #0a1f22; border: 1px solid #b9d6d6; }
+  #welcome .hits { background: #fff; border-color: #b9d6d6; }
+  #welcome .hits button { color: #0a1f22; } #welcome .hits button small { color: #5b7b7d; }
+  #welcome .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { background: #fff; color: #0a1f22; border: 1.5px solid #b9d6d6; border-radius: 10px; padding: 8px 12px; font: inherit; font-weight: 600; cursor: pointer; }
+  .chip.on { border-color: #0d8f88; background: #e1f6f4; color: #086660; }
+  #welcome .go { width: 100%; margin-top: 16px; padding: 12px; border-radius: 12px; font-size: .95rem; }
+  #welcome .close { position: absolute; z-index: 2; top: 12px; right: 12px; background: #fff; color: #0a1f22; border: 1px solid #b9d6d6; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; }
+  #welcome .fine { margin-top: 14px; color: #5b7b7d; font-size: .85rem; line-height: 1.4; }
+
+  /* result panel + legend */
+  #panel { position: fixed; z-index: 10; left: 10px; bottom: 28px; width: min(360px, calc(100% - 20px)); border-radius: 16px; padding: 14px 16px; display: none; }
+  #panel h3 { margin: 0 0 2px; font-family: var(--display); font-size: 1.05rem; font-weight: 800; letter-spacing: .04em; }
+  #panel .sub { color: var(--muted); font-size: .86rem; margin-bottom: 8px; }
+  #panel .chips { display: flex; gap: 6px; margin: 8px 0; }
+  #panel .chip { background: transparent; color: var(--ink); border: 1px solid var(--line); padding: 5px 10px; font-weight: 500; }
+  #panel .chip.on { background: var(--aqua); color: #03161a; border-color: var(--aqua); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 6px 0; }
+  .row label { color: var(--muted); font-size: .86rem; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 6px; }
+  .stat { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: rgba(2, 10, 11, .55); }
+  .stat span { display: block; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .stat strong { font-family: var(--display); font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  #panel p { margin: 6px 0 0; font-size: .82rem; line-height: 1.4; color: var(--muted); }
+  #panel p.err { color: #ff8d7a; }
+  #legend { position: fixed; z-index: 10; right: 10px; bottom: 28px; border-radius: 12px; padding: 10px 12px; display: none; }
+  #legend h4 { margin: 0 0 6px; font-family: var(--display); font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; }
+  #legend div { display: flex; align-items: center; gap: 8px; font-size: .82rem; margin: 2px 0; font-variant-numeric: tabular-nums; }
+  #legend i { width: 16px; height: 12px; border-radius: 3px; display: inline-block; }
+  #busy { position: fixed; z-index: 12; top: 70px; left: 50%; transform: translateX(-50%); padding: 7px 16px; border-radius: 999px; display: none; font-size: .9rem; }
+  @media (max-width: 760px) {
+    #welcome .card { grid-template-columns: 1fr; } #welcome .left { display: none; }
+    #bar .brand + .pill { display: none; } .btn .lbl { display: none; }
+    #legend { bottom: auto; top: 64px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="bar" class="glass">
+  <a class="brand" href="/">LANDLAB</a><span class="pill">Instant</span>
+  <div class="searchbox">
+    <input type="text" id="barSearch" placeholder="Search a place or district in Pakistan" autocomplete="off" aria-label="Search a place or district">
+    <div class="hits" id="barHits"></div>
+  </div>
+  <div class="spacer">
+    <button class="btn" id="drawBtn" title="Draw your own area on the map">Draw area</button>
+    <button class="btn" id="threeD" title="Tilt the map and show terrain relief">3D</button>
+    <a class="btn" href="/app" title="Full physical model">Physical model &rarr;</a>
+  </div>
+</div>
+
+<div id="busy" class="glass">Working...</div>
+
+<div id="welcome" role="dialog" aria-modal="true" aria-labelledby="wtitle">
+  <div class="card glass">
+    <button class="close" id="wclose" aria-label="Close and explore the map">&times;</button>
+    <div class="left">
+      <h1>LANDLAB Instant</h1>
+      <ul>
+        <li><b>Which slopes could fail</b>Rain soaks into the soil and raises the water pressure inside it. Steep ground with a weak, thick soil fails first.</li>
+        <li><b>Answer in a few seconds</b>Computed from the terrain and a typical soil, no runout simulation to wait for.</li>
+        <li><b>Real Pakistan rainfall</b>Moderate and extreme storms come from recorded rainfall near the place you pick.</li>
+      </ul>
+    </div>
+    <div class="right">
+      <h2 id="wtitle">Get landslide information<br>for <em>your area</em></h2>
+      <label for="wSearch">Enter your location</label>
+      <div class="searchbox" style="max-width:none;"><input type="text" id="wSearch" placeholder="Search a place or district, e.g. Hunza or Murree" autocomplete="off"><div class="hits" id="wHits"></div></div>
+      <label>Choose a scenario</label>
+      <div class="chips" id="wChips"><button class="chip on" data-s="moderate">Moderate rain</button><button class="chip" data-s="extreme">Extreme rain</button></div>
+      <button class="btn primary go" id="wGo">Get landslide information</button>
+      <p class="fine">A screening estimate at about 30 m terrain detail. It shows where slopes could fail under a 24 hour storm, not how far the debris travels. For runout, buildings, roads, earthquakes and loss, open the <a href="/app" style="color:#086660;">physical model</a>.</p>
+    </div>
+  </div>
+</div>
+
+<div id="panel" class="glass">
+  <h3 id="pTitle">Your area</h3>
+  <div class="sub" id="pSub"></div>
+  <div class="chips" id="pChips"><button class="chip" data-s="moderate">Moderate rain</button><button class="chip" data-s="extreme">Extreme rain</button><button class="chip" data-s="custom">Custom</button></div>
+  <div class="row"><label for="rain">Rain in 24 hours</label><b><span id="rainVal">60</span> mm</b></div>
+  <input type="range" id="rain" min="0" max="600" step="5" value="60" aria-label="Rain depth in millimetres over 24 hours">
+  <div class="row"><label for="soil">Soil</label>
+    <select id="soil" style="width:auto;"><option value="colluvium_shallow" selected>Typical (colluvium)</option><option value="residual_soil">Residual soil</option><option value="weak_clayey">Weak clay</option></select></div>
+  <div class="row"><label for="view">Map shows</label>
+    <select id="view" style="width:auto;"><option value="now" selected>Slopes that fail at this rain</option><option value="crit">Rain needed to fail</option></select></div>
+  <div class="stats">
+    <div class="stat"><span>Could fail</span><strong id="sArea">&ndash;</strong></div>
+    <div class="stat"><span>Of soil-bearing slope</span><strong id="sShare">&ndash;</strong></div>
+  </div>
+  <p id="sNote">&nbsp;</p>
+  <p id="sBasis"></p>
+  <a class="btn" href="/app" style="margin-top:8px;">Run the full physical model &rarr;</a>
+</div>
+
+<div id="legend" class="glass">
+  <h4 id="legTitle">Slope stability</h4>
+  <div id="legBody"></div>
+</div>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+<script src="https://unpkg.com/@mapbox/mapbox-gl-draw@1.4.3/dist/mapbox-gl-draw.js"></script>
+<script>
+"use strict";
+const MAPBOX_TOKEN = "__MAPBOX_TOKEN__";
+mapboxgl.accessToken = MAPBOX_TOKEN;
+const $ = id => document.getElementById(id);
+const BASE = 'mapbox://styles/mapbox/satellite-streets-v12';
+let geom = null, label = '', scen = null, lib = null, scenKey = 'moderate', areaToken = 0, lastOv = null, is3D = false;
+
+const map = new mapboxgl.Map({ container: 'map', style: BASE, center: [69.3, 30.4], zoom: 4.8, preserveDrawingBuffer: true });
+map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+const draw = new MapboxDraw({ displayControlsDefault: false });
+map.addControl(draw);
+
+function busy(msg) { const b = $('busy'); if (msg) { b.textContent = msg; b.style.display = 'block'; } else b.style.display = 'none'; }
+const fmtArea = v => v >= 100 ? v.toFixed(0) : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+const boxAround = (lon, lat, km) => { const dl = km / 2 / 111.32, dn = dl / Math.cos(lat * Math.PI / 180);
+  return { type: 'Polygon', coordinates: [[[lon - dn, lat - dl], [lon + dn, lat - dl], [lon + dn, lat + dl], [lon - dn, lat + dl], [lon - dn, lat - dl]]] }; };
+const boundsOf = g => { const b = new mapboxgl.LngLatBounds(); g.coordinates[0].forEach(c => b.extend(c)); return b; };
+const post = (url, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json());
+
+// ---------- search (places + districts) ----------
+function wireSearch(input, hitsEl, onPick) {
+  let t = null;
+  input.addEventListener('input', () => {
+    clearTimeout(t); const q = input.value.trim();
+    if (q.length < 2) { hitsEl.style.display = 'none'; return; }
+    t = setTimeout(async () => {
+      const [dis, geo] = await Promise.all([
+        fetch('/districts/search?n=4&q=' + encodeURIComponent(q)).then(r => r.json()).catch(() => ({})),
+        fetch('https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(q + ', Pakistan') + '.json?access_token=' + encodeURIComponent(MAPBOX_TOKEN) +
+              '&limit=5&country=pk&bbox=60.87,23.63,77.84,37.13').then(r => r.json()).catch(() => ({})),
+      ]);
+      hitsEl.innerHTML = '';
+      const add = (txt, sub, fn) => { const b = document.createElement('button'); b.innerHTML = txt + (sub ? '<small>' + sub + '</small>' : ''); b.onclick = () => { hitsEl.style.display = 'none'; fn(); }; hitsEl.appendChild(b); };
+      const places = (geo.features || []);
+      if (places.length) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = 'Places'; hitsEl.appendChild(g);
+        places.forEach(f => add(f.text, f.place_name, () => onPick({ kind: 'place', name: f.place_name, lon: f.center[0], lat: f.center[1] }))); }
+      const th = (dis.results || []).slice(0, 4);
+      if (th.length) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = 'Districts (whole area, up to ~2,000 km²)'; hitsEl.appendChild(g);
+        th.forEach(x => add(x.name, [x.province].filter(Boolean).join(', '), () => onPick({ kind: 'district', id: x.idx, name: x.name + ' district' }))); }
+      if (!hitsEl.children.length) add('No match', '', () => {});
+      hitsEl.style.display = 'block';
+    }, 250);
+  });
+  document.addEventListener('click', e => { if (!hitsEl.contains(e.target) && e.target !== input) hitsEl.style.display = 'none'; });
+}
+let pendingPick = null;
+wireSearch($('wSearch'), $('wHits'), p => { pendingPick = p; $('wSearch').value = p.name; });
+wireSearch($('barSearch'), $('barHits'), p => { $('barSearch').value = p.name; usePick(p); });
+
+async function usePick(p) {
+  if (p.kind === 'district') {
+    busy('Loading the area...');
+    const d = await fetch('/districts/' + p.id).then(r => r.json()).catch(() => null);
+    busy(); if (!d || !d.geometry) return;
+    setArea(d.geometry, p.name);
+  } else setArea(boxAround(p.lon, p.lat, 6), p.name);
+}
+
+// ---------- welcome ----------
+$('wChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; scenKey = b.dataset.s;
+  document.querySelectorAll('#wChips .chip').forEach(x => x.classList.toggle('on', x === b)); });
+$('wclose').onclick = () => { $('welcome').style.display = 'none'; };
+$('wGo').onclick = () => { if (!pendingPick) { $('wSearch').focus(); $('wSearch').placeholder = 'Pick a place from the list first'; return; } $('welcome').style.display = 'none'; usePick(pendingPick); };
+$('wSearch').addEventListener('keydown', e => { if (e.key === 'Enter') $('wGo').click(); });
+
+// ---------- area ----------
+async function setArea(g, name) {
+  const my = ++areaToken; geom = g; label = name || 'Your area'; lastOv = null; lib = null; clearOverlay();
+  draw.getAll().features.forEach(f => draw.delete(f.id));
+  map.fitBounds(boundsOf(g), { padding: { top: 90, bottom: 60, left: 380, right: 120 }, duration: 1400, pitch: is3D ? 60 : 0 });
+  $('panel').style.display = 'block'; $('legend').style.display = 'block';
+  $('pTitle').textContent = label; $('pSub').textContent = 'Reading the terrain...'; $('sArea').textContent = '–'; $('sShare').textContent = '–'; $('sNote').className = ''; $('sNote').textContent = '';
+  busy('Reading the terrain for this area...');
+  try {
+    scen = await post('/area/instant-scenarios', { geometry: g });
+    if (my !== areaToken) return;
+    applyScenario(scenKey === 'custom' ? 'moderate' : scenKey, false);
+    await loadLibrary(my);
+  } catch (e) { $('sNote').className = 'err'; $('sNote').textContent = 'Failed: ' + e; busy(); }
+}
+function applyScenario(k, refresh) {
+  scenKey = k; document.querySelectorAll('#pChips .chip').forEach(x => x.classList.toggle('on', x.dataset.s === k));
+  if (k !== 'custom' && scen) { const v = k === 'extreme' ? scen.extreme_mm : scen.moderate_mm; $('rain').value = Math.min(600, v); $('rainVal').textContent = v; }
+  if (refresh) render();
+}
+$('pChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) applyScenario(b.dataset.s, true); });
+$('rain').addEventListener('input', () => { $('rainVal').textContent = $('rain').value; applyScenario('custom', false); render(); });
+$('view').addEventListener('change', render);
+$('soil').addEventListener('change', () => { const my = areaToken; loadLibrary(my); });
+
+// ---------- stability library: FS grids over a ladder of 24 h rain totals, computed once per area and soil ----------
+async function loadLibrary(my) {
+  if (!geom) return;
+  busy('Computing slope stability for 9 rain amounts...');
+  const r = await post('/area/instant-library', { geometry: geom, params: { strength_preset: $('soil').value, texture: 'sandy loam', strength_quantile: 0.3 } });
+  if (my !== areaToken) return; busy();
+  if (r.error) { $('pSub').textContent = ''; $('sNote').className = 'err'; $('sNote').textContent = r.error; return; }
+  lib = r; $('pSub').textContent = fmtArea(r.area_km2) + ' km² area · terrain ' + r.resolution_m.toFixed(0) + ' m cells'; render();
+}
+function interp(x, xs, ys) { if (x <= xs[0]) return ys[0]; for (let i = 1; i < xs.length; i++) if (x <= xs[i]) return ys[i - 1] + (ys[i] - ys[i - 1]) * (x - xs[i - 1]) / (xs[i] - xs[i - 1]); return ys[ys.length - 1]; }
+function render() {
+  if (!lib) return; const mm = parseFloat($('rain').value), lad = lib.ladder_mm;
+  const km2 = interp(mm, lad, lib.unstable_area_km2), mob = (lib.mobilisable && lib.mobilisable.cells_mobilisable) ? lib.mobilisable.cells_mobilisable * lib.resolution_m * lib.resolution_m / 1e6 : null;
+  $('sArea').textContent = fmtArea(km2) + ' km²'; $('sShare').textContent = mob ? (100 * km2 / mob).toFixed(1) + ' %' : '–';
+  const crit = lib.median_critical_rain_mm;
+  $('sNote').className = ''; $('sNote').textContent = crit == null ? 'Nothing fails within 600 mm of rain in 24 hours with this soil.' : 'Half of the soil-bearing slopes that can fail do so below about ' + Math.round(crit) + ' mm in 24 hours.';
+  $('sBasis').textContent = (scen && scen.source ? 'Rainfall: ' + scen.source + '. ' : '') + 'Typical soil values, not measurements: strength is the dominant uncertainty. Screening estimate, not a forecast.';
+  const showCrit = $('view').value === 'crit';
+  let k = 0; for (let i = 0; i < lad.length; i++) if (lad[i] <= mm) k = i;             // nearest rung at or below the chosen rain
+  const png = showCrit ? lib.png.crit : (lib.png['f' + String(lad[k])] || lib.png[String(lad[k])]);
+  lastOv = { image: 'data:image/png;base64,' + png, coordinates: lib.corners }; paintOverlay(lastOv);
+  $('legTitle').textContent = showCrit ? 'Rain needed to fail (mm / 24 h)' : 'Slopes that fail (' + lad[k] + ' mm rung)';
+  $('legBody').innerHTML = showCrit
+    ? '<div><i style="background:#7f0000"></i>0</div><div><i style="background:#d73027"></i>50</div><div><i style="background:#fc8d59"></i>150</div><div><i style="background:#fee090"></i>300</div><div><i style="background:#ffffbf"></i>600</div>'
+    : '<div><i style="background:#8b0a26"></i>Could fail at this rain</div><div style="color:#678">Soil-bearing slopes with no colour stay stable</div>';
+}
+
+// ---------- overlay on the map ----------
+function clearOverlay() { if (map.getLayer('ls')) map.removeLayer('ls'); if (map.getSource('ls')) map.removeSource('ls'); }
+function paintOverlay(ov) {
+  if (!map.isStyleLoaded()) { map.once('idle', () => paintOverlay(ov)); return; }
+  clearOverlay();
+  map.addSource('ls', { type: 'image', url: ov.image, coordinates: ov.coordinates });
+  map.addLayer({ id: 'ls', type: 'raster', source: 'ls', paint: { 'raster-opacity': 0.85, 'raster-resampling': 'nearest', 'raster-fade-duration': 150 } });
+}
+map.on('style.load', () => { if (lastOv) paintOverlay(lastOv); if (is3D) enableTerrain(); });
+
+// ---------- 3D, draw ----------
+function enableTerrain() {
+  if (!map.getSource('dem')) map.addSource('dem', { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 });
+  map.setTerrain({ source: 'dem', exaggeration: 1.5 });
+}
+$('threeD').onclick = () => {
+  is3D = !is3D; $('threeD').classList.toggle('on', is3D);
+  if (is3D) { enableTerrain(); map.easeTo({ pitch: 62, duration: 900 }); } else { map.setTerrain(null); map.easeTo({ pitch: 0, bearing: 0, duration: 700 }); }
+};
+$('drawBtn').onclick = () => { $('welcome').style.display = 'none'; draw.changeMode('draw_polygon'); busy('Click the map to outline your area; double-click to finish.'); };
+const onDraw = () => {
+  busy();
+  const polys = draw.getAll().features.filter(f => f.geometry.type === 'Polygon'); if (!polys.length) return;
+  const last = polys[polys.length - 1]; polys.slice(0, -1).forEach(f => draw.delete(f.id));
+  clearTimeout(onDraw.t); onDraw.t = setTimeout(() => setAreaKeepDrawing(last.geometry), 400);
+};
+async function setAreaKeepDrawing(g) {
+  const keep = JSON.parse(JSON.stringify(g)); await setArea(g, 'Drawn area');
+  draw.add({ type: 'Feature', properties: {}, geometry: keep });
+}
+map.on('draw.create', onDraw); map.on('draw.update', onDraw);
+
+// deep links: /instant#district=12 or /instant#lat=35.9&lon=74.3
+(function deepLink() {
+  const h = location.hash;
+  const t = /district=(\d+)/.exec(h), la = /lat=([-\d.]+)/.exec(h), lo = /lon=([-\d.]+)/.exec(h);
+  if (t) { $('welcome').style.display = 'none'; usePick({ kind: 'district', id: t[1], name: 'District ' + t[1] }); }
+  else if (la && lo) { $('welcome').style.display = 'none'; setArea(boxAround(parseFloat(lo[1]), parseFloat(la[1]), 6), 'Selected place'); }
+})();
+</script>
+</body>
+</html>

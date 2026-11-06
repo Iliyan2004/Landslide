@@ -11,6 +11,26 @@ class TestApi(unittest.TestCase):
     def setUp(self):
         S.app.testing = True; self.c = S.app.test_client(); S._hits.clear(); os.environ.pop("LANDLAB_TOKEN", None)
 
+    def test_pages_landing_app_instant(self):
+        land = self.c.get("/"); self.assertEqual(land.status_code, 200); self.assertIn(b"LANDLAB Instant", land.data); self.assertIn(b'href="/app"', land.data)
+        self.assertNotIn(b"SAILAB", land.data.replace(b"base64", b""))
+        self.assertEqual(self.c.get("/?import=abc").status_code, 302)                                    # a hand-over goes straight to the app
+        app = self.c.get("/app"); self.assertEqual(app.status_code, 200); self.assertIn(b"welcomeOverlay", app.data); self.assertIn(b"geoInput", app.data)
+        ins = self.c.get("/instant"); self.assertEqual(ins.status_code, 200); self.assertIn(b"instant-library", ins.data); self.assertNotIn(b"__MAPBOX_TOKEN__", ins.data)
+
+    def test_runfile_load_validation(self):
+        good = {"format": "landlab-run-file", "geometry": G, "params": {"mode": "rain", "strength_quantile": 0.4, "bogus": 1, "rain": {"times_h": [1, 2], "rate_mm_h": [5, 6], "source": "x"}}}
+        j = self.c.post("/api/runfile/load", json=good).get_json()
+        self.assertEqual(j["params"]["strength_quantile"], 0.4); self.assertNotIn("bogus", j["params"]); self.assertEqual(len(j["params"]["rain"]["times_h"]), 2); self.assertTrue(any("bogus" in w for w in j["warnings"]))
+        for bad in ({"format": "other"}, {"format": "landlab-run-file", "geometry": {"type": "Point"}}, {"format": "landlab-run-file", "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]]}}):
+            self.assertEqual(self.c.post("/api/runfile/load", json=bad).status_code, 400)
+
+    def test_custom_dem_rejects_a_non_tiff(self):
+        import io
+        r = self.c.post("/api/custom-dem", data={"file": (io.BytesIO(b"not a tiff"), "x.tif")}, content_type="multipart/form-data")
+        self.assertEqual(r.status_code, 422); self.assertIn("error", r.get_json())
+        self.assertEqual(self.c.post("/api/custom-dem", data={}, content_type="multipart/form-data").status_code, 400)
+
     def test_page_and_presets(self):
         self.assertEqual(self.c.get("/").status_code, 200)
         j = self.c.get("/api/presets").get_json(); self.assertIn("sandy loam", j["textures"])

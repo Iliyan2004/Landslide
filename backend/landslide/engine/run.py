@@ -9,7 +9,7 @@ import numpy as np
 from pyproj import Transformer
 from rasterio.enums import Resampling
 from scipy import ndimage
-from ..app import paths, rasters, pipeline as P, rainfall as RF, layers as LY
+from ..app import paths, rasters, pipeline as P, rainfall as RF, layers as LY, custom_dem as CD
 from ..data.preprocessing import aoi as AOI, terrain
 from ..errors import GateError, InsufficientData
 from . import loss as LS, flow as FL, trigger as TR, interventions as IV, ground as GR, access as AC, site as SITE, antecedent as ANT, ensemble as ENSM, wetness as WET, census as CEN
@@ -71,15 +71,19 @@ def _execute(geom, params, run_dir, progress):
     bbox, area_km2, w0 = AOI.validate_geojson(geom, max_area_km2=P.MAX_AOI_KM2)
     warns += list(w0)
     epsg, w1 = AOI.select_analysis_crs(bbox); warns += list(w1)
-    res = max(P.MIN_RES_M, float(np.ceil(np.sqrt(area_km2 * 1e6 / MAX_PHYS_CELLS) / 10.0) * 10.0))
+    dem_path, min_res, dem_note = CD.resolve(params, bbox, paths.get("DEM"), P.MIN_RES_M)
+    if dem_note:
+        warns.append(dem_note)
+    step = 10.0 if min_res >= 10.0 else min_res
+    res = max(min_res, float(np.ceil(np.sqrt(area_km2 * 1e6 / MAX_PHYS_CELLS) / step) * step))
     if res > MAX_PHYS_RES_M:
         raise GateError([f"{area_km2:,.0f} km2 is too large for a physics run (cells would be {res:.0f} m, slope is smoothed away). "
                          f"Draw an area of <= {MAX_PHYS_CELLS*MAX_PHYS_RES_M**2/1e6:,.0f} km2, or use Tier 1/2 for large areas."])
-    if res > P.MIN_RES_M:
-        warns.append(f"Run uses {res:.0f} m cells (area {area_km2:,.0f} km2); a smaller area gives 30 m.")
+    if res > min_res:
+        warns.append(f"Run uses {res:.0f} m cells (area {area_km2:,.0f} km2); a smaller area gives {min_res:.0f} m.")
     progress("terrain", 0.04)
     grid = rasters.make_grid(bbox, epsg, res)
-    dem = rasters.read(paths.get("DEM"), grid, Resampling.average if res > P.MIN_RES_M else Resampling.bilinear)
+    dem = rasters.read(dem_path, grid, Resampling.average if res > min_res else Resampling.bilinear)
     if dem is None:
         raise InsufficientData(["DEM coverage for this AOI"], "terrain")
     inside = rasters.polygon_mask(geom, grid)
@@ -488,11 +492,13 @@ def stability_context(geom, params):
     """Everything the stability-only evaluations need (no flow): used to rank mitigation levers quickly."""
     bbox, area_km2, _ = AOI.validate_geojson(geom, max_area_km2=P.MAX_AOI_KM2)
     epsg, _ = AOI.select_analysis_crs(bbox)
-    res = max(P.MIN_RES_M, float(np.ceil(np.sqrt(area_km2 * 1e6 / MAX_PHYS_CELLS) / 10.0) * 10.0))
+    dem_path, min_res, _n = CD.resolve(params, bbox, paths.get("DEM"), P.MIN_RES_M)
+    step = 10.0 if min_res >= 10.0 else min_res
+    res = max(min_res, float(np.ceil(np.sqrt(area_km2 * 1e6 / MAX_PHYS_CELLS) / step) * step))
     if res > MAX_PHYS_RES_M:
         raise GateError([f"{area_km2:,.0f} km2 is too large for this evaluation"])
     grid = rasters.make_grid(bbox, epsg, res)
-    dem = rasters.read(paths.get("DEM"), grid, Resampling.average if res > P.MIN_RES_M else Resampling.bilinear)
+    dem = rasters.read(dem_path, grid, Resampling.average if res > min_res else Resampling.bilinear)
     if dem is None:
         raise InsufficientData(["DEM coverage for this AOI"], "terrain")
     valid = rasters.polygon_mask(geom, grid) & np.isfinite(dem)

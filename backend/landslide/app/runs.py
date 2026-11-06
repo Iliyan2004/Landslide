@@ -7,7 +7,7 @@ from .. import manifest as M
 from ..engine import run as ENG
 from . import pipeline as P, render, viewer, paths
 
-VERSION = "2.4.0"
+VERSION = "2.5.0"
 LAYER_INFO = {
     "hmax": "Maximum flow depth", "vmax": "Maximum flow speed", "deposit": "Net deposit thickness", "scour": "Scar / scour depth",
     "t_fail_h": "Failure time", "fs_min": "Minimum factor of safety", "pga_g": "Peak ground acceleration", "slope": "Slope", "p_fail": "Failure probability (ensemble)",
@@ -27,6 +27,10 @@ def execute(geom, params, runs_root, token, progress=lambda s, f: None, force=Fa
     t0 = time.time()
     out = ENG.execute(geom, params, rdir, progress)
     summary = out["summary"]
+    try:                                                      # the complete inputs, for 'Save run file' (the manifest keeps only a subset of the parameters)
+        (rdir / "inputs.json").write_text(json.dumps({"geometry": geom, "params": params}, default=str))
+    except Exception:
+        pass
     man_extra = {}
     pending_scene = False
     if out.get("has_flow"):
@@ -54,7 +58,7 @@ def execute(geom, params, runs_root, token, progress=lambda s, f: None, force=Fa
                               "max_depth_m": [round(s[1], 2) for s in out["stats_t"]], "volume_m3": [round(s[2], 1) for s in out["stats_t"]]}
         np.savez_compressed(rdir / "arrays.npz", **{k: np.asarray(v, "float32") for k, v in out["arrays"].items()})
     gg = {k: v for k, v in out["grid"].items() if k != "affine"}
-    srcs = [{"id": "DEM_SRTM_Pak", "path": paths.get("DEM")}]
+    srcs = [{"id": ("DEM_custom_" + str(params["custom_dem_id"])) if params.get("custom_dem_id") else "DEM_SRTM_Pak", "path": paths.get("DEM")}]
     man = M.build_manifest("landslide_physics_run", VERSION, srcs, hashlib.sha256(json.dumps(geom, sort_keys=True).encode()).hexdigest(), gg,
                            parameter_mode="scenario_ensemble",
                            warnings=out["warnings"] + ["Screening-grade decision support. Not for engineering design or evacuation orders.",
@@ -102,11 +106,13 @@ def instant_library(geom, params):
     from . import rasters
     bbox, area_km2, warn = AOI.validate_geojson(geom, max_area_km2=P.MAX_AOI_KM2)
     epsg, _ = AOI.select_analysis_crs(bbox)
-    res = P.choose_resolution(area_km2, bbox)
+    from . import custom_dem as CD
+    dem_path, min_res, _n = CD.resolve(params, bbox, paths.get("DEM"), P.MIN_RES_M)
+    res = max(min_res, P.choose_resolution(area_km2, bbox)) if min_res >= P.MIN_RES_M else max(min_res, float(np.ceil(np.sqrt(area_km2 * 1e6 / P.MAX_CELLS) / min_res) * min_res))
     if res > P.MAX_PHYSICS_RES_M:
         raise P.GateError([f"{area_km2:,.0f} km2 is too large for the instant library (cells {res:.0f} m). Draw <= ~{P.MAX_CELLS*P.MAX_PHYSICS_RES_M**2/1e6:,.0f} km2."])
     grid = rasters.make_grid(bbox, epsg, res)
-    dem = rasters.read(paths.get("DEM"), grid, Resampling.average if res > P.MIN_RES_M else Resampling.bilinear)
+    dem = rasters.read(dem_path, grid, Resampling.average if res > min_res else Resampling.bilinear)
     valid = rasters.polygon_mask(geom, grid) & np.isfinite(dem)
     slope = terrain.slope_aspect(np.where(np.isfinite(dem), dem, np.nanmedian(dem)), res, res)["slope_deg"].astype("float32")
     spec, _ = P.build_spec(params)
@@ -144,6 +150,8 @@ def instant_library(geom, params):
     for i, mm in enumerate(LADDER_MM):
         png, corners = render.overlay_png(np.where(fs_stack[i] < 1.0, 1.0, np.where(mob, 0.0, np.nan)).astype("float32"), grid, "frac_lt1")
         pngs[str(mm)] = base64.b64encode(png).decode()
+        pf, _c = render.overlay_png(np.where(fs_stack[i] < 1.0, 1.0, np.nan).astype("float32"), grid, "frac_lt1")      # failing cells only (LANDLAB Instant draws just these)
+        pngs["f" + str(mm)] = base64.b64encode(pf).decode()
     png, corners = render.overlay_png(crit, grid, "crit_rain_mm")
     pngs["crit"] = base64.b64encode(png).decode()
     out["corners"] = corners; out["png"] = pngs; out["bbox"] = bbox
