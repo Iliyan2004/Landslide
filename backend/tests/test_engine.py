@@ -102,3 +102,21 @@ class TestTrigger(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestStrengthZones(unittest.TestCase):
+    def test_zone_overrides_only_inside(self):
+        from landslide.app import rasters
+        from landslide.engine import ground
+        g = rasters.make_grid((74.30, 35.90, 74.32, 35.92), 32643, 30)
+        shape = (g["height"], g["width"])
+        sp = {"effective_cohesion": 5000.0, "friction_angle": 30.0}
+        zone = {"geometry": {"type": "Polygon", "coordinates": [[[74.30, 35.90], [74.31, 35.90], [74.31, 35.92], [74.30, 35.92], [74.30, 35.90]]]},
+                "cohesion_kpa": 12.0, "friction_deg": 99.0}
+        sp2, rep = ground.apply_zones(sp, [zone], g, shape)
+        m = rasters.polygon_mask(zone["geometry"], g)
+        self.assertEqual(rep["zones_applied"], 1)
+        self.assertTrue(m.any() and (~m).any())
+        self.assertTrue(np.allclose(sp2["effective_cohesion"][m], 12000.0))
+        self.assertTrue(np.allclose(sp2["friction_angle"][m], 50.0))            # clipped to the 50 degree limit
+        self.assertTrue(np.allclose(sp2["effective_cohesion"][~m], 5000.0))

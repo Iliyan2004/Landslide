@@ -140,7 +140,7 @@ def build_html(rid, runs_root):
              _tile("Released volume", _fmt((fl.get("released_volume_m3") or 0) / 1e6, 2) + " Mm³", f"{_fmt(fl.get('entrained_volume_m3'), 0)} m³ entrained"),
              _tile("Impacted area", _fmt(fl.get("impacted_area_km2"), 3) + " km²", "flow depth over 0.3 m"),
              _tile("Max depth", _fmt(fl.get("max_depth_m"), 1) + " m", f"max speed {_fmt(fl.get('max_speed_ms'), 1)} m/s"),
-             _tile("Max runout", _fmt(fl.get("max_runout_m"), 0) + " m", "from the source cells"),
+             _tile("Max runout", _fmt(fl.get("max_runout_m"), 0) + " m", ("typical slide " + _fmt((fl.get("runout_stats_m") or {}).get("median_m"), 0) + " m (median of " + _fmt((fl.get("runout_stats_m") or {}).get("n"), 0) + " flows)") if fl.get("runout_stats_m") else "from the source cells"),
              _tile("Buildings DS ≥ 3", _fmt(ex.get("buildings_ds_ge3"), 0), f"{_fmt(ex.get('buildings_damaged_ds_ge1'), 0)} damaged of {_fmt(ex.get('buildings_in_aoi'), 0)}"),
              _tile("Direct loss", _money(ex.get("direct_loss_pkr")), "structure + contents + crops"),
              _tile("Roads blocked", _fmt(ex.get("road_blocked_km"), 2) + " km", f"of {_fmt(ex.get('road_length_km'), 1)} km"),

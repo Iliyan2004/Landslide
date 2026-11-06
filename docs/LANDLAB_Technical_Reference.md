@@ -17,7 +17,7 @@ A **national product** (all of Pakistan, 90 m, 164 districts) is built from the 
 
 | Feature | Status |
 |---|---|
-| Tiers 1 to 4, national product, districts, basins | Implemented and tested (126 unit tests) |
+| Tiers 1 to 4, national product, districts, basins | Implemented and tested (130 unit tests) |
 | Rainfall sources: design storm, forecast, recent, ERA5, CHIRPS, CSV | Implemented |
 | Impacts: buildings, roads, hospitals and schools, direct loss | Implemented (all thresholds assumed, Ch. 17) |
 | Live monitoring with webhook, compare runs, PDF report, MP4 export | Implemented |
@@ -1000,7 +1000,7 @@ A perfect match gives CSI 1 and disjoint extents give 0 (tested). This is the on
 
 | Claim | Evidence | Status |
 |---|---|---|
-| The code solves its equations | 126 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
+| The code solves its equations | 130 unit tests; mass conservation, rest, Voellmy speed, entrainment, GPU equals CPU, fast ensemble equals the reference ensemble | **Verified** |
 | Rainfall separates landslide days from ordinary days | AUC 0.73 (0.71 to 0.76) for 24 h intensity, leave-one-year-out | **Validated, modest** |
 | Published Guzzetti threshold is usable as a watch | TSS 0.32 on the same data | **Validated, weak** |
 | Slopes flagged by the physics are the slopes that fail | Ground calibration, held-out blocks: base physics 0.56, with soil texture 0.65; mean slope 0.59 | **Weak** |
@@ -1225,7 +1225,7 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 
 ## 30.2 Tests
 
-`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 126 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
+`cd backend && PYTHONPATH=. ~/flood/venv/bin/python -m unittest discover -s tests -t .` runs 130 tests: the original physics and integrity tests, the app layer (fast ensemble equals the reference, GPU equals CPU, mobilisation rule), and the engine (mass, rest, speed, entrainment, GPU equals CPU, Joyner-Boore, Wells-Coppersmith, mobilisation). GPU tests skip if the shared GPU cannot be initialised.
 
 ## 30.3 Files
 
@@ -1242,7 +1242,29 @@ Compute-heavy validation and calibration scripts are run only on request: `valid
 One heavy job at a time; the GPU is shared, so it is released after every job; any GPU failure falls back to the CPU; all data paths are read-only; the application never writes into SAILAB or the shared data folders.
 
 
-# 42. References
+# 42. SAILAB Parity and FastSlide-Inspired Features
+
+## 43.1 Pages and interface taken from SAILAB (version 2.5.0)
+
+- **Landing page** at `/` (WebGL shader background, links to the two tools), **the app** at `/app`, and **LANDLAB Instant** at `/instant`.
+- **Instant** draws an area and returns, in seconds, the unstable area against a 24 h rain ladder (0, 25, 50, 100, 150, 200, 300, 450, 600 mm), a critical-rain map and failing-cells overlays. It uses the median strength of the chosen preset, not an ensemble, so it is a screening view; the full run remains the product.
+- App additions: header navigation and place search, a welcome card, 3D expand/hide, custom DEM upload, saving and loading a run file, and calibration to an observed landslide extent.
+- **Custom DEM.** A user GeoTIFF replaces the national DEM inside its footprint. Areas outside the file are refused with a message rather than filled from another source.
+- **Run file.** A run's inputs are written to `inputs.json`; loading one passes through a whitelist, so unknown or oversized fields are dropped.
+- Not taken: the basemap switch (satellite or streets) in the 2D view, because swapping the style drops the map's sources.
+
+## 43.2 Calibration to an observed extent
+
+The user supplies observed landslide polygons. The platform runs trial scenarios over a strength quantile and a friction-multiplier grid and keeps the one with the highest critical success index (CSI) against the observed cells. Synthetic check: an extent produced at quantile 0.55 was used as the "observed" one, starting from quantile 0.2 (CSI 0.14); the search chose 0.5 and CSI rose to 0.92. This shows the search finds a known answer; it does not show that a real inventory is reproduced, which depends on the reports' positional accuracy.
+
+## 43.3 Ideas from FastSlide (fastflood.org)
+
+Implemented: **strength zones** (the user supplies polygons with `cohesion_kpa` and/or `friction_deg`; those cells take the stated values, cohesion clipped to 0 to 100 kPa and friction to 5 to 50 degrees, later polygons override earlier ones) and **per-slide runout statistics** (mean, median and 90th percentile of runout over connected flows, shown in the results and the report). The zone logic has a unit test.
+
+Not implemented: SMAP soil-moisture input (the platform has its own antecedent-wetness treatment), an erosion or entrainment term (not calibrated here), and in-browser (WebAssembly) computation, which does not apply to a GPU server design.
+
+
+# 43. References
 
 - Azarafza, M. et al. (2021). Deep learning-based landslide susceptibility mapping. *Scientific Reports* 11, 24112 (the national ML method).
 - Bates, P. D., Horritt, M. S., Fewtrell, T. J. (2010). A simple inertial formulation of the shallow water equations. *Journal of Hydrology* 387, 33-45.

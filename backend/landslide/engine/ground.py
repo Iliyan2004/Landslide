@@ -100,3 +100,25 @@ def apply(sp, grid, shape, cfg=None, cache=None):
         sp2["root_cohesion"] = np.where(np.isfinite(lc), add, base).astype("float32")
         rep["landcover_coverage"] = float(np.isfinite(lc).mean()); rep["active"].append("landcover")
     return sp2, rep
+
+
+def apply_zones(sp, zones, grid, shape):
+    """User-drawn strength zones (FastSlide-style 'set cohesion / friction'): each zone is {geometry (GeoJSON polygon, lon/lat), cohesion_kpa?, friction_deg?}.
+    Later zones override earlier ones. Cells in a zone get the stated effective cohesion and/or friction angle (replacing, not multiplying, the scenario value); everything
+    else keeps the scenario / ground-map value. Returns (sp2, report)."""
+    from shapely.geometry import shape as shp
+    c = np.broadcast_to(np.asarray(sp["effective_cohesion"], "float32"), shape).copy(); f = np.broadcast_to(np.asarray(sp["friction_angle"], "float32"), shape).copy(); n = 0; cells = 0
+    for z in (zones or [])[:50]:
+        try:
+            m = rasters.polygon_mask(z["geometry"], grid)
+        except Exception:
+            continue
+        if not m.any():
+            continue
+        if z.get("cohesion_kpa") is not None:
+            c[m] = float(np.clip(float(z["cohesion_kpa"]), 0.0, 100.0)) * 1000.0
+        if z.get("friction_deg") is not None:
+            f[m] = float(np.clip(float(z["friction_deg"]), 5.0, 50.0))
+        n += 1; cells += int(m.sum())
+    sp2 = dict(sp); sp2["effective_cohesion"] = c; sp2["friction_angle"] = f
+    return sp2, {"zones_applied": n, "cells": cells}

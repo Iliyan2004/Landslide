@@ -260,7 +260,7 @@ def _execute(geom, params, run_dir, progress):
     summary["flow"] = {"failure_type": params.get("failure_type", "debris_flow"), "mu": mu, "xi": xi, "entrainment": entr,
                        "released_volume_m3": released_total, "entrained_volume_m3": fin["ent_vol"],
                        "final_flow_volume_m3": float(fin["H"].sum() * dx * dx), "impacted_area_km2": reach_cells * dx * dx / 1e6,
-                       "max_depth_m": float(hmax.max()), "max_speed_ms": float(vmax.max()), "max_runout_m": run_len,
+                       "max_depth_m": float(hmax.max()), "max_speed_ms": float(vmax.max()), "max_runout_m": run_len, "runout_stats_m": runout_stats(rel, wet, dx),
                        "mass_check_m3": float(released_total + fin["ent_vol"] - (fin["H"].sum() * dx * dx)),
                        "frame_interval_s": dt_frame, "window_h": [t0 / 3600, t1 / 3600],
                        "note": "Voellmy local-inertial solver, friction is a scenario value, not calibrated"}
@@ -329,7 +329,10 @@ def _extras(params, mode, grid, dem_f, valid, res):
         except Exception as e:
             rep["rain_field"] = f"unavailable: {str(e)[:80]}"
     suc = float(params.get("suction_kpa", 0.0)) * 1000.0
+    zones = params.get("strength_zones") or []
     def post(sp):
+        if zones:
+            sp, rep["strength_zones"] = GR.apply_zones(sp, zones, grid, valid.shape)
         sp, r = WET.apply(sp, twi, valid, beta); rep["wetness"] = r
         if scale is not None:
             sp = dict(sp); sp["rain_scale"] = scale
@@ -377,6 +380,22 @@ def _quake_field(qk, grid, epsg, slope=None, model="auto", depth_km=15.0):
     vs30, src = (SITE.vs30_field(grid, slope) if model != "jb81" else (None, "not used (jb81)"))
     pga, d, geom = TR.pga_field((ny, nx), grid["affine"], (ex, ey), float(qk["magnitude"]), fault_xy, vs30=vs30, model=model, depth_km=depth_km)
     return pga, d, geom, src
+
+
+def runout_stats(release_mask, wet, dx):
+    """Per-slide runout (m): for every connected flow body (release patch plus wet cells), the distance from the release cells to its furthest wet cell. Returns
+    {n, mean_m, median_m, p90_m, max_m} (None when nothing ran out). The mean describes the typical slide; max_runout_m describes the worst one."""
+    from scipy import ndimage as ndi
+    body = wet | release_mask
+    lab, n = ndi.label(body, structure=np.ones((3, 3)))
+    if n == 0 or not release_mask.any():
+        return None
+    d = ndi.distance_transform_edt(~release_mask) * dx
+    mx = np.asarray(ndi.maximum(np.where(wet, d, 0.0), lab, np.arange(1, n + 1))); has = np.asarray(ndi.sum(release_mask, lab, np.arange(1, n + 1))) > 0
+    r = mx[has]
+    if r.size == 0:
+        return None
+    return {"n": int(r.size), "mean_m": float(r.mean()), "median_m": float(np.median(r)), "p90_m": float(np.percentile(r, 90)), "max_m": float(r.max())}
 
 
 def _runout_length(release_mask, wet, dx):

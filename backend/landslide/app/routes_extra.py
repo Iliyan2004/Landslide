@@ -219,6 +219,56 @@ def run_validate_observed(rid):
                     "note": "scored on the run's grid inside the analysed area; observed extent must cover the same event"})
 
 
+@app.post("/runs/<rid>/calibrate-observed")
+def run_calibrate_observed(rid):
+    """Fit the strength quantile and the Voellmy friction to an observed extent (as SAILAB's calibration): every trial is a FULL run of the same area, storm and settings.
+    Phase 1 tries 5 strength quantiles; phase 2 tries 3 friction scales at the best one (at most max_evals trials in all). The score is CSI of the cells reached (depth >= threshold)
+    against the observed extent. Returns the best settings, the score before and after, and every trial."""
+    z, man = _arrays(rid)
+    f = request.files.get("file")
+    if not f:
+        return jsonify({"error": "upload the observed extent (.geojson, zipped shapefile or 0/1 GeoTIFF)"}), 400
+    inp = RUNS / rid / "inputs.json"
+    if not inp.exists():
+        return jsonify({"error": "this run predates saved inputs: run it again, then calibrate"}), 400
+    from affine import Affine
+    t = man["grid"]["transform"]; grid = {**man["grid"], "affine": Affine(t[1], 0, t[0], 0, t[5], t[3])}
+    thr = float(request.form.get("depth_m", 0.3)); budget = max(4, min(int(request.form.get("max_evals", 8)), 14))
+    try:
+        obs = OB.observed_mask(f.read(), f.filename, grid)
+    except Exception as e:
+        return jsonify({"error": f"could not read the observed extent: {e}"}), 400
+    if int(obs.sum()) < 5:
+        return jsonify({"error": "the observed extent has almost no cells inside this area"}), 400
+    full = json.loads(inp.read_text()); g0, p0 = full["geometry"], full["params"]
+    from ..engine import trigger as TR
+    base_mu = float(p0.get("mu", TR.FAILURE_TYPES[p0.get("failure_type", "debris_flow")][0]))
+    def fn(prog):
+        trials = []
+        def trial(q, ms, label):
+            p = {**p0, "strength_quantile": round(float(q), 3), "mu": round(base_mu * float(ms), 4)}
+            r = RUNS_MOD.execute(g0, p, str(RUNS), _env_token(), lambda s_, f_: None)
+            if r.get("outcome") != "failure_and_runout":
+                sc = {"CSI": 0.0, "POD": 0.0, "FAR": None}
+            else:
+                h = np.load(RUNS / r["run_id"] / "arrays.npz")["hmax"]; model = np.nan_to_num(h) >= thr
+                sc = OB.score(model, obs, np.isfinite(np.load(RUNS / r["run_id"] / "arrays.npz")["dem"]))
+            trials.append({"q": p["strength_quantile"], "mu_scale": float(ms), "mu": p["mu"], "CSI": sc["CSI"] or 0.0, "POD": sc.get("POD"), "FAR": sc.get("FAR"), "run_id": r.get("run_id")})
+            prog(f"trial {len(trials)}: {label}  CSI {trials[-1]['CSI']:.3f}", min(0.95, len(trials) / budget)); return trials[-1]
+        before = trial(float(p0.get("strength_quantile", 0.3)), 1.0, "your settings")
+        for q in (0.1, 0.3, 0.5, 0.7, 0.9)[: max(1, budget - 4)]:
+            if abs(q - before["q"]) > 0.04:
+                trial(q, 1.0, f"strength {q}")
+        best = max(trials, key=lambda x: x["CSI"])
+        for ms in (0.5, 2.0, 4.0)[: max(0, budget - len(trials))]:
+            trial(best["q"], ms, f"friction x{ms}")
+        best = max(trials, key=lambda x: x["CSI"])
+        return {"depth_threshold_m": thr, "csi_before": before["CSI"], "csi_after": best["CSI"], "best": {k: best[k] for k in ("q", "mu_scale", "mu", "run_id")}, "trials": trials,
+                "improved": best["CSI"] > before["CSI"] + 0.01, "observed_cells": int(obs.sum()),
+                "note": "Fitted on ONE event, two parameters: the result describes this event and area, not Pakistan. A CSI near the best of the trials does not mean the physics is right; check the map."}
+    return jsonify({"job": _job(fn)})
+
+
 def _batch_html(ids):
     from . import report as REP
     return REP.batch_html(ids, RUNS)

@@ -11,6 +11,7 @@ SCALARS = {"mode": str, "texture": str, "strength_preset": str, "strength_quanti
            "spatial_ground": bool, "antecedent": bool, "ensemble": int, "min_slope_deg": float, "min_cluster_cells": int, "release_factor": float, "mu": float, "xi": float,
            "max_soil_slope_deg": float, "seed": int, "wetness_beta": float, "suction_kpa": float, "rain_field": bool, "custom_dem_id": str, "min_source_slope_deg": float}
 RAIN_KEYS = ("times_h", "rate_mm_h", "source", "start_iso", "antecedent_daily_mm", "total_mm", "peak_mm_h", "duration_h", "grid_lat", "grid_lon")
+ZONE_KEYS = ("geometry", "cohesion_kpa", "friction_deg")
 QUAKE_KEYS = ("magnitude", "depth_km", "lon", "lat", "time_h", "d_crit_cm", "snap_to_fault", "gmpe")
 
 
@@ -61,6 +62,8 @@ def sanitize(doc):
                 p["rain"] = r
             else:
                 dropped.append("rain")
+        elif k == "strength_zones" and isinstance(v, list):
+            p["strength_zones"] = [{kk: z[kk] for kk in ZONE_KEYS if kk in z} for z in v[:50] if isinstance(z, dict) and isinstance(z.get("geometry"), dict)]
         elif k == "quake" and isinstance(v, dict):
             p["quake"] = {kk: v[kk] for kk in QUAKE_KEYS if kk in v}
         elif k in ("backend",):
