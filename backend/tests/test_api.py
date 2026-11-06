@@ -98,3 +98,11 @@ class TestGround(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCalibrateSusceptibilityInput(unittest.TestCase):
+    def test_needs_file_or_susceptibility_source(self):
+        from landslide.app.server import app
+        c = app.test_client()
+        r = c.post("/runs/doesnotexist/calibrate-observed", data={})
+        self.assertIn(r.status_code, (400, 404))

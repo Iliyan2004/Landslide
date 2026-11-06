@@ -1,0 +1,67 @@
+{
+ "note": "ln(platform) - ln(OpenQuake); 0 means identical",
+ "bssa14": {
+  "vs30_200": {
+   "n": 60,
+   "mean_ln_diff": -9.62193288008469e-17,
+   "max_abs_ln_diff": 8.881784197001252e-16,
+   "max_abs_pct": 8.881784197001252e-14
+  },
+  "vs30_400": {
+   "n": 60,
+   "mean_ln_diff": -7.031412489292658e-17,
+   "max_abs_ln_diff": 8.881784197001252e-16,
+   "max_abs_pct": 8.881784197001252e-14
+  },
+  "vs30_760": {
+   "n": 60,
+   "mean_ln_diff": 0.0,
+   "max_abs_ln_diff": 0.0,
+   "max_abs_pct": 0.0
+  },
+  "vs30_1000": {
+   "n": 60,
+   "mean_ln_diff": 0.0,
+   "max_abs_ln_diff": 0.0,
+   "max_abs_pct": 0.0
+  }
+ },
+ "bchydro_slab": {
+  "depth_60_vs30_400": {
+   "n": 30,
+   "mean_ln_diff": 0.0,
+   "max_abs_ln_diff": 0.0,
+   "max_abs_pct": 0.0
+  },
+  "depth_60_vs30_760": {
+   "n": 30,
+   "mean_ln_diff": 0.0,
+   "max_abs_ln_diff": 0.0,
+   "max_abs_pct": 0.0
+  },
+  "depth_120_vs30_400": {
+   "n": 30,
+   "mean_ln_diff": 0.0,
+   "max_abs_ln_diff": 0.0,
+   "max_abs_pct": 0.0
+  },
+  "depth_120_vs30_760": {
+   "n": 30,
+   "mean_ln_diff": 0.0,
+   "max_abs_ln_diff": 0.0,
+   "max_abs_pct": 0.0
+  },
+  "depth_200_vs30_400": {
+   "n": 30,
+   "mean_ln_diff": 0.0,
+   "max_abs_ln_diff": 0.0,
+   "max_abs_pct": 0.0
+  },
+  "depth_200_vs30_760": {
+   "n": 30,
+   "mean_ln_diff": 0.0,
+   "max_abs_ln_diff": 0.0,
+   "max_abs_pct": 0.0
+  }
+ }
+}

@@ -225,9 +225,10 @@ def run_calibrate_observed(rid):
     Phase 1 tries 5 strength quantiles; phase 2 tries 3 friction scales at the best one (at most max_evals trials in all). The score is CSI of the cells reached (depth >= threshold)
     against the observed extent. Returns the best settings, the score before and after, and every trial."""
     z, man = _arrays(rid)
-    f = request.files.get("file")
-    if not f:
-        return jsonify({"error": "upload the observed extent (.geojson, zipped shapefile or 0/1 GeoTIFF)"}), 400
+    lt_txt = None
+    f = request.files.get("file"); from_lsm = request.form.get("source") == "susceptibility"
+    if not f and not from_lsm:
+        return jsonify({"error": "upload the observed extent (.geojson, zipped shapefile or 0/1 GeoTIFF), or choose source=susceptibility"}), 400
     inp = RUNS / rid / "inputs.json"
     if not inp.exists():
         return jsonify({"error": "this run predates saved inputs: run it again, then calibrate"}), 400
@@ -235,11 +236,19 @@ def run_calibrate_observed(rid):
     t = man["grid"]["transform"]; grid = {**man["grid"], "affine": Affine(t[1], 0, t[0], 0, t[5], t[3])}
     thr = float(request.form.get("depth_m", 0.3)); budget = max(4, min(int(request.form.get("max_evals", 8)), 14))
     try:
-        obs = OB.observed_mask(f.read(), f.filename, grid)
+        if from_lsm:                                     # target = the national machine-learning susceptibility, not an observed event
+            from . import rasters, paths
+            from rasterio.enums import Resampling
+            lsm = rasters.read(paths.get("LSM_PROB"), grid, Resampling.bilinear)
+            if lsm is None:
+                return jsonify({"error": "the susceptibility map does not cover this area"}), 400
+            lt = float(request.form.get("lsm_threshold", 0.5)); lt_txt = lt; obs = np.nan_to_num(lsm, nan=0.0) >= lt
+        else:
+            obs = OB.observed_mask(f.read(), f.filename, grid)
     except Exception as e:
         return jsonify({"error": f"could not read the observed extent: {e}"}), 400
     if int(obs.sum()) < 5:
-        return jsonify({"error": "the observed extent has almost no cells inside this area"}), 400
+        return jsonify({"error": "the target extent has almost no cells inside this area" + (" (no cell reaches the susceptibility threshold: lower it)" if from_lsm else "")}), 400
     full = json.loads(inp.read_text()); g0, p0 = full["geometry"], full["params"]
     from ..engine import trigger as TR
     base_mu = float(p0.get("mu", TR.FAILURE_TYPES[p0.get("failure_type", "debris_flow")][0]))
@@ -265,7 +274,8 @@ def run_calibrate_observed(rid):
         best = max(trials, key=lambda x: x["CSI"])
         return {"depth_threshold_m": thr, "csi_before": before["CSI"], "csi_after": best["CSI"], "best": {k: best[k] for k in ("q", "mu_scale", "mu", "run_id")}, "trials": trials,
                 "improved": best["CSI"] > before["CSI"] + 0.01, "observed_cells": int(obs.sum()),
-                "note": "Fitted on ONE event, two parameters: the result describes this event and area, not Pakistan. A CSI near the best of the trials does not mean the physics is right; check the map."}
+                "target": "national susceptibility >= %s (a model, not an observation)" % lt_txt if from_lsm else "observed extent",
+                "note": ("Matched to the national machine-learning susceptibility map, which is itself a model trained on 381 uncertain reports: this tunes the strength to agree with it, it does not validate anything. " if from_lsm else "") + "Fitted on ONE event, two parameters: the result describes this event and area, not Pakistan. A CSI near the best of the trials does not mean the physics is right; check the map."}
     return jsonify({"job": _job(fn)})
 
 

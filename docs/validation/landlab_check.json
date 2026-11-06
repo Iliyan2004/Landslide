@@ -1,0 +1,19 @@
+{
+ "cells": 300,
+ "iterations": 2000,
+ "seed": 7,
+ "mean_p_landlab": 0.2813700006426855,
+ "mean_p_platform_standard": 0.20910833333333334,
+ "mean_p_sinmap_form_same_samples": 0.28240333333333334,
+ "landlab_vs_sinmap_form_same_samples": {
+  "max_abs_diff": 0.034499996900558494,
+  "mean_abs_diff": 0.0032433321903382107,
+  "correlation": 0.9998634777874116
+ },
+ "landlab_vs_platform_standard_form": {
+  "max_abs_diff": 0.6515000262260437,
+  "mean_abs_diff": 0.07229166737551335,
+  "correlation": 0.935856230778117
+ },
+ "note": "Row 1 differs only by random draws (Monte Carlo noise); row 2 adds the cos(b) in the cohesion term and the exact unit-weight treatment, so it is the real difference between the two formulas."
+}
