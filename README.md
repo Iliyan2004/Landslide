@@ -4,16 +4,28 @@ Implementation of `docs/LANDSLIDE_PLATFORM_FULL_METHODOLOGY.md` (v1.0): one web 
 engines (susceptibility, rainfall stability, seismic, runout, sediment, exposure, monitoring), with explicit data gates,
 scenario-ensemble uncertainty and per-run manifests.
 
-**Status: working, tested physics/gating core + API/frontend scaffold. Not a finished product** — see "Not done" below.
+**Status: working, tested platform with a web app (LANDLAB). Screening-grade, not for engineering design** — see "Not done" below.
+
+## Folder layout
+| Folder or file | What it is |
+|---|---|
+| `landslide_app.py` | starts the web app (LANDLAB) on port 5070 |
+| `backend/landslide/` | the platform: `app/` (Flask server, pages in `app/static/`), `engine/` (rain and quake triggers, runout, loss), `models/` (physics modules), `calibration/`, `data/`, `api/` |
+| `backend/tests/` | the unit tests (`cd backend && python -m unittest discover -s tests -t .`) |
+| `configs/` | scenario and ground-class settings |
+| `scripts/` | data builds, validation and cross-check scripts, see `scripts/README.md` |
+| `docs/` | technical reference (`LANDLAB_Technical_Reference.pdf`, built from `docs/landlab/*.md`), methodology, runbook, user guide, validation outputs in `docs/validation/` |
+| `datasets/` | the data the app reads (git-ignored, about 4 GB: `external/`, `national/`, `derived/`, `state/`) |
+| `Datadownload/` | raw downloads kept for reference (git-ignored) |
+| `runs/` | one folder per model run (git-ignored, safe to empty) |
 
 ## Quick start
 ```bash
-make registries    # regenerate docs/data_registry.yaml + licensing_register.csv from the methodology table
-make test          # 115 tests (stdlib unittest; also runs under pytest)
-make demo          # synthetic-DEM end-to-end run -> runs/<id>/{manifest,summary}.json + arrays.npz
-make api           # needs: pip install -e ".[api]"
-make frontend      # needs node 20
+~/flood/venv/bin/python landslide_app.py                       # the app: http://<host>:5070
+cd backend && ~/flood/venv/bin/python -m unittest discover -s tests -t .   # tests
+~/flood/venv/bin/python scripts/build_landlab_techref.py       # rebuild the technical reference
 ```
+(`make registries`, `make test` and `make demo` in the Makefile still work for the original prototype.)
 
 ## Web app (SAILAB-style, whole of Pakistan)
 Runs on SAILAB's own venv (xarray, zarr, duckdb, weasyprint, CUDA torch):
