@@ -12,8 +12,8 @@
 <link href="https://unpkg.com/@mapbox/mapbox-gl-draw@1.4.3/dist/mapbox-gl-draw.css" rel="stylesheet">
 <style>
   :root {
-    --ink: #eaf6f5; --muted: #9bbcbe; --aqua: #55e6da; --aqua-deep: #14a8a0; --bg: #05100f;
-    --glass: rgba(6, 22, 24, .82); --line: rgba(85, 230, 218, .22); --warn: #f0b04a;
+    --ink: #F3EBDF; --muted: #C0B19D; --aqua: #E39B4B; --aqua-deep: #C8702C; --bg: #0F0B08;
+    --glass: rgba(21, 16, 11, .86); --line: rgba(227, 155, 75, .26); --warn: #f0b04a;
     --display: "Archivo", "Helvetica Neue", Arial, sans-serif; --text: "Archivo Narrow", "Arial Narrow", Arial, sans-serif;
   }
   * { box-sizing: border-box; }
@@ -25,43 +25,43 @@
   /* top bar */
   #bar { position: fixed; z-index: 10; top: 10px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 14px; }
   .brand { font-family: var(--display); font-weight: 800; font-stretch: 110%; letter-spacing: .12em; text-decoration: none; color: var(--ink); padding: 0 6px; }
-  .pill { font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: #03161a; background: var(--aqua); border-radius: 999px; padding: 3px 10px; font-weight: 600; }
+  .pill { font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: #1a0f02; background: var(--aqua); border-radius: 999px; padding: 3px 10px; font-weight: 600; }
   .searchbox { position: relative; flex: 1; min-width: 120px; max-width: 460px; }
-  input[type=text], input[type=number], select { width: 100%; background: rgba(2, 10, 11, .7); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font: inherit; }
+  input[type=text], input[type=number], select { width: 100%; background: rgba(10, 7, 4, .6); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font: inherit; }
   input[type=range] { width: 100%; accent-color: var(--aqua); }
   :focus-visible { outline: 2px solid var(--aqua); outline-offset: 2px; }
   .btn { display: inline-flex; align-items: center; gap: 6px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 7px 12px; font: inherit; letter-spacing: .04em; cursor: pointer; text-decoration: none; white-space: nowrap; }
   .btn:hover { border-color: var(--aqua); color: var(--aqua); }
-  .btn.on { background: var(--aqua); color: #03161a; border-color: var(--aqua); }
-  .btn.primary { background: linear-gradient(135deg, var(--aqua), var(--aqua-deep)); color: #03161a; border: 0; font-family: var(--display); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: .82rem; }
+  .btn.on { background: var(--aqua); color: #1a0f02; border-color: var(--aqua); }
+  .btn.primary { background: linear-gradient(135deg, var(--aqua), var(--aqua-deep)); color: #1a0f02; border: 0; font-family: var(--display); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: .82rem; }
   .spacer { margin-left: auto; display: flex; gap: 8px; }
-  .hits { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; background: #071819; border: 1px solid var(--line); border-radius: 12px; max-height: 300px; overflow-y: auto; display: none; }
+  .hits { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; background: #14100B; border: 1px solid var(--line); border-radius: 12px; max-height: 300px; overflow-y: auto; display: none; }
   .hits button { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--ink); padding: 8px 12px; font: inherit; cursor: pointer; }
   .hits button small { display: block; color: var(--muted); }
-  .hits button:hover, .hits button:focus-visible { background: rgba(85, 230, 218, .12); outline: none; }
+  .hits button:hover, .hits button:focus-visible { background: rgba(227, 155, 75, .14); outline: none; }
   .hits .grp { padding: 6px 12px 2px; font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--aqua); }
 
   /* welcome */
-  #welcome { position: fixed; z-index: 30; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(2, 8, 9, .55); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+  #welcome { position: fixed; z-index: 30; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(10, 7, 4, .55); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
   #welcome .card { position: relative; width: min(860px, 100%); display: grid; grid-template-columns: 1fr 1fr; border-radius: 22px; overflow: hidden; }
-  #welcome .left { padding: 30px; background: linear-gradient(160deg, #0b3a3c 0%, #0a2a30 60%, #06161b 100%); }
+  #welcome .left { padding: 30px; background: linear-gradient(160deg, #2F1F11 0%, #251D16 60%, #120D09 100%); }
   #welcome .left h1 { margin: 0 0 18px; font-family: var(--display); font-weight: 900; font-stretch: 110%; letter-spacing: .08em; font-size: 2rem; }
-  #welcome .left li { list-style: none; margin: 0 0 14px; line-height: 1.4; color: rgba(234, 246, 245, .88); }
+  #welcome .left li { list-style: none; margin: 0 0 14px; line-height: 1.4; color: rgba(246, 242, 234, .9); }
   #welcome .left li b { display: block; color: var(--ink); font-size: 1.05rem; }
   #welcome ul { padding: 0; margin: 0; }
-  #welcome .right { padding: 30px; background: #f4fbfb; color: #0a1f22; }
+  #welcome .right { padding: 30px; background: #F6F2EA; color: #1B1510; }
   #welcome .right h2 { margin: 0 0 16px; font-family: var(--display); font-weight: 800; font-size: 1.7rem; line-height: 1.15; }
-  #welcome .right h2 em { font-style: normal; color: #0d8f88; }
+  #welcome .right h2 em { font-style: normal; color: #B8620F; }
   #welcome label { display: block; font-weight: 600; margin: 10px 0 6px; }
-  #welcome input[type=text] { background: #fff; color: #0a1f22; border: 1px solid #b9d6d6; }
-  #welcome .hits { background: #fff; border-color: #b9d6d6; }
-  #welcome .hits button { color: #0a1f22; } #welcome .hits button small { color: #5b7b7d; }
+  #welcome input[type=text] { background: #fff; color: #1B1510; border: 1px solid #D4C6B2; }
+  #welcome .hits { background: #fff; border-color: #D4C6B2; }
+  #welcome .hits button { color: #1B1510; } #welcome .hits button small { color: #85755F; }
   #welcome .chips { display: flex; gap: 8px; flex-wrap: wrap; }
-  .chip { background: #fff; color: #0a1f22; border: 1.5px solid #b9d6d6; border-radius: 10px; padding: 8px 12px; font: inherit; font-weight: 600; cursor: pointer; }
-  .chip.on { border-color: #0d8f88; background: #e1f6f4; color: #086660; }
+  .chip { background: #fff; color: #1B1510; border: 1.5px solid #D4C6B2; border-radius: 10px; padding: 8px 12px; font: inherit; font-weight: 600; cursor: pointer; }
+  .chip.on { border-color: #B8620F; background: #F3E3CF; color: #7A3A10; }
   #welcome .go { width: 100%; margin-top: 16px; padding: 12px; border-radius: 12px; font-size: .95rem; }
-  #welcome .close { position: absolute; z-index: 2; top: 12px; right: 12px; background: #fff; color: #0a1f22; border: 1px solid #b9d6d6; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; }
-  #welcome .fine { margin-top: 14px; color: #5b7b7d; font-size: .85rem; line-height: 1.4; }
+  #welcome .close { position: absolute; z-index: 2; top: 12px; right: 12px; background: #fff; color: #1B1510; border: 1px solid #D4C6B2; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; }
+  #welcome .fine { margin-top: 14px; color: #85755F; font-size: .85rem; line-height: 1.4; }
 
   /* result panel + legend */
   #panel { position: fixed; z-index: 10; left: 10px; bottom: 28px; width: min(360px, calc(100% - 20px)); border-radius: 16px; padding: 14px 16px; display: none; }
@@ -69,11 +69,11 @@
   #panel .sub { color: var(--muted); font-size: .86rem; margin-bottom: 8px; }
   #panel .chips { display: flex; gap: 6px; margin: 8px 0; }
   #panel .chip { background: transparent; color: var(--ink); border: 1px solid var(--line); padding: 5px 10px; font-weight: 500; }
-  #panel .chip.on { background: var(--aqua); color: #03161a; border-color: var(--aqua); }
+  #panel .chip.on { background: var(--aqua); color: #1a0f02; border-color: var(--aqua); }
   .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 6px 0; }
   .row label { color: var(--muted); font-size: .86rem; }
   .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 6px; }
-  .stat { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: rgba(2, 10, 11, .55); }
+  .stat { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: rgba(10, 7, 4, .5); }
   .stat span { display: block; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
   .stat strong { font-family: var(--display); font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
   #panel p { margin: 6px 0 0; font-size: .82rem; line-height: 1.4; color: var(--muted); }
@@ -89,6 +89,19 @@
     #legend { bottom: auto; top: 64px; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  /* light theme (shared choice with /app via localStorage "landlabTheme") */
+  :root[data-theme="light"] {
+    --ink: #2A2118; --muted: #5A4C3C; --aqua: #B8620F; --aqua-deep: #9E500A; --bg: #EFE9DF;
+    --glass: rgba(255, 255, 255, .9); --line: rgba(120, 70, 20, .25); --warn: #B5760F;
+  }
+  :root[data-theme="light"] .glass { box-shadow: 0 10px 30px rgba(42, 33, 24, .18); }
+  :root[data-theme="light"] input[type=text], :root[data-theme="light"] input[type=number], :root[data-theme="light"] select { background: #fff; }
+  :root[data-theme="light"] .pill, :root[data-theme="light"] .btn.on, :root[data-theme="light"] .btn.primary, :root[data-theme="light"] #panel .chip.on { color: #fff; }
+  :root[data-theme="light"] .hits { background: #fff; }
+  :root[data-theme="light"] .stat { background: rgba(255, 255, 255, .7); }
+  :root[data-theme="light"] #panel p.err { color: #C3392E; }
+  :root[data-theme="light"] #welcome { background: rgba(239, 233, 223, .6); }
+  #themeToggle { width: 36px; padding: 7px 0; justify-content: center; font-size: 1rem; line-height: 1; }
 </style>
 </head>
 <body>
@@ -104,6 +117,7 @@
     <button class="btn" id="drawBtn" title="Draw your own area on the map">Draw area</button>
     <button class="btn" id="threeD" title="Tilt the map and show terrain relief">3D</button>
     <a class="btn" href="/app" title="Full physical model">Physical model &rarr;</a>
+    <button class="btn" id="themeToggle" title="Switch between dark and light mode" aria-label="Switch between dark and light mode">&#9680;</button>
   </div>
 </div>
 
@@ -127,7 +141,7 @@
       <label>Choose a scenario</label>
       <div class="chips" id="wChips"><button class="chip on" data-s="moderate">Moderate rain</button><button class="chip" data-s="extreme">Extreme rain</button></div>
       <button class="btn primary go" id="wGo">Get landslide information</button>
-      <p class="fine">A screening estimate at about 30 m terrain detail. It shows where slopes could fail under a 24 hour storm, not how far the debris travels. For runout, buildings, roads, earthquakes and loss, open the <a href="/app" style="color:#086660;">physical model</a>.</p>
+      <p class="fine">A screening estimate at about 30 m terrain detail. It shows where slopes could fail under a 24 hour storm, not how far the debris travels. For runout, buildings, roads, earthquakes and loss, open the <a href="/app" style="color:#7A3A10;">physical model</a>.</p>
     </div>
   </div>
 </div>
@@ -158,6 +172,21 @@
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
 <script src="https://unpkg.com/@mapbox/mapbox-gl-draw@1.4.3/dist/mapbox-gl-draw.js"></script>
+<script>
+(function () {
+  var root = document.documentElement;
+  function apply(t) { root.setAttribute('data-theme', t); var b = document.getElementById('themeToggle'); if (b) b.innerHTML = t === 'light' ? '&#9790;' : '&#9728;'; }
+  var t = 'dark'; try { t = localStorage.getItem('landlabTheme') || 'dark'; } catch (e) {}
+  apply(t);
+  document.addEventListener('DOMContentLoaded', function () {
+    apply(root.getAttribute('data-theme'));
+    document.getElementById('themeToggle').addEventListener('click', function () {
+      var n = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      apply(n); try { localStorage.setItem('landlabTheme', n); } catch (e) {}
+    });
+  });
+})();
+</script>
 <script>
 "use strict";
 const MAPBOX_TOKEN = "__MAPBOX_TOKEN__";
